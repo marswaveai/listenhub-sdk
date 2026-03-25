@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+dist/
+*.tsbuildinfo
+docs/api/
+
+# Environment files with secrets
+.env
+.env.local
+.env.staging
+.env.production
