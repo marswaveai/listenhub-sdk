@@ -1,0 +1,44 @@
+{
+  "name": "@marswave/listenhub-sdk",
+  "version": "0.1.0",
+  "description": "ListenHub API SDK — TypeScript client with Core + Adapter architecture",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./cli-auth": {
+      "types": "./dist/cli-auth.d.ts",
+      "node": {
+        "import": "./dist/cli-auth.mjs",
+        "require": "./dist/cli-auth.cjs"
+      },
+      "default": null
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "open": "^10.0.0"
+  },
+  "license": "UNLICENSED"
+}
