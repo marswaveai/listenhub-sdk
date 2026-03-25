@@ -183,3 +183,13 @@ describe('ListenHubClient', () => {
     })
   })
 })
+
+describe('ListenHubClient (from index)', () => {
+  it('has auth resource auto-wired', async () => {
+    const { ListenHubClient } = await import('../src/index')
+    const client = new ListenHubClient()
+    expect(client.auth).toBeDefined()
+    expect(typeof client.auth.cliInit).toBe('function')
+    expect(typeof client.auth.refresh).toBe('function')
+  })
+})
