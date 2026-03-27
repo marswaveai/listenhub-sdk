@@ -182,6 +182,77 @@ describe('ListenHubClient', () => {
       await expect(client.request('GET', '/v1/me')).rejects.toThrow(ListenHubError)
     })
   })
+
+  describe('429 rate limit retry', () => {
+    it('retries on 429 with Retry-After header (seconds)', async () => {
+      const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
+
+      mockFetch
+        .mockResolvedValueOnce(new Response('', {
+          status: 429,
+          headers: { 'retry-after': '1', 'content-type': 'text/plain' },
+        }))
+        .mockResolvedValueOnce(jsonResponse({ ok: true }))
+
+      const result = await client.request('GET', '/v1/things')
+
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+      expect(result).toEqual({ ok: true })
+    })
+
+    it('retries up to maxRetries times then throws', async () => {
+      const client = new ListenHubClient({
+        baseURL: 'https://api.test.com/api',
+        maxRetries: 2,
+      })
+
+      mockFetch.mockResolvedValue(new Response(
+        JSON.stringify({ code: 42900, message: 'Too many requests' }),
+        { status: 429, headers: { 'retry-after': '0', 'content-type': 'application/json' } },
+      ))
+
+      await expect(client.request('GET', '/v1/things')).rejects.toThrow(ListenHubError)
+      // 1 initial + 2 retries = 3 calls
+      expect(mockFetch).toHaveBeenCalledTimes(3)
+    })
+
+    it('does not retry when maxRetries is 0', async () => {
+      const client = new ListenHubClient({
+        baseURL: 'https://api.test.com/api',
+        maxRetries: 0,
+      })
+
+      mockFetch.mockResolvedValueOnce(new Response(
+        JSON.stringify({ code: 42900, message: 'Too many requests' }),
+        { status: 429, headers: { 'content-type': 'application/json' } },
+      ))
+
+      await expect(client.request('GET', '/v1/things')).rejects.toThrow(ListenHubError)
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('uses exponential backoff when no Retry-After header', async () => {
+      const client = new ListenHubClient({
+        baseURL: 'https://api.test.com/api',
+        maxRetries: 1,
+      })
+
+      mockFetch
+        .mockResolvedValueOnce(new Response('', {
+          status: 429,
+          headers: { 'content-type': 'text/plain' },
+        }))
+        .mockResolvedValueOnce(jsonResponse({ ok: true }))
+
+      const start = Date.now()
+      await client.request('GET', '/v1/things')
+      const elapsed = Date.now() - start
+
+      // Should wait ~1000ms (DEFAULT_RETRY_DELAY_MS * 2^0)
+      expect(elapsed).toBeGreaterThanOrEqual(800)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+    })
+  })
 })
 
 describe('ListenHubClient (from index)', () => {

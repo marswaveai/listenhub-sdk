@@ -17,4 +17,6 @@ export interface RequestOptions {
   headers?: Record<string, string>
   signal?: AbortSignal
   skipAutoRefresh?: boolean
+  /** @internal Current retry attempt (used internally by retry logic) */
+  _retryCount?: number
 }
