@@ -17,6 +17,8 @@ export interface RequestOptions {
   headers?: Record<string, string>
   signal?: AbortSignal
   skipAutoRefresh?: boolean
+  /** Skip camelCase/snake_case auto-conversion for this request */
+  rawKeys?: boolean
   /** @internal Current retry attempt (used internally by retry logic) */
   _retryCount?: number
 }
