@@ -8,9 +8,11 @@ const ACCESS_TOKEN = process.env.LISTENHUB_ACCESS_TOKEN
 describe.skipIf(!API_URL)('E2E: Client basic requests', () => {
   it('reaches the API via public endpoint', async () => {
     const client = new ListenHubClient({ baseURL: API_URL })
-    // TODO: replace /v1/health with actual public endpoint path
-    const result = await client.request('GET', '/v1/health')
-    expect(result).toBeDefined()
+    const result = await client.request<{ sessionId: string; authUrl: string }>(
+      'POST', '/v1/auth/connect/init', { body: { callbackPort: 19526 }, rawKeys: true },
+    )
+    expect(result.sessionId).toBeDefined()
+    expect(result.authUrl).toBeDefined()
   })
 
   it('throws ListenHubError on invalid endpoint', async () => {
@@ -26,9 +28,10 @@ describe.skipIf(!API_URL)('E2E: Client basic requests', () => {
 
   it('response keys are camelCased', async () => {
     const client = new ListenHubClient({ baseURL: API_URL })
-    // TODO: replace with an endpoint that returns snake_case keys
-    const result = await client.request<Record<string, unknown>>('GET', '/v1/health')
-    // All top-level keys should be camelCase (no underscores)
+    // connect/init returns snake_case from backend (session_id, auth_url) — SDK should camelCase them
+    const result = await client.request<Record<string, unknown>>(
+      'POST', '/v1/auth/connect/init', { body: { callbackPort: 19526 }, rawKeys: true },
+    )
     for (const key of Object.keys(result as object)) {
       expect(key).not.toMatch(/_[a-z]/)
     }
@@ -41,16 +44,14 @@ describe.skipIf(!API_URL || !ACCESS_TOKEN)('E2E: Authenticated requests', () => 
       baseURL: API_URL,
       accessToken: ACCESS_TOKEN,
     })
-    // TODO: replace /v1/me with actual protected endpoint path
-    const result = await client.request('GET', '/v1/me')
-    expect(result).toBeDefined()
+    const result = await client.request<{ id: string }>('GET', '/v1/users/me')
+    expect(result.id).toBeDefined()
   })
 
   it('throws 401 without access token', async () => {
     const client = new ListenHubClient({ baseURL: API_URL })
     try {
-      // TODO: replace /v1/me with actual protected endpoint path
-      await client.request('GET', '/v1/me', { skipAutoRefresh: true })
+      await client.request('GET', '/v1/users/me', { skipAutoRefresh: true })
       expect.fail('Should have thrown')
     } catch (e) {
       expect(e).toBeInstanceOf(ListenHubError)
@@ -65,9 +66,8 @@ describe.skipIf(!API_URL || !ACCESS_TOKEN)('E2E: Authenticated requests', () => 
       accessToken: ACCESS_TOKEN,
       onRequest: (req) => { capturedUrl = req.url },
     })
-    // TODO: replace /v1/me with actual protected endpoint path
-    await client.request('GET', '/v1/me')
-    expect(capturedUrl).toContain('/v1/me')
+    await client.request('GET', '/v1/users/me')
+    expect(capturedUrl).toContain('/v1/users/me')
   })
 
   it('onResponse hook fires with real response', async () => {
@@ -77,8 +77,7 @@ describe.skipIf(!API_URL || !ACCESS_TOKEN)('E2E: Authenticated requests', () => 
       accessToken: ACCESS_TOKEN,
       onResponse: (res) => { capturedStatus = res.status },
     })
-    // TODO: replace /v1/me with actual protected endpoint path
-    await client.request('GET', '/v1/me')
+    await client.request('GET', '/v1/users/me')
     expect(capturedStatus).toBe(200)
   })
 })
