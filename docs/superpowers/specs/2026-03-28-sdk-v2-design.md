@@ -148,7 +148,7 @@ ky is configured with `throwHttpErrors: false` so that non-2xx responses are ret
 
 ky's built-in retry is disabled (`retry: 0`) because:
 
-1. **ky defaults `retry.methods` to `['GET']`** — our auth endpoints are POST, and many future endpoints will be non-idempotent. Expanding retry methods globally is unsafe.
+1. **ky defaults `retry.methods` to GET, PUT, HEAD, DELETE, OPTIONS, TRACE** — notably excluding POST. Our auth endpoints are POST, and many future endpoints will be non-idempotent. Expanding retry methods globally is unsafe.
 2. **401 token refresh** is not a simple retry — it requires a single-flight refresh call, then replaying the original request with the new token.
 3. **429 backoff** needs to read `Retry-After` header and fall back to exponential backoff, which is custom logic regardless.
 
@@ -392,11 +392,11 @@ New dev dependencies: `typedoc`, `typedoc-plugin-markdown`.
 | `camelcase-keys` | Response key conversion |
 | `decamelize-keys` | Request key conversion |
 
-### Runtime (removed)
+### Runtime (removed from root dependencies)
 
 | Package | Reason |
 |---------|--------|
-| `open` | Moves from runtime dep to NodeCLIAdapter-only (still needed, but scoped) |
+| `open` | Moves from root `dependencies` to `NodeCLIAdapter`-only. Stays as a runtime dependency but scoped: declared in root `dependencies` and only imported by `src/adapters/node/`. It is NOT removed from the package — just no longer used by the core client. |
 
 ### Dev (new)
 
