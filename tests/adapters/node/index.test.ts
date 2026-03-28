@@ -15,10 +15,10 @@ function jsonResponse(data: unknown) {
   })
 }
 
-describe('cliLogin', () => {
+describe('NodeCLIAdapter.auth.login', () => {
   it('orchestrates full login flow: server → init → browser → callback → token → save', async () => {
     const { ListenHubClient } = await import('../../../src/index')
-    const { cliLogin } = await import('../../../src/adapters/cli-auth/index')
+    const { NodeCLIAdapter } = await import('../../../src/adapters/node/index')
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdk-login-test-'))
     const tokenPath = path.join(tmpDir, 'credentials.json')
@@ -49,12 +49,9 @@ describe('cliLogin', () => {
       })
     })
 
-    const result = await cliLogin({
-      client: new ListenHubClient({ baseURL: 'https://api.test.com/api' }),
-      openBrowser,
-      tokenStorePath: tokenPath,
-      timeout: 5000,
-    })
+    const adapter = new NodeCLIAdapter({ tokenStorePath: tokenPath, openBrowser, loginTimeout: 5000 })
+    const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
+    const result = await adapter.auth.login(client.auth)
 
     expect(result.accessToken).toBe('at-new')
     expect(result.refreshToken).toBe('rt-new')
@@ -71,7 +68,7 @@ describe('cliLogin', () => {
 describe('loadCredentials', () => {
   it('returns credentials when file exists and token is valid', async () => {
     const { ListenHubClient } = await import('../../../src/index')
-    const { loadCredentials } = await import('../../../src/adapters/cli-auth/index')
+    const { loadCredentials } = await import('../../../src/adapters/node/index')
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdk-load-test-'))
     const tokenPath = path.join(tmpDir, 'credentials.json')
@@ -80,7 +77,7 @@ describe('loadCredentials', () => {
     fs.writeFileSync(tokenPath, JSON.stringify(creds))
 
     const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
-    const result = await loadCredentials({ client, tokenStorePath: tokenPath })
+    const result = await loadCredentials({ authAPI: client.auth, tokenStorePath: tokenPath })
     expect(result).toEqual(creds)
 
     fs.rmSync(tmpDir, { recursive: true, force: true })
@@ -88,11 +85,11 @@ describe('loadCredentials', () => {
 
   it('returns null when no credentials file exists', async () => {
     const { ListenHubClient } = await import('../../../src/index')
-    const { loadCredentials } = await import('../../../src/adapters/cli-auth/index')
+    const { loadCredentials } = await import('../../../src/adapters/node/index')
 
     const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
     const result = await loadCredentials({
-      client,
+      authAPI: client.auth,
       tokenStorePath: '/tmp/nonexistent-sdk-test/credentials.json',
     })
     expect(result).toBeNull()
@@ -100,7 +97,7 @@ describe('loadCredentials', () => {
 
   it('auto-refreshes when token is near expiry', async () => {
     const { ListenHubClient } = await import('../../../src/index')
-    const { loadCredentials } = await import('../../../src/adapters/cli-auth/index')
+    const { loadCredentials } = await import('../../../src/adapters/node/index')
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdk-refresh-test-'))
     const tokenPath = path.join(tmpDir, 'credentials.json')
@@ -113,7 +110,7 @@ describe('loadCredentials', () => {
     }))
 
     const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
-    const result = await loadCredentials({ client, tokenStorePath: tokenPath })
+    const result = await loadCredentials({ authAPI: client.auth, tokenStorePath: tokenPath })
 
     expect(result!.accessToken).toBe('new-at')
     expect(result!.refreshToken).toBe('new-rt')
@@ -125,10 +122,10 @@ describe('loadCredentials', () => {
   })
 })
 
-describe('cliLogout', () => {
+describe('NodeCLIAdapter.auth.logout', () => {
   it('revokes server token and deletes local file', async () => {
     const { ListenHubClient } = await import('../../../src/index')
-    const { cliLogout } = await import('../../../src/adapters/cli-auth/index')
+    const { NodeCLIAdapter } = await import('../../../src/adapters/node/index')
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdk-logout-test-'))
     const tokenPath = path.join(tmpDir, 'credentials.json')
@@ -138,12 +135,10 @@ describe('cliLogout', () => {
 
     mockFetch.mockResolvedValueOnce(jsonResponse({ success: true }))
 
+    const adapter = new NodeCLIAdapter({ tokenStorePath: tokenPath })
     const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
-    const result = await cliLogout({ client, tokenStorePath: tokenPath })
+    await adapter.auth.logout(client.auth)
 
-    expect(result.serverRevoked).toBe(true)
-    expect(result.localCleared).toBe(true)
-    expect(result.warning).toBeUndefined()
     expect(fs.existsSync(tokenPath)).toBe(false)
 
     fs.rmSync(tmpDir, { recursive: true, force: true })
@@ -151,7 +146,7 @@ describe('cliLogout', () => {
 
   it('clears local file even when server revocation fails', async () => {
     const { ListenHubClient } = await import('../../../src/index')
-    const { cliLogout } = await import('../../../src/adapters/cli-auth/index')
+    const { NodeCLIAdapter } = await import('../../../src/adapters/node/index')
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdk-logout-fail-'))
     const tokenPath = path.join(tmpDir, 'credentials.json')
@@ -161,12 +156,10 @@ describe('cliLogout', () => {
 
     mockFetch.mockRejectedValueOnce(new Error('Network error'))
 
+    const adapter = new NodeCLIAdapter({ tokenStorePath: tokenPath })
     const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
-    const result = await cliLogout({ client, tokenStorePath: tokenPath })
+    await adapter.auth.logout(client.auth)
 
-    expect(result.serverRevoked).toBe(false)
-    expect(result.localCleared).toBe(true)
-    expect(result.warning).toBeDefined()
     expect(fs.existsSync(tokenPath)).toBe(false)
 
     fs.rmSync(tmpDir, { recursive: true, force: true })

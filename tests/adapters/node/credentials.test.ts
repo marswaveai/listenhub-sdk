@@ -7,7 +7,7 @@ import {
   writeCredentials,
   deleteCredentials,
   DEFAULT_TOKEN_STORE_PATH,
-} from '../../../src/adapters/cli-auth/credentials'
+} from '../../../src/adapters/node/credentials'
 import type { StoredCredentials } from '../../../src/types/auth'
 
 let tmpDir: string

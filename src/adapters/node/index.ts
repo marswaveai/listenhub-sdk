@@ -1,8 +1,8 @@
 import * as http from 'node:http'
 import * as url from 'node:url'
-import type { ListenHubClient } from '../../client'
-import type { ClientOptions } from '../../types/client'
+import type { AuthAPI, AuthStrategy, StorageProvider, PlatformAdapter } from '../../types/adapter'
 import type { TokenResponse, StoredCredentials, LogoutResult } from '../../types/auth'
+import type { ClientOptions } from '../../types/client'
 import { ListenHubError } from '../../types/common'
 import {
   readCredentials,
@@ -15,56 +15,99 @@ export type { StoredCredentials, LogoutResult }
 
 const REFRESH_BUFFER_MS = 60_000
 
-interface CliLoginOptions {
-  client: ListenHubClient
-  port?: number
+export interface NodeCLIAdapterOptions {
   tokenStorePath?: string
   openBrowser?: (url: string) => Promise<void>
-  timeout?: number
+  loginTimeout?: number
 }
 
-export async function cliLogin(options: CliLoginOptions): Promise<TokenResponse> {
-  const {
-    client,
-    tokenStorePath = DEFAULT_TOKEN_STORE_PATH,
-    timeout = 300_000,
-  } = options
+class NodeCLIAuthStrategy implements AuthStrategy {
+  constructor(
+    private storage: NodeCLIStorageProvider,
+    private openBrowser: (url: string) => Promise<void>,
+    private loginTimeout: number,
+  ) {}
 
-  const openBrowser = options.openBrowser ?? defaultOpenBrowser
+  async login(authAPI: AuthAPI): Promise<TokenResponse> {
+    const { server, port, waitForCode } = await startCallbackServer(this.loginTimeout)
 
-  const { server, port, waitForCode } = await startCallbackServer(timeout)
+    try {
+      const { authUrl, sessionId } = await authAPI.cliInit({ callbackPort: port })
+      await this.openBrowser(authUrl)
+      const code = await waitForCode
+      const tokens = await authAPI.cliToken({ sessionId, code })
 
-  try {
-    const { sessionId, authUrl } = await client.auth.cliInit({ callbackPort: port })
-    await openBrowser(authUrl)
-    const code = await waitForCode
-    const tokens = await client.auth.cliToken({ sessionId, code })
+      const credentials: StoredCredentials = {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresAt: Date.now() + tokens.expiresIn * 1000,
+      }
+      await this.storage.save(credentials)
 
-    const credentials: StoredCredentials = {
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      expiresAt: Date.now() + tokens.expiresIn * 1000,
+      return tokens
+    } finally {
+      server.close()
     }
-    await writeCredentials(tokenStorePath, credentials)
+  }
 
-    return tokens
-  } finally {
-    server.close()
+  async logout(authAPI: AuthAPI): Promise<void> {
+    const creds = await this.storage.load()
+    if (creds) {
+      try {
+        await authAPI.revoke({ refreshToken: creds.refreshToken })
+      } catch {
+        // Best-effort server revocation
+      }
+    }
+    await this.storage.clear()
   }
 }
 
+class NodeCLIStorageProvider implements StorageProvider {
+  constructor(private tokenStorePath: string) {}
+
+  async load(): Promise<StoredCredentials | null> {
+    return readCredentials(this.tokenStorePath)
+  }
+
+  async save(credentials: StoredCredentials): Promise<void> {
+    await writeCredentials(this.tokenStorePath, credentials)
+  }
+
+  async clear(): Promise<void> {
+    await deleteCredentials(this.tokenStorePath)
+  }
+}
+
+export class NodeCLIAdapter implements PlatformAdapter {
+  auth: AuthStrategy
+  storage: StorageProvider
+
+  constructor(options: NodeCLIAdapterOptions = {}) {
+    const tokenStorePath = options.tokenStorePath ?? DEFAULT_TOKEN_STORE_PATH
+    const openBrowser = options.openBrowser ?? defaultOpenBrowser
+    const loginTimeout = options.loginTimeout ?? 300_000
+
+    const storage = new NodeCLIStorageProvider(tokenStorePath)
+    this.storage = storage
+    this.auth = new NodeCLIAuthStrategy(storage, openBrowser, loginTimeout)
+  }
+}
+
+// --- Convenience functions (preserve v1 API surface) ---
+
 export async function loadCredentials(options: {
-  client: ListenHubClient
+  authAPI: AuthAPI
   tokenStorePath?: string
 }): Promise<StoredCredentials | null> {
-  const { client, tokenStorePath = DEFAULT_TOKEN_STORE_PATH } = options
+  const { authAPI, tokenStorePath = DEFAULT_TOKEN_STORE_PATH } = options
 
   const creds = await readCredentials(tokenStorePath)
   if (!creds) return null
 
   if (creds.expiresAt - REFRESH_BUFFER_MS < Date.now()) {
     try {
-      const tokens = await client.auth.refresh({ refreshToken: creds.refreshToken })
+      const tokens = await authAPI.refresh({ refreshToken: creds.refreshToken })
       const updated: StoredCredentials = {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
@@ -80,28 +123,33 @@ export async function loadCredentials(options: {
   return creds
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createAuthenticatedClient(options?: {
   tokenStorePath?: string
   clientOptions?: ClientOptions
-}): Promise<ListenHubClient> {
+}): Promise<{ client: any; adapter: NodeCLIAdapter }> {
   const tokenStorePath = options?.tokenStorePath ?? DEFAULT_TOKEN_STORE_PATH
+  const adapter = new NodeCLIAdapter({ tokenStorePath })
 
   const { ListenHubClient } = await import('../../index')
 
   const tmpClient = new ListenHubClient(options?.clientOptions)
-  const creds = await loadCredentials({ client: tmpClient, tokenStorePath })
+  const creds = await loadCredentials({ authAPI: tmpClient.auth, tokenStorePath })
   if (!creds) {
     throw new ListenHubError({
       status: 0,
       code: 'NOT_AUTHENTICATED',
-      message: 'No stored credentials found. Run cliLogin() first.',
+      message: 'No stored credentials found. Run login() first.',
     })
   }
 
-  const client: ListenHubClient = new ListenHubClient({
+  // Use a ref object so onTokenExpired can reference the client after construction
+  const ref: { client: InstanceType<typeof ListenHubClient> | null } = { client: null }
+
+  const client = new ListenHubClient({
     ...options?.clientOptions,
     accessToken: creds.accessToken,
-    onTokenExpired: async () => {
+    onTokenExpired: async (): Promise<string> => {
       const current = await readCredentials(tokenStorePath)
       if (!current) {
         throw new ListenHubError({
@@ -110,9 +158,7 @@ export async function createAuthenticatedClient(options?: {
           message: 'Credentials file missing during token refresh.',
         })
       }
-      const tokens = await client.auth.refresh({
-        refreshToken: current.refreshToken,
-      })
+      const tokens: TokenResponse = await ref.client!.auth.refresh({ refreshToken: current.refreshToken })
       const updated: StoredCredentials = {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
@@ -122,33 +168,12 @@ export async function createAuthenticatedClient(options?: {
       return tokens.accessToken
     },
   })
+  ref.client = client
 
-  return client
+  return { client, adapter }
 }
 
-export async function cliLogout(options: {
-  client: ListenHubClient
-  tokenStorePath?: string
-}): Promise<LogoutResult> {
-  const { client, tokenStorePath = DEFAULT_TOKEN_STORE_PATH } = options
-  const result: LogoutResult = { serverRevoked: false, localCleared: false }
-
-  const creds = await readCredentials(tokenStorePath)
-
-  if (creds) {
-    try {
-      await client.auth.revoke({ refreshToken: creds.refreshToken })
-      result.serverRevoked = true
-    } catch (err) {
-      result.warning = `Server token revocation failed: ${(err as Error).message}. Token may still be valid on server.`
-    }
-  }
-
-  await deleteCredentials(tokenStorePath)
-  result.localCleared = true
-
-  return result
-}
+// --- Internal helpers ---
 
 async function defaultOpenBrowser(targetUrl: string): Promise<void> {
   const open = (await import('open')).default
