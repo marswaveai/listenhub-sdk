@@ -23,26 +23,39 @@ describe('NodeCLIAdapter.auth.login', () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdk-login-test-'))
     const tokenPath = path.join(tmpDir, 'credentials.json')
 
-    mockFetch.mockImplementation(async (url: string) => {
-      if (url.includes('/auth/cli/init')) {
+    let capturedPort: number | undefined
+
+    mockFetch.mockImplementation(async (requestOrUrl: Request | string) => {
+      const urlStr = requestOrUrl instanceof Request ? requestOrUrl.url : requestOrUrl
+      if (urlStr.includes('/auth/cli/init')) {
+        // Extract callbackPort from the request body to use in openBrowser mock
+        if (requestOrUrl instanceof Request) {
+          try {
+            const text = await requestOrUrl.text()
+            const body = JSON.parse(text)
+            capturedPort = body.callback_port ?? body.callbackPort
+          } catch {
+            // ignore read errors
+          }
+        }
         return jsonResponse({ sessionId: 'sess-1', authUrl: 'https://auth.test/cli?session_id=sess-1' })
       }
-      if (url.includes('/auth/cli/token')) {
+      if (urlStr.includes('/auth/cli/token')) {
         return jsonResponse({ accessToken: 'at-new', refreshToken: 'rt-new', expiresIn: 2592000 })
       }
-      throw new Error(`Unexpected fetch: ${url}`)
+      throw new Error(`Unexpected fetch: ${urlStr}`)
     })
 
     // Use Node http.get (NOT fetch) to hit the local callback server, since global fetch is mocked
-    const openBrowser = vi.fn().mockImplementation(async () => {
+    const openBrowser = vi.fn().mockImplementation(async (authUrl: string) => {
+      // authUrl is e.g. 'https://auth.test/cli?session_id=sess-1'
+      // The callback port is captured from when the mock server started
       await new Promise((r) => setTimeout(r, 50))
-      const initCall = mockFetch.mock.calls.find(([u]: [string]) => u.includes('/auth/cli/init'))
-      const body = JSON.parse(initCall[1].body)
-      const port = body.callbackPort
+      if (!capturedPort) throw new Error('capturedPort not set')
 
       const nodeHttp = await import('node:http')
       await new Promise<void>((resolve, reject) => {
-        nodeHttp.get(`http://127.0.0.1:${port}/callback?code=auth-code-123`, (res) => {
+        nodeHttp.get(`http://127.0.0.1:${capturedPort}/callback?code=auth-code-123`, (res) => {
           res.resume()
           res.on('end', resolve)
         }).on('error', reject)
