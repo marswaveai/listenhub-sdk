@@ -35,12 +35,20 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
+    "express": "^5.2.1",
+    "get-port": "^7.2.0",
     "tsup": "^8.0.0",
+    "typedoc": "^0.28.18",
+    "typedoc-plugin-markdown": "^4.11.0",
     "typescript": "^5.4.0",
     "vitest": "^2.0.0"
   },
   "dependencies": {
+    "camelcase-keys": "^10.0.2",
+    "decamelize-keys": "^2.0.1",
+    "ky": "^1.14.3",
     "open": "^10.0.0"
   },
   "license": "UNLICENSED"
