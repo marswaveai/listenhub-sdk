@@ -37,7 +37,7 @@
     "docs": "typedoc",
     "test": "vitest run --exclude 'tests/e2e/**'",
     "test:watch": "vitest --exclude 'tests/e2e/**'",
-    "test:e2e": "vitest run tests/e2e/",
+    "test:e2e": "vitest run tests/e2e/ --mode staging",
     "lint": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
