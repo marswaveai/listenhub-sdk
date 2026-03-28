@@ -16,10 +16,21 @@ Define a `PlatformAdapter` interface that each environment implements:
 
 ```ts
 // src/types/adapter.ts
+// NOTE: This file must NOT import from client.ts. AuthStrategy receives
+// a minimal AuthAPI interface (defined here in types/) to preserve the
+// dependency direction: adapters → resources → client → types.
+
+/** Minimal surface that AuthStrategy needs — implemented by AuthResource */
+interface AuthAPI {
+  cliInit(params: { callbackPort: number }): Promise<CliInitResponse>
+  cliToken(params: { sessionId: string; code: string }): Promise<TokenResponse>
+  refresh(params: { refreshToken: string }): Promise<TokenResponse>
+  revoke(params: { refreshToken: string }): Promise<void>
+}
 
 interface AuthStrategy {
-  login(client: ListenHubClient): Promise<TokenResponse>
-  logout(client: ListenHubClient): Promise<void>
+  login(authAPI: AuthAPI): Promise<TokenResponse>
+  logout(authAPI: AuthAPI): Promise<void>
 }
 
 interface StorageProvider {
@@ -44,6 +55,8 @@ interface PlatformAdapter {
 }
 ```
 
+`AuthResource` implements `AuthAPI` naturally (same method signatures). The client passes `this.auth` (the `AuthResource` instance) to `adapter.auth.login(this.auth)`. The types layer never imports `ListenHubClient`, keeping the dependency direction clean: `adapters → resources → client → types`.
+
 ### Client injection
 
 ```ts
@@ -58,10 +71,21 @@ Client accesses capabilities via `this.adapter.storage.load()` etc. Core layer n
 
 | Adapter | Export subpath | Environment |
 |---------|---------------|-------------|
-| `NodeCLIAdapter` | `listenhub-sdk/node` | Node.js CLI |
-| `BrowserAdapter` | `listenhub-sdk/browser` | Browser SPA |
+| `NodeCLIAdapter` | `@marswave/listenhub-sdk/node` | Node.js CLI |
+| `BrowserAdapter` | `@marswave/listenhub-sdk/browser` | Browser SPA |
 
 Desktop and mobile: users implement `PlatformAdapter` themselves.
+
+### Export migration from v1
+
+This is a **semver major** change (v0 → v1, or v0.x breaking). Migration path:
+
+| v1 subpath | v2 subpath | Status |
+|------------|------------|--------|
+| `@marswave/listenhub-sdk` | `@marswave/listenhub-sdk` | **Preserved** (core client + types) |
+| `@marswave/listenhub-sdk/cli-auth` | `@marswave/listenhub-sdk/node` | **Renamed** — `./cli-auth` is removed |
+
+`./cli-auth` is **not** kept as an alias. It is removed entirely. Users must update imports to `./node`. Since we are pre-1.0 (`0.1.0`), this is an acceptable breaking change per semver convention. The CHANGELOG and migration guide should document the rename.
 
 ### NodeCLIAdapter constructor
 
@@ -77,10 +101,10 @@ Storage path is baked into the adapter instance at construction time.
 
 These are two separate concerns that coexist:
 
-- **`adapter.auth`** (`AuthStrategy`): orchestrates the login/logout *flow* (open browser, wait for callback, store credentials). Called by convenience functions like `createAuthenticatedClient()`.
-- **`client.auth`** (`AuthResource`): wraps auth API *endpoints* (`/v1/auth/token`, `/v1/auth/cli/init`, etc.). Used by adapter.auth internally, and available for direct use.
+- **`adapter.auth`** (`AuthStrategy`): orchestrates the login/logout *flow* (open browser, wait for callback, store credentials). Called by convenience functions like `createAuthenticatedClient()`. Receives an `AuthAPI` interface (not the full client).
+- **`client.auth`** (`AuthResource`): wraps auth API *endpoints* (`/v1/auth/token`, `/v1/auth/cli/init`, etc.). Implements `AuthAPI`. Used by adapter.auth internally, and available for direct use.
 
-`AuthStrategy.login()` receives the client, calls `client.auth.cliInit()` / `client.auth.cliToken()` internally, then calls `adapter.storage.save()` to persist.
+`AuthStrategy.login()` receives `authAPI` (the `AuthResource` instance), calls `authAPI.cliInit()` / `authAPI.cliToken()` internally, then calls `adapter.storage.save()` to persist.
 
 ### Migration from current cli-auth
 
@@ -100,19 +124,63 @@ import ky from 'ky'
 this.http = ky.create({
   prefixUrl: baseURL,
   timeout: options.timeout ?? 30_000,
+  throwHttpErrors: false,   // We handle errors ourselves via parseErrorResponse
+  retry: 0,                 // Disable ky's built-in retry entirely
   hooks: { /* see below */ }
 })
 ```
 
-ky hook responsibilities:
-- `beforeRequest`: inject Bearer token, call user `onRequest` hook
-- `beforeRetry`: 401 token refresh (single-flight preserved), 429 exponential backoff
+#### Architecture baseline change
 
-ky's built-in retry handles 429 retry count (`retry.limit` = current `maxRetries`). 401 refresh stays custom in `beforeRetry` for single-flight deduplication.
+This is a deliberate departure from the v1 "zero HTTP dependency / built-in fetch" baseline. Rationale:
 
-Response unwrapping (`{ code, data }` format) happens in the `request()` method after `await ky(...).json()`, not in hooks, because ky's `afterResponse` hook operates on the raw Response and cannot transform the resolved value. Alternatively, ky's `parseJson` option can be used for custom JSON parsing.
+- **ky is a thin fetch wrapper** (~3.5 kB minified+gzip), not a heavy HTTP library. It uses the native Fetch API underneath.
+- **Eliminates ~120 lines** of hand-written timeout, header injection, and response handling.
+- **Hooks system** gives us clean extension points (beforeRequest, afterResponse) instead of ad-hoc logic.
+- **Runtime matrix**: ky supports all our targets — Node 18+ (native fetch), browsers, Deno. No polyfill needed.
+- **Trade-off**: one new runtime dependency, slightly larger bundle. Acceptable given the maintenance reduction.
 
-The user `onResponse` hook is called in `afterResponse` with the raw Response (before unwrapping), giving users access to headers and status for logging/monitoring.
+#### Error handling strategy: throwHttpErrors: false
+
+ky is configured with `throwHttpErrors: false` so that non-2xx responses are returned as normal `Response` objects. The `request()` method checks `response.ok` and routes to `parseErrorResponse()` for content-type aware error construction. This avoids fighting ky's default `HTTPError` and gives us full control over error shaping.
+
+#### Retry strategy: fully self-managed
+
+ky's built-in retry is disabled (`retry: 0`) because:
+
+1. **ky defaults `retry.methods` to `['GET']`** — our auth endpoints are POST, and many future endpoints will be non-idempotent. Expanding retry methods globally is unsafe.
+2. **401 token refresh** is not a simple retry — it requires a single-flight refresh call, then replaying the original request with the new token.
+3. **429 backoff** needs to read `Retry-After` header and fall back to exponential backoff, which is custom logic regardless.
+
+Both 401 and 429 retry are implemented in the `request()` method (same location as v1), not in ky hooks:
+
+```ts
+async request<T>(method, path, options): Promise<T> {
+  const response = await this.http(path, { method, ... })
+
+  // User onResponse hook (raw Response for logging)
+  await this.options.onResponse?.(response, request)
+
+  if (response.ok) {
+    // unwrap { code, data } + camelCase conversion
+  }
+
+  // 401: single-flight token refresh + replay (once)
+  if (response.status === 401 && !options.skipAutoRefresh && this.onTokenExpired) {
+    // ... same single-flight logic as v1
+  }
+
+  // 429: exponential backoff with Retry-After
+  if (response.status === 429 && retryCount < maxRetries) {
+    // ... same backoff logic as v1
+  }
+
+  // All other errors
+  throw await parseErrorResponse(response)
+}
+```
+
+This keeps retry logic explicit, idempotency-safe, and independent of ky's retry plumbing.
 
 ### User-facing hooks
 
@@ -124,7 +192,7 @@ interface ClientOptions {
 }
 ```
 
-Execution order: ky `beforeRequest` injects token first, then calls user `onRequest`. `afterResponse` calls user `onResponse` with the raw Response for logging/monitoring.
+Execution order: ky `beforeRequest` hook injects Bearer token first, then calls user `onRequest`. User `onResponse` is called in `request()` after receiving the response, before error/unwrap logic.
 
 ### Content-type aware error parsing
 
