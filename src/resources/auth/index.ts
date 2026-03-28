@@ -1,27 +1,25 @@
 import type { ListenHubClient } from '../../client'
 import type { CliInitResponse, TokenResponse } from '../../types/auth'
+import * as methods from './methods'
 
 export class AuthResource {
   constructor(private client: ListenHubClient) {
     client._setAuth(this)
   }
 
-  async cliInit(params: { callbackPort: number }): Promise<CliInitResponse> {
-    return this.client.request('POST', '/v1/auth/cli/init', { body: params })
+  cliInit(params: { callbackPort: number }): Promise<CliInitResponse> {
+    return methods.cliInit(this.client, params)
   }
 
-  async cliToken(params: { sessionId: string; code: string }): Promise<TokenResponse> {
-    return this.client.request('POST', '/v1/auth/cli/token', { body: params })
+  cliToken(params: { sessionId: string; code: string }): Promise<TokenResponse> {
+    return methods.cliToken(this.client, params)
   }
 
-  async refresh(params: { refreshToken: string }): Promise<TokenResponse> {
-    return this.client.request('POST', '/v1/auth/token', {
-      body: { grantType: 'refresh_token', refreshToken: params.refreshToken },
-      skipAutoRefresh: true,
-    })
+  refresh(params: { refreshToken: string }): Promise<TokenResponse> {
+    return methods.refresh(this.client, params)
   }
 
   async revoke(params: { refreshToken: string }): Promise<void> {
-    await this.client.request('POST', '/v1/auth/token/revoke', { body: params })
+    return methods.revoke(this.client, params)
   }
 }
