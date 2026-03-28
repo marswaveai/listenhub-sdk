@@ -1,7 +1,7 @@
 import * as http from 'node:http'
 import * as url from 'node:url'
 import type { AuthAPI, AuthStrategy, StorageProvider, PlatformAdapter } from '../../types/adapter'
-import type { TokenResponse, StoredCredentials, LogoutResult } from '../../types/auth'
+import type { TokenResponse, StoredCredentials } from '../../types/auth'
 import type { ClientOptions } from '../../types/client'
 import { ListenHubError } from '../../types/common'
 import {
@@ -11,7 +11,7 @@ import {
   DEFAULT_TOKEN_STORE_PATH,
 } from './credentials'
 
-export type { StoredCredentials, LogoutResult }
+export type { StoredCredentials }
 
 const REFRESH_BUFFER_MS = 60_000
 
@@ -149,6 +149,7 @@ export async function createAuthenticatedClient(options?: {
   const client = new ListenHubClient({
     ...options?.clientOptions,
     accessToken: creds.accessToken,
+    adapter,
     onTokenExpired: async (): Promise<string> => {
       const current = await readCredentials(tokenStorePath)
       if (!current) {

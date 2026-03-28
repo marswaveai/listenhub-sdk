@@ -22,4 +22,4 @@ export type {
   NotifyOptions,
   PlatformAdapter,
 } from './types/adapter'
-export type { StoredCredentials, LogoutResult } from './types/auth'
+export type { StoredCredentials } from './types/auth'
