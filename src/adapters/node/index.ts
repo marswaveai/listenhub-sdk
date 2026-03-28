@@ -15,15 +15,15 @@ export type { StoredCredentials }
 
 const REFRESH_BUFFER_MS = 60_000
 
-export interface NodeCLIAdapterOptions {
+export interface NodeAdapterOptions {
   tokenStorePath?: string
   openBrowser?: (url: string) => Promise<void>
   loginTimeout?: number
 }
 
-class NodeCLIAuthStrategy implements AuthStrategy {
+class NodeAuthStrategy implements AuthStrategy {
   constructor(
-    private storage: NodeCLIStorageProvider,
+    private storage: NodeStorageProvider,
     private openBrowser: (url: string) => Promise<void>,
     private loginTimeout: number,
   ) {}
@@ -32,10 +32,10 @@ class NodeCLIAuthStrategy implements AuthStrategy {
     const { server, port, waitForCode } = await startCallbackServer(this.loginTimeout)
 
     try {
-      const { authUrl, sessionId } = await authAPI.cliInit({ callbackPort: port })
+      const { authUrl, sessionId } = await authAPI.connectInit({ callbackPort: port })
       await this.openBrowser(authUrl)
       const code = await waitForCode
-      const tokens = await authAPI.cliToken({ sessionId, code })
+      const tokens = await authAPI.connectToken({ sessionId, code })
 
       const credentials: StoredCredentials = {
         accessToken: tokens.accessToken,
@@ -63,7 +63,7 @@ class NodeCLIAuthStrategy implements AuthStrategy {
   }
 }
 
-class NodeCLIStorageProvider implements StorageProvider {
+class NodeStorageProvider implements StorageProvider {
   constructor(private tokenStorePath: string) {}
 
   async load(): Promise<StoredCredentials | null> {
@@ -79,18 +79,18 @@ class NodeCLIStorageProvider implements StorageProvider {
   }
 }
 
-export class NodeCLIAdapter implements PlatformAdapter {
+export class NodeAdapter implements PlatformAdapter {
   auth: AuthStrategy
   storage: StorageProvider
 
-  constructor(options: NodeCLIAdapterOptions = {}) {
+  constructor(options: NodeAdapterOptions = {}) {
     const tokenStorePath = options.tokenStorePath ?? DEFAULT_TOKEN_STORE_PATH
     const openBrowser = options.openBrowser ?? defaultOpenBrowser
     const loginTimeout = options.loginTimeout ?? 300_000
 
-    const storage = new NodeCLIStorageProvider(tokenStorePath)
+    const storage = new NodeStorageProvider(tokenStorePath)
     this.storage = storage
-    this.auth = new NodeCLIAuthStrategy(storage, openBrowser, loginTimeout)
+    this.auth = new NodeAuthStrategy(storage, openBrowser, loginTimeout)
   }
 }
 
@@ -127,9 +127,9 @@ export async function loadCredentials(options: {
 export async function createAuthenticatedClient(options?: {
   tokenStorePath?: string
   clientOptions?: ClientOptions
-}): Promise<{ client: any; adapter: NodeCLIAdapter }> {
+}): Promise<{ client: any; adapter: NodeAdapter }> {
   const tokenStorePath = options?.tokenStorePath ?? DEFAULT_TOKEN_STORE_PATH
-  const adapter = new NodeCLIAdapter({ tokenStorePath })
+  const adapter = new NodeAdapter({ tokenStorePath })
 
   const { ListenHubClient } = await import('../../index')
 

@@ -15,10 +15,10 @@ function jsonResponse(data: unknown) {
   })
 }
 
-describe('NodeCLIAdapter.auth.login', () => {
+describe('NodeAdapter.auth.login', () => {
   it('orchestrates full login flow: server → init → browser → callback → token → save', async () => {
     const { ListenHubClient } = await import('../../../src/index')
-    const { NodeCLIAdapter } = await import('../../../src/adapters/node/index')
+    const { NodeAdapter } = await import('../../../src/adapters/node/index')
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdk-login-test-'))
     const tokenPath = path.join(tmpDir, 'credentials.json')
@@ -27,7 +27,7 @@ describe('NodeCLIAdapter.auth.login', () => {
 
     mockFetch.mockImplementation(async (requestOrUrl: Request | string) => {
       const urlStr = requestOrUrl instanceof Request ? requestOrUrl.url : requestOrUrl
-      if (urlStr.includes('/auth/cli/init')) {
+      if (urlStr.includes('/auth/connect/init')) {
         // Extract callbackPort from the request body to use in openBrowser mock
         if (requestOrUrl instanceof Request) {
           try {
@@ -40,7 +40,7 @@ describe('NodeCLIAdapter.auth.login', () => {
         }
         return jsonResponse({ sessionId: 'sess-1', authUrl: 'https://auth.test/cli?session_id=sess-1' })
       }
-      if (urlStr.includes('/auth/cli/token')) {
+      if (urlStr.includes('/auth/connect/token')) {
         return jsonResponse({ accessToken: 'at-new', refreshToken: 'rt-new', expiresIn: 2592000 })
       }
       throw new Error(`Unexpected fetch: ${urlStr}`)
@@ -62,7 +62,7 @@ describe('NodeCLIAdapter.auth.login', () => {
       })
     })
 
-    const adapter = new NodeCLIAdapter({ tokenStorePath: tokenPath, openBrowser, loginTimeout: 5000 })
+    const adapter = new NodeAdapter({ tokenStorePath: tokenPath, openBrowser, loginTimeout: 5000 })
     const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
     const result = await adapter.auth.login(client.auth)
 
@@ -135,10 +135,10 @@ describe('loadCredentials', () => {
   })
 })
 
-describe('NodeCLIAdapter.auth.logout', () => {
+describe('NodeAdapter.auth.logout', () => {
   it('revokes server token and deletes local file', async () => {
     const { ListenHubClient } = await import('../../../src/index')
-    const { NodeCLIAdapter } = await import('../../../src/adapters/node/index')
+    const { NodeAdapter } = await import('../../../src/adapters/node/index')
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdk-logout-test-'))
     const tokenPath = path.join(tmpDir, 'credentials.json')
@@ -148,7 +148,7 @@ describe('NodeCLIAdapter.auth.logout', () => {
 
     mockFetch.mockResolvedValueOnce(jsonResponse({ success: true }))
 
-    const adapter = new NodeCLIAdapter({ tokenStorePath: tokenPath })
+    const adapter = new NodeAdapter({ tokenStorePath: tokenPath })
     const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
     await adapter.auth.logout(client.auth)
 
@@ -159,7 +159,7 @@ describe('NodeCLIAdapter.auth.logout', () => {
 
   it('clears local file even when server revocation fails', async () => {
     const { ListenHubClient } = await import('../../../src/index')
-    const { NodeCLIAdapter } = await import('../../../src/adapters/node/index')
+    const { NodeAdapter } = await import('../../../src/adapters/node/index')
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdk-logout-fail-'))
     const tokenPath = path.join(tmpDir, 'credentials.json')
@@ -169,7 +169,7 @@ describe('NodeCLIAdapter.auth.logout', () => {
 
     mockFetch.mockRejectedValueOnce(new Error('Network error'))
 
-    const adapter = new NodeCLIAdapter({ tokenStorePath: tokenPath })
+    const adapter = new NodeAdapter({ tokenStorePath: tokenPath })
     const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
     await adapter.auth.logout(client.auth)
 

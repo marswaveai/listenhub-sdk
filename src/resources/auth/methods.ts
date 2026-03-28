@@ -1,5 +1,5 @@
 import type { ListenHubClient } from '../../client'
-import type { CliInitResponse, TokenResponse } from '../../types/auth'
+import type { ConnectInitResponse, TokenResponse } from '../../types/auth'
 
 export async function refresh(
   client: ListenHubClient,
@@ -11,20 +11,20 @@ export async function refresh(
   })
 }
 
-export async function cliInit(
+export async function connectInit(
   client: ListenHubClient,
   params: { callbackPort: number },
-): Promise<CliInitResponse> {
-  return client.request<CliInitResponse>('POST', '/v1/auth/cli/init', {
+): Promise<ConnectInitResponse> {
+  return client.request<ConnectInitResponse>('POST', '/v1/auth/connect/init', {
     body: params,
   })
 }
 
-export async function cliToken(
+export async function connectToken(
   client: ListenHubClient,
   params: { sessionId: string; code: string },
 ): Promise<TokenResponse> {
-  return client.request<TokenResponse>('POST', '/v1/auth/cli/token', {
+  return client.request<TokenResponse>('POST', '/v1/auth/connect/token', {
     body: params,
   })
 }

@@ -136,7 +136,7 @@ describe('ListenHubClient', () => {
       mockFetch.mockResolvedValueOnce(errorResponse(21002, 'Auth state not found'))
 
       try {
-        await client.request('POST', '/v1/auth/cli/token', { body: {} })
+        await client.request('POST', '/v1/auth/connect/token', { body: {} })
         expect.fail('Should have thrown')
       } catch (e) {
         expect(e).toBeInstanceOf(ListenHubError)
@@ -332,7 +332,7 @@ describe('ListenHubClient (from index)', () => {
     const { ListenHubClient } = await import('../../src/index')
     const client = new ListenHubClient()
     expect(client.auth).toBeDefined()
-    expect(typeof client.auth.cliInit).toBe('function')
+    expect(typeof client.auth.connectInit).toBe('function')
     expect(typeof client.auth.refresh).toBe('function')
   })
 })

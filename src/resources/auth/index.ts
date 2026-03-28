@@ -1,5 +1,5 @@
 import type { ListenHubClient } from '../../client'
-import type { CliInitResponse, TokenResponse } from '../../types/auth'
+import type { ConnectInitResponse, TokenResponse } from '../../types/auth'
 import * as methods from './methods'
 
 export class AuthResource {
@@ -7,12 +7,12 @@ export class AuthResource {
     client._setAuth(this)
   }
 
-  cliInit(params: { callbackPort: number }): Promise<CliInitResponse> {
-    return methods.cliInit(this.client, params)
+  connectInit(params: { callbackPort: number }): Promise<ConnectInitResponse> {
+    return methods.connectInit(this.client, params)
   }
 
-  cliToken(params: { sessionId: string; code: string }): Promise<TokenResponse> {
-    return methods.cliToken(this.client, params)
+  connectToken(params: { sessionId: string; code: string }): Promise<TokenResponse> {
+    return methods.connectToken(this.client, params)
   }
 
   refresh(params: { refreshToken: string }): Promise<TokenResponse> {

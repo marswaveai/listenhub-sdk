@@ -24,25 +24,25 @@ describe('auth/methods', () => {
     })
   })
 
-  describe('cliInit()', () => {
-    it('sends POST to /v1/auth/cli/init', async () => {
+  describe('connectInit()', () => {
+    it('sends POST to /v1/auth/connect/init', async () => {
       const request = vi.fn().mockResolvedValueOnce({
         sessionId: 'sid',
         authUrl: 'https://auth.test.com',
       })
       const client = mockClient(request)
 
-      const result = await methods.cliInit(client, { callbackPort: 9999 })
+      const result = await methods.connectInit(client, { callbackPort: 9999 })
 
-      expect(request).toHaveBeenCalledWith('POST', '/v1/auth/cli/init', {
+      expect(request).toHaveBeenCalledWith('POST', '/v1/auth/connect/init', {
         body: { callbackPort: 9999 },
       })
       expect(result.sessionId).toBe('sid')
     })
   })
 
-  describe('cliToken()', () => {
-    it('sends POST to /v1/auth/cli/token', async () => {
+  describe('connectToken()', () => {
+    it('sends POST to /v1/auth/connect/token', async () => {
       const request = vi.fn().mockResolvedValueOnce({
         accessToken: 'at',
         refreshToken: 'rt',
@@ -50,9 +50,9 @@ describe('auth/methods', () => {
       })
       const client = mockClient(request)
 
-      await methods.cliToken(client, { sessionId: 'sid', code: 'code123' })
+      await methods.connectToken(client, { sessionId: 'sid', code: 'code123' })
 
-      expect(request).toHaveBeenCalledWith('POST', '/v1/auth/cli/token', {
+      expect(request).toHaveBeenCalledWith('POST', '/v1/auth/connect/token', {
         body: { sessionId: 'sid', code: 'code123' },
       })
     })

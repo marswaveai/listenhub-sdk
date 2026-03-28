@@ -40,21 +40,21 @@ function createClientWithCapture() {
 }
 
 describe('AuthResource', () => {
-  it('cliInit sends POST /v1/auth/cli/init with callbackPort', async () => {
+  it('connectInit sends POST /v1/auth/connect/init with callbackPort', async () => {
     const { client, captured } = createClientWithCapture()
     mockFetch.mockResolvedValueOnce(jsonResponse({ sessionId: 'sess-1', authUrl: 'https://auth.test/cli?session_id=sess-1' }))
-    const result = await client.auth.cliInit({ callbackPort: 19526 })
-    expect(captured[0].url).toBe('https://api.test.com/api/v1/auth/cli/init')
+    const result = await client.auth.connectInit({ callbackPort: 19526 })
+    expect(captured[0].url).toBe('https://api.test.com/api/v1/auth/connect/init')
     expect(captured[0].method).toBe('POST')
     expect(captured[0].body).toEqual({ callback_port: 19526 })
     expect(result).toEqual({ sessionId: 'sess-1', authUrl: 'https://auth.test/cli?session_id=sess-1' })
   })
 
-  it('cliToken sends POST /v1/auth/cli/token', async () => {
+  it('connectToken sends POST /v1/auth/connect/token', async () => {
     const { client, captured } = createClientWithCapture()
     mockFetch.mockResolvedValueOnce(jsonResponse({ accessToken: 'at', refreshToken: 'rt', expiresIn: 2592000 }))
-    const result = await client.auth.cliToken({ sessionId: 'sess-1', code: 'code-1' })
-    expect(captured[0].url).toBe('https://api.test.com/api/v1/auth/cli/token')
+    const result = await client.auth.connectToken({ sessionId: 'sess-1', code: 'code-1' })
+    expect(captured[0].url).toBe('https://api.test.com/api/v1/auth/connect/token')
     expect(captured[0].body).toEqual({ session_id: 'sess-1', code: 'code-1' })
     expect(result.accessToken).toBe('at')
   })

@@ -1,4 +1,4 @@
-export interface CliInitResponse {
+export interface ConnectInitResponse {
   sessionId: string
   authUrl: string
 }

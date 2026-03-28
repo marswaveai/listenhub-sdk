@@ -11,7 +11,7 @@ export class ListenHubClient extends BaseClient {
 
 export { ListenHubError } from './types/common'
 export type { ClientOptions } from './types/client'
-export type { CliInitResponse, TokenResponse } from './types/auth'
+export type { ConnectInitResponse, TokenResponse } from './types/auth'
 export type { RequestOptions } from './types/common'
 export type {
   AuthAPI,

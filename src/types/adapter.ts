@@ -1,12 +1,12 @@
 // NOTE: This file must NOT import from client.ts to preserve
 // dependency direction: adapters → resources → client → types.
 
-import type { CliInitResponse, TokenResponse, StoredCredentials } from './auth'
+import type { ConnectInitResponse, TokenResponse, StoredCredentials } from './auth'
 
 /** Minimal auth API surface — implemented by AuthResource */
 export interface AuthAPI {
-  cliInit(params: { callbackPort: number }): Promise<CliInitResponse>
-  cliToken(params: { sessionId: string; code: string }): Promise<TokenResponse>
+  connectInit(params: { callbackPort: number }): Promise<ConnectInitResponse>
+  connectToken(params: { sessionId: string; code: string }): Promise<TokenResponse>
   refresh(params: { refreshToken: string }): Promise<TokenResponse>
   revoke(params: { refreshToken: string }): Promise<void>
 }
