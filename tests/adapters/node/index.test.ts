@@ -33,7 +33,7 @@ describe('NodeAdapter.auth.login', () => {
           try {
             const text = await requestOrUrl.text()
             const body = JSON.parse(text)
-            capturedPort = body.callback_port ?? body.callbackPort
+            capturedPort = body.callbackPort
           } catch {
             // ignore read errors
           }

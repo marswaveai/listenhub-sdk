@@ -1,6 +1,6 @@
 import ky, { type KyInstance } from 'ky'
 import camelcaseKeys from 'camelcase-keys'
-import decamelizeKeys from 'decamelize-keys'
+
 import type { AuthResource } from './resources/auth/index'
 import type { ClientOptions } from './types/client'
 import type { PlatformAdapter } from './types/adapter'
@@ -111,10 +111,7 @@ export class ListenHubClient {
     }
 
     if (options.body !== undefined) {
-      const body = options.rawKeys
-        ? options.body
-        : decamelizeKeys(options.body as Record<string, unknown> | Record<string, unknown>[], { deep: true })
-      kyOptions.json = body
+      kyOptions.json = options.body
     }
 
     // Strip leading slash — ky prefixUrl requires it

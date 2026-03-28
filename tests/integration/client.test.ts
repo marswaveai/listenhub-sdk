@@ -27,12 +27,12 @@ describe('Integration: ListenHubClient', () => {
     expect(result.items).toEqual([1, 2, 3])
   })
 
-  it('POST request with snake_case body conversion', async () => {
+  it('POST request sends body keys as-is', async () => {
     const client = new ListenHubClient({ baseURL })
     const result = await client.request<Record<string, unknown>>('POST', '/v1/echo', {
       body: { userName: 'alice', accountType: 'pro' },
     })
-    // Server receives snake_case, echoes back, client camelizes
+    // Server echoes body back, client camelizes response (no-op since already camelCase)
     expect(result).toEqual({ userName: 'alice', accountType: 'pro' })
   })
 

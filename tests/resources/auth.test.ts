@@ -46,7 +46,7 @@ describe('AuthResource', () => {
     const result = await client.auth.connectInit({ callbackPort: 19526 })
     expect(captured[0].url).toBe('https://api.test.com/api/v1/auth/connect/init')
     expect(captured[0].method).toBe('POST')
-    expect(captured[0].body).toEqual({ callback_port: 19526 })
+    expect(captured[0].body).toEqual({ callbackPort: 19526 })
     expect(result).toEqual({ sessionId: 'sess-1', authUrl: 'https://auth.test/cli?session_id=sess-1' })
   })
 
@@ -55,7 +55,7 @@ describe('AuthResource', () => {
     mockFetch.mockResolvedValueOnce(jsonResponse({ accessToken: 'at', refreshToken: 'rt', expiresIn: 2592000 }))
     const result = await client.auth.connectToken({ sessionId: 'sess-1', code: 'code-1' })
     expect(captured[0].url).toBe('https://api.test.com/api/v1/auth/connect/token')
-    expect(captured[0].body).toEqual({ session_id: 'sess-1', code: 'code-1' })
+    expect(captured[0].body).toEqual({ sessionId: 'sess-1', code: 'code-1' })
     expect(result.accessToken).toBe('at')
   })
 
@@ -64,7 +64,7 @@ describe('AuthResource', () => {
     mockFetch.mockResolvedValueOnce(jsonResponse({ accessToken: 'new-at', refreshToken: 'new-rt', expiresIn: 2592000 }))
     const result = await client.auth.refresh({ refreshToken: 'old-rt' })
     expect(captured[0].url).toBe('https://api.test.com/api/v1/auth/token')
-    expect(captured[0].body).toEqual({ grant_type: 'refresh_token', refresh_token: 'old-rt' })
+    expect(captured[0].body).toEqual({ grantType: 'refresh_token', refreshToken: 'old-rt' })
     expect(result.accessToken).toBe('new-at')
   })
 
@@ -73,6 +73,6 @@ describe('AuthResource', () => {
     mockFetch.mockResolvedValueOnce(jsonResponse({ success: true }))
     await client.auth.revoke({ refreshToken: 'rt-to-revoke' })
     expect(captured[0].url).toBe('https://api.test.com/api/v1/auth/token/revoke')
-    expect(captured[0].body).toEqual({ refresh_token: 'rt-to-revoke' })
+    expect(captured[0].body).toEqual({ refreshToken: 'rt-to-revoke' })
   })
 })

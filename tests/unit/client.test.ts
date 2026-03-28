@@ -75,7 +75,7 @@ describe('ListenHubClient', () => {
   })
 
   describe('camelCase / snake_case conversion', () => {
-    it('decamelizes request body keys', async () => {
+    it('sends request body keys as-is (no conversion)', async () => {
       const client = new ListenHubClient({ baseURL: 'https://api.test.com/api' })
       let capturedBody: unknown
       mockFetch.mockImplementationOnce(async (req: Request) => {
@@ -87,7 +87,7 @@ describe('ListenHubClient', () => {
         body: { grantType: 'refresh_token', refreshToken: 'rt_123' },
       })
 
-      expect(capturedBody).toEqual({ grant_type: 'refresh_token', refresh_token: 'rt_123' })
+      expect(capturedBody).toEqual({ grantType: 'refresh_token', refreshToken: 'rt_123' })
     })
 
     it('camelizes response data keys', async () => {
