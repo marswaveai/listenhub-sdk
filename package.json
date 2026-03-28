@@ -9,13 +9,18 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
-    "./cli-auth": {
-      "types": "./dist/cli-auth.d.ts",
+    "./node": {
+      "types": "./dist/node.d.ts",
       "node": {
-        "import": "./dist/cli-auth.mjs",
-        "require": "./dist/cli-auth.cjs"
+        "import": "./dist/node.mjs",
+        "require": "./dist/node.cjs"
       },
       "default": null
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.mjs",
+      "require": "./dist/browser.cjs"
     }
   },
   "main": "./dist/index.cjs",
@@ -29,6 +34,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "docs": "typedoc",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",

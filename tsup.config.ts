@@ -13,7 +13,19 @@ export default defineConfig([
     },
   },
   {
-    entry: { 'cli-auth': 'src/adapters/cli-auth/index.ts' },
+    entry: { node: 'src/adapters/node/index.ts' },
+    format: ['esm', 'cjs'],
+    dts: true,
+    outDir: 'dist',
+    clean: false,
+    sourcemap: true,
+    external: ['@marswave/listenhub-sdk'],
+    outExtension({ format }) {
+      return { js: format === 'esm' ? '.mjs' : '.cjs' }
+    },
+  },
+  {
+    entry: { browser: 'src/adapters/browser/index.ts' },
     format: ['esm', 'cjs'],
     dts: true,
     outDir: 'dist',
