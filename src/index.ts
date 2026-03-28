@@ -13,3 +13,13 @@ export { ListenHubError } from './types/common'
 export type { ClientOptions } from './types/client'
 export type { CliInitResponse, TokenResponse } from './types/auth'
 export type { RequestOptions } from './types/common'
+export type {
+  AuthAPI,
+  AuthStrategy,
+  StorageProvider,
+  FileIOProvider,
+  NotifyProvider,
+  NotifyOptions,
+  PlatformAdapter,
+} from './types/adapter'
+export type { StoredCredentials, LogoutResult } from './types/auth'
