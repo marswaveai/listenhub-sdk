@@ -29,25 +29,30 @@ it('interactive login — opens browser, saves token to .env.staging', async () 
 
   console.log('\n✅ Login successful!')
   console.log('   accessToken:', tokens.accessToken.slice(0, 20) + '...')
+  console.log('   refreshToken:', tokens.refreshToken.slice(0, 20) + '...')
 
   // Update .env.staging
   let envContent = ''
   try {
     envContent = fs.readFileSync(ENV_FILE, 'utf-8')
   } catch {
-    envContent = `LISTENHUB_API_URL=${API_URL}\nLISTENHUB_ACCESS_TOKEN=\n`
+    envContent = `LISTENHUB_API_URL=${API_URL}\nLISTENHUB_ACCESS_TOKEN=\nLISTENHUB_REFRESH_TOKEN=\n`
   }
 
-  if (envContent.includes('LISTENHUB_ACCESS_TOKEN=')) {
-    envContent = envContent.replace(
-      /LISTENHUB_ACCESS_TOKEN=.*/,
-      `LISTENHUB_ACCESS_TOKEN=${tokens.accessToken}`,
-    )
-  } else {
-    envContent += `\nLISTENHUB_ACCESS_TOKEN=${tokens.accessToken}\n`
+  const updates: [RegExp, string][] = [
+    [/LISTENHUB_ACCESS_TOKEN=.*/, `LISTENHUB_ACCESS_TOKEN=${tokens.accessToken}`],
+    [/LISTENHUB_REFRESH_TOKEN=.*/, `LISTENHUB_REFRESH_TOKEN=${tokens.refreshToken}`],
+  ]
+
+  for (const [pattern, replacement] of updates) {
+    if (pattern.test(envContent)) {
+      envContent = envContent.replace(pattern, replacement)
+    } else {
+      envContent += `\n${replacement}\n`
+    }
   }
 
   fs.writeFileSync(ENV_FILE, envContent)
-  console.log('   Token saved to .env.staging')
+  console.log('   Tokens saved to .env.staging')
   console.log('   Now run: pnpm test:e2e')
 }, 120_000)

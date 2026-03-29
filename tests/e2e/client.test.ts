@@ -4,6 +4,7 @@ import { ListenHubError } from "../../src/types/common";
 
 const API_URL = process.env.LISTENHUB_API_URL;
 const ACCESS_TOKEN = process.env.LISTENHUB_ACCESS_TOKEN;
+const REFRESH_TOKEN = process.env.LISTENHUB_REFRESH_TOKEN;
 
 describe.skipIf(!API_URL)("E2E: Client basic requests", () => {
   it("reaches the API via public endpoint", async () => {
@@ -93,6 +94,19 @@ describe.skipIf(!API_URL || !ACCESS_TOKEN)(
       });
       await client.request("GET", "/v1/users/me");
       expect(capturedStatus).toBe(200);
+    });
+  },
+);
+
+describe.skipIf(!API_URL || !REFRESH_TOKEN)(
+  "E2E: Token refresh",
+  () => {
+    it("refreshes token and gets new access + refresh tokens", async () => {
+      const client = new ListenHubClient({ baseURL: API_URL });
+      const result = await client.auth.refresh({ refreshToken: REFRESH_TOKEN! });
+      expect(result.accessToken).toBeDefined();
+      expect(result.refreshToken).toBeDefined();
+      expect(result.expiresIn).toBeGreaterThan(0);
     });
   },
 );
