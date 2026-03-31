@@ -31,7 +31,6 @@
 		"test:e2e": "vp test run tests/e2e/client.test.ts tests/e2e/checkin.test.ts --mode staging",
 		"test:login": "vp test run tests/e2e/login.test.ts --mode staging",
 		"prepublishOnly": "pnpm run build",
-		"release": "np"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -45,7 +44,6 @@
 		"@types/node": "^25.5.0",
 		"express": "^5.2.1",
 		"get-port": "^7.2.0",
-		"np": "^11.0.2",
 		"open": "^11.0.0",
 		"typescript": "^5.9.3",
 		"vite": "^8.0.3",
