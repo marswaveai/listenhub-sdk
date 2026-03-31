@@ -1,9 +1,5 @@
 # @marswave/listenhub-sdk
 
-[![npm version](https://img.shields.io/npm/v/@marswave/listenhub-sdk.svg)](https://www.npmjs.com/package/@marswave/listenhub-sdk)
-[![node](https://img.shields.io/node/v/@marswave/listenhub-sdk.svg)](https://nodejs.org)
-[![license](https://img.shields.io/npm/l/@marswave/listenhub-sdk.svg)](https://github.com/marswaveai/listenhub-sdk/blob/main/LICENSE)
-
 JavaScript SDK for the [ListenHub](https://listenhub.ai) API.
 
 ## Install
