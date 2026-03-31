@@ -18,6 +18,9 @@
 	"type": "module",
 	"types": "dist/index.d.mts",
 	"exports": "./dist/index.mjs",
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"dev": "vp pack --watch",
 		"build": "vp pack --dts --platform node",
@@ -31,9 +34,6 @@
 		"test:e2e": "vp test run tests/e2e/client.test.ts tests/e2e/checkin.test.ts --mode staging",
 		"test:login": "vp test run tests/e2e/login.test.ts --mode staging",
 		"prepublishOnly": "pnpm run build"
-	},
-	"publishConfig": {
-		"access": "public"
 	},
 	"dependencies": {
 		"ky": "^1.14.3"
