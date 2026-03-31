@@ -2,6 +2,7 @@
 	"name": "@marswave/listenhub-sdk",
 	"version": "0.0.1",
 	"description": "JavaScript SDK for ListenHub API",
+	"packageManager": "pnpm@10.32.1",
 	"homepage": "https://github.com/marswaveai/listenhub-sdk#readme",
 	"bugs": {
 		"url": "https://github.com/marswaveai/listenhub-sdk/issues"
