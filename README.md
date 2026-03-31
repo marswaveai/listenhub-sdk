@@ -36,10 +36,10 @@ const client = new ListenHubClient({
 
 ## Examples
 
-| File                                                     | Description                                    |
-| -------------------------------------------------------- | ---------------------------------------------- |
-| [`examples/basic.ts`](examples/basic.ts)                 | Static token, API calls, error handling, hooks |
-| [`examples/oauth-login.ts`](examples/oauth-login.ts)     | Browser-based OAuth login flow                 |
+| File                                                 | Description                                    |
+| ---------------------------------------------------- | ---------------------------------------------- |
+| [`examples/basic.ts`](examples/basic.ts)             | Static token, API calls, error handling, hooks |
+| [`examples/oauth-login.ts`](examples/oauth-login.ts) | Browser-based OAuth login flow                 |
 
 ## Documentation
 
