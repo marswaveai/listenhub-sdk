@@ -30,7 +30,7 @@
 		"test:watch": "vp test --exclude 'tests/e2e/**'",
 		"test:e2e": "vp test run tests/e2e/client.test.ts tests/e2e/checkin.test.ts --mode staging",
 		"test:login": "vp test run tests/e2e/login.test.ts --mode staging",
-		"prepublishOnly": "pnpm run build",
+		"prepublishOnly": "pnpm run build"
 	},
 	"publishConfig": {
 		"access": "public"
