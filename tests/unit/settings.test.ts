@@ -43,4 +43,32 @@ describe('Settings methods', () => {
 		expect(request.url).toBe('https://api.test.com/api/v1/settings/api-key/regenerate');
 		expect(request.method).toBe('POST');
 	});
+
+	it('getSettings sends GET /v2/settings and returns items', async () => {
+		const client = new ListenHubClient({
+			baseURL: 'https://api.test.com/api',
+			accessToken: 'test-token',
+		});
+		mockFetch.mockResolvedValueOnce(
+			jsonResponse({
+				items: [
+					{
+						type: 'podcast',
+						language: 'en',
+						speakers: [],
+						duration: 'medium',
+						mode: 'deep',
+						updatedAt: 1700000000,
+						imagesConfig: {},
+					},
+				],
+			}),
+		);
+		const result = await client.getSettings();
+		const req = mockFetch.mock.calls[0][0] as Request;
+		expect(req.url).toBe('https://api.test.com/api/v2/settings');
+		expect(req.method).toBe('GET');
+		expect(result.items).toHaveLength(1);
+		expect(result.items[0].type).toBe('podcast');
+	});
 });

@@ -31,7 +31,7 @@
 		"check": "vp check",
 		"test": "vp test run --exclude 'tests/e2e/**'",
 		"test:watch": "vp test --exclude 'tests/e2e/**'",
-		"test:e2e": "vp test run tests/e2e/client.test.ts tests/e2e/checkin.test.ts --mode staging",
+		"test:e2e": "vp test run tests/e2e/client.test.ts tests/e2e/checkin.test.ts tests/e2e/episodes.test.ts --mode staging",
 		"test:login": "vp test run tests/e2e/login.test.ts --mode staging",
 		"prepublishOnly": "pnpm run build"
 	},
@@ -45,6 +45,7 @@
 		"express": "^5.2.1",
 		"get-port": "^7.2.0",
 		"open": "^11.0.0",
+		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
 		"vite": "^8.0.3",
 		"vite-plus": "^0.1.14",

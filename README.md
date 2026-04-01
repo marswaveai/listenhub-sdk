@@ -36,10 +36,15 @@ const client = new ListenHubClient({
 
 ## Examples
 
-| File                                                 | Description                                    |
-| ---------------------------------------------------- | ---------------------------------------------- |
-| [`examples/basic.ts`](examples/basic.ts)             | Static token, API calls, error handling, hooks |
-| [`examples/oauth-login.ts`](examples/oauth-login.ts) | Browser-based OAuth login flow                 |
+| File                                                                       | Description                              |
+| -------------------------------------------------------------------------- | ---------------------------------------- |
+| [`examples/basic.ts`](examples/basic.ts)                                   | Static token, API calls, error handling  |
+| [`examples/oauth-login.ts`](examples/oauth-login.ts)                       | Browser-based OAuth login flow           |
+| [`examples/create-podcast.ts`](examples/create-podcast.ts)                 | Create a duo podcast and poll for result |
+| [`examples/create-tts.ts`](examples/create-tts.ts)                         | Text-to-speech from plain text           |
+| [`examples/create-explainer-video.ts`](examples/create-explainer-video.ts) | Explainer video from a URL               |
+| [`examples/create-slides.ts`](examples/create-slides.ts)                   | Slide deck presentation                  |
+| [`examples/create-ai-image.ts`](examples/create-ai-image.ts)               | AI image generation from a prompt        |
 
 ## Documentation
 
@@ -73,6 +78,42 @@ const client = new ListenHubClient({
 | -------------------- | ----------------------------------------------- |
 | `getApiKey()`        | Get current API key                             |
 | `regenerateApiKey()` | Regenerate API key (triggers `onApiKeyChanged`) |
+| `getSettings()`      | Get episode template settings per product type  |
+
+### Content creation
+
+| Method                         | Description                        |
+| ------------------------------ | ---------------------------------- |
+| `createPodcast(params)`        | Create a podcast (solo/duo)        |
+| `createTTS(params)`            | Create a text-to-speech audio      |
+| `createExplainerVideo(params)` | Create an explainer video          |
+| `createSlides(params)`         | Create a slides presentation       |
+| `createAIImage(params)`        | Generate an AI image from a prompt |
+
+### List by product
+
+| Method                         | Description              |
+| ------------------------------ | ------------------------ |
+| `listPodcasts(params?)`        | List podcast episodes    |
+| `listTTS(params?)`             | List TTS episodes        |
+| `listExplainerVideos(params?)` | List explainer videos    |
+| `listSlides(params?)`          | List slides              |
+| `listAIImages(params?)`        | List AI-generated items  |
+| `getCreation(episodeId)`       | Get full creation detail |
+| `deleteCreations({ids})`       | Batch delete creations   |
+
+### Users
+
+| Method              | Description                            |
+| ------------------- | -------------------------------------- |
+| `getCurrentUser()`  | Get current user profile               |
+| `getSubscription()` | Get subscription and credit usage info |
+
+### Speakers
+
+| Method                  | Description                         |
+| ----------------------- | ----------------------------------- |
+| `listSpeakers(params?)` | List available speakers by language |
 
 ### Custom requests
 
