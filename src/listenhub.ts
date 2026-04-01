@@ -120,11 +120,11 @@ export class ListenHubClient {
 		return this.listByProduct('aiImage', params);
 	}
 
-	async getEpisode(episodeId: string): Promise<EpisodeDetail> {
+	async getCreation(episodeId: string): Promise<EpisodeDetail> {
 		return this.api.get(`v5/episodes/${episodeId}/detail`).json<EpisodeDetail>();
 	}
 
-	async deleteEpisodes(params: DeleteEpisodesParams): Promise<void> {
+	async deleteCreations(params: DeleteEpisodesParams): Promise<void> {
 		await this.api.delete('v1/episodes', {json: params});
 	}
 

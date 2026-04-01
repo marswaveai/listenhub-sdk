@@ -131,7 +131,7 @@ describe('Episode methods', () => {
 		expect(result.pagination.page).toBe(1);
 	});
 
-	it('getEpisode sends GET /v5/episodes/{id}/detail and returns episode detail', async () => {
+	it('getCreation sends GET /v5/episodes/{id}/detail and returns episode detail', async () => {
 		mockFetch.mockResolvedValueOnce(
 			jsonResponse({
 				id: 'ep-1',
@@ -140,16 +140,16 @@ describe('Episode methods', () => {
 				processStatus: 'completed',
 			}),
 		);
-		const result = await client.getEpisode('ep-1');
+		const result = await client.getCreation('ep-1');
 		const req = mockFetch.mock.calls[0][0] as Request;
 		expect(req.method).toBe('GET');
 		expect(req.url).toBe('https://api.test.com/api/v5/episodes/ep-1/detail');
 		expect(result.id).toBe('ep-1');
 	});
 
-	it('deleteEpisodes sends DELETE /v1/episodes with ids array', async () => {
+	it('deleteCreations sends DELETE /v1/episodes with ids array', async () => {
 		mockJsonResponse(null);
-		await client.deleteEpisodes({ids: ['ep-1', 'ep-2']});
+		await client.deleteCreations({ids: ['ep-1', 'ep-2']});
 		const req = await capturedRequest();
 		expect(req.url).toBe('https://api.test.com/api/v1/episodes');
 		expect(req.method).toBe('DELETE');
