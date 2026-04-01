@@ -1,6 +1,6 @@
 {
 	"name": "@marswave/listenhub-sdk",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "JavaScript SDK for ListenHub API",
 	"homepage": "https://github.com/marswaveai/listenhub-sdk#readme",
 	"bugs": {
