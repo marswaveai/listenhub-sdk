@@ -10,9 +10,8 @@ describe.skipIf(!API_URL || !ACCESS_TOKEN)('E2E: Core endpoints', () => {
 		accessToken: ACCESS_TOKEN,
 	});
 
-	it('listEpisodes() returns items and pagination', async () => {
-		const result = await client.listEpisodes({page: 1, pageSize: 5});
-		console.log(result);
+	it('listPodcasts() returns items and pagination', async () => {
+		const result = await client.listPodcasts({page: 1, pageSize: 5});
 		expect(result).toHaveProperty('items');
 		expect(Array.isArray(result.items)).toBe(true);
 		expect(result).toHaveProperty('pagination');

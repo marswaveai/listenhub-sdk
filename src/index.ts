@@ -20,6 +20,7 @@ export type {
 	SlideAspectRatio,
 	EpisodeImageConfig,
 	EpisodeInput,
+	ProductId,
 	EpisodeItem,
 	EpisodeDetail,
 	ListEpisodesParams,

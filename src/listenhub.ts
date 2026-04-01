@@ -11,6 +11,7 @@ import type {
 	CreateEpisodeResponse,
 	ListEpisodesParams,
 	ListEpisodesResponse,
+	ProductId,
 	EpisodeDetail,
 	DeleteEpisodesParams,
 } from './types/episodes.js';
@@ -86,14 +87,37 @@ export class ListenHubClient {
 		return this.api.post('v1/episodes/storybook', {json: params}).json<CreateEpisodeResponse>();
 	}
 
-	// --- Episodes ---
+	// --- List by product ---
 
-	async listEpisodes(params: ListEpisodesParams = {}): Promise<ListEpisodesResponse> {
+	private listByProduct(
+		productId: ProductId,
+		params: ListEpisodesParams = {},
+	): Promise<ListEpisodesResponse> {
 		return this.api
 			.get('v1/episodes', {
-				searchParams: params as Record<string, string | number | boolean | undefined>,
+				searchParams: {...params, productId} as Record<string, string | number | boolean>,
 			})
 			.json<ListEpisodesResponse>();
+	}
+
+	async listPodcasts(params: ListEpisodesParams = {}): Promise<ListEpisodesResponse> {
+		return this.listByProduct('aiPodcast', params);
+	}
+
+	async listTTS(params: ListEpisodesParams = {}): Promise<ListEpisodesResponse> {
+		return this.listByProduct('textToSpeech', params);
+	}
+
+	async listExplainerVideos(params: ListEpisodesParams = {}): Promise<ListEpisodesResponse> {
+		return this.listByProduct('explainerVideo', params);
+	}
+
+	async listSlides(params: ListEpisodesParams = {}): Promise<ListEpisodesResponse> {
+		return this.listByProduct('slideDeck', params);
+	}
+
+	async listAIImages(params: ListEpisodesParams = {}): Promise<ListEpisodesResponse> {
+		return this.listByProduct('aiImage', params);
 	}
 
 	async getEpisode(episodeId: string): Promise<EpisodeDetail> {

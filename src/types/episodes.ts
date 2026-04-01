@@ -144,10 +144,11 @@ export interface EpisodeItem {
 	createdAt: number;
 }
 
+export type ProductId = 'aiPodcast' | 'textToSpeech' | 'explainerVideo' | 'slideDeck' | 'aiImage';
+
 export interface ListEpisodesParams {
 	page?: number;
 	pageSize?: number;
-	productId?: string;
 }
 
 export interface ListEpisodesResponse {

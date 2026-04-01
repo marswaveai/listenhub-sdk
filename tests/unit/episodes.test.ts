@@ -113,20 +113,20 @@ describe('Episode methods', () => {
 		expect(result).toEqual({episodeId: 'ep-4'});
 	});
 
-	it('listEpisodes sends GET /v1/episodes with page/pageSize/productId params', async () => {
+	it('listPodcasts sends GET /v1/episodes with productId=aiPodcast', async () => {
 		mockFetch.mockResolvedValueOnce(
 			jsonResponse({
 				items: [{id: 'ep-1', title: 'Episode 1'}],
 				pagination: {page: 1, pageSize: 10, total: 1},
 			}),
 		);
-		const result = await client.listEpisodes({page: 1, pageSize: 10, productId: 'podcast'});
+		const result = await client.listPodcasts({page: 1, pageSize: 10});
 		const req = mockFetch.mock.calls[0][0] as Request;
 		expect(req.method).toBe('GET');
 		expect(req.url).toContain('v1/episodes');
 		expect(req.url).toContain('page=1');
 		expect(req.url).toContain('pageSize=10');
-		expect(req.url).toContain('productId=podcast');
+		expect(req.url).toContain('productId=aiPodcast');
 		expect(result.items).toHaveLength(1);
 		expect(result.pagination.page).toBe(1);
 	});

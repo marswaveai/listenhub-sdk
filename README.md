@@ -85,13 +85,17 @@ const client = new ListenHubClient({
 | `createSlides(params)`         | Create a slides presentation       |
 | `createAIImage(params)`        | Generate an AI image from a prompt |
 
-### Episodes
+### List by product
 
-| Method                  | Description                   |
-| ----------------------- | ----------------------------- |
-| `listEpisodes(params?)` | List episodes with pagination |
-| `getEpisode(episodeId)` | Get full episode detail       |
-| `deleteEpisodes({ids})` | Batch delete episodes         |
+| Method                         | Description             |
+| ------------------------------ | ----------------------- |
+| `listPodcasts(params?)`        | List podcast episodes   |
+| `listTTS(params?)`             | List TTS episodes       |
+| `listExplainerVideos(params?)` | List explainer videos   |
+| `listSlides(params?)`          | List slides             |
+| `listAIImages(params?)`        | List AI-generated items |
+| `getEpisode(episodeId)`        | Get full episode detail |
+| `deleteEpisodes({ids})`        | Batch delete episodes   |
 
 ### Users
 
