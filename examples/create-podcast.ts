@@ -2,7 +2,7 @@
 //
 // Run: LISTENHUB_ACCESS_TOKEN=xxx npx tsx examples/create-podcast.ts
 
-import {ListenHubClient, type ProcessStatus} from '@marswave/listenhub-sdk';
+import {ListenHubClient, type ProcessStatus} from '../src/index.js';
 
 const client = new ListenHubClient({
 	accessToken: process.env['LISTENHUB_ACCESS_TOKEN'],
@@ -10,7 +10,8 @@ const client = new ListenHubClient({
 
 // 1. Pick speakers
 const speakers = await client.listSpeakers({language: 'en'});
-const [host, guest] = speakers.items.slice(0, 2);
+const host = speakers.items[0]!;
+const guest = speakers.items[1]!;
 console.log(`Speakers: ${host.name}, ${guest.name}`);
 
 // 2. Create podcast

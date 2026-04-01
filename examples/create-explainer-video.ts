@@ -2,14 +2,14 @@
 //
 // Run: LISTENHUB_ACCESS_TOKEN=xxx npx tsx examples/create-explainer-video.ts
 
-import {ListenHubClient, type ProcessStatus} from '@marswave/listenhub-sdk';
+import {ListenHubClient, type ProcessStatus} from '../src/index.js';
 
 const client = new ListenHubClient({
 	accessToken: process.env['LISTENHUB_ACCESS_TOKEN'],
 });
 
 const speakers = await client.listSpeakers({language: 'en'});
-const narrator = speakers.items[0];
+const narrator = speakers.items[0]!;
 
 const {episodeId} = await client.createExplainerVideo({
 	query: 'How does CRISPR gene editing work?',

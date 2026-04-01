@@ -4,7 +4,7 @@
 // Run: npx tsx examples/oauth-login.ts
 
 import * as http from 'node:http';
-import {ListenHubClient} from '@marswave/listenhub-sdk';
+import {ListenHubClient} from '../src/index.js';
 
 const client = new ListenHubClient();
 

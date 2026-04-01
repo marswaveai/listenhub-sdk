@@ -2,14 +2,14 @@
 //
 // Run: LISTENHUB_ACCESS_TOKEN=xxx npx tsx examples/create-tts.ts
 
-import {ListenHubClient, type ProcessStatus} from '@marswave/listenhub-sdk';
+import {ListenHubClient, type ProcessStatus} from '../src/index.js';
 
 const client = new ListenHubClient({
 	accessToken: process.env['LISTENHUB_ACCESS_TOKEN'],
 });
 
 const speakers = await client.listSpeakers({language: 'zh'});
-const speaker = speakers.items[0];
+const speaker = speakers.items[0]!;
 console.log(`Speaker: ${speaker.name}`);
 
 const {episodeId} = await client.createTTS({

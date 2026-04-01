@@ -3,7 +3,7 @@
 // Prerequisites: pnpm install
 // Run: LISTENHUB_ACCESS_TOKEN=xxx npx tsx examples/basic.ts
 
-import {ListenHubClient, ListenHubError} from '@marswave/listenhub-sdk';
+import {ListenHubClient, ListenHubError} from '../src/index.js';
 
 const client = new ListenHubClient({
 	accessToken: process.env['LISTENHUB_ACCESS_TOKEN'],
