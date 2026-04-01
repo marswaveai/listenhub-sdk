@@ -21,6 +21,7 @@ import type {ListSpeakersParams, ListSpeakersResponse} from './types/speakers.js
 import type {
 	CreateAIImageParams,
 	CreateAIImageResponse,
+	AIImageItem,
 	ListAIImagesParams,
 	ListAIImagesResponse,
 } from './types/images.js';
@@ -163,6 +164,10 @@ export class ListenHubClient {
 				searchParams: params as Record<string, string | number | boolean>,
 			})
 			.json<ListAIImagesResponse>();
+	}
+
+	async getAIImage(imageId: string): Promise<AIImageItem> {
+		return this.api.get(`v1/images/${imageId}`).json<AIImageItem>();
 	}
 
 	async createAIImage(params: CreateAIImageParams): Promise<CreateAIImageResponse> {

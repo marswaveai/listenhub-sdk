@@ -14,9 +14,27 @@ const {imageId} = await client.createAIImage({
 });
 console.log(`Created image: ${imageId}`);
 
+// Poll until done
+let image = await client.getAIImage(imageId);
+while (image.status === 'pending') {
+	await sleep(3000);
+	image = await client.getAIImage(imageId);
+	console.log(`Status: ${image.status}`);
+}
+
+if (image.imageUrl) {
+	console.log(`Image: ${image.imageUrl}`);
+} else {
+	console.error('Generation failed');
+}
+
 // List recent AI images
 const images = await client.listAIImages({page: 1, pageSize: 5});
-console.log(`Total AI images: ${images.pagination.total}`);
+console.log(`\nRecent AI images (${images.pagination.total} total):`);
 for (const item of images.items) {
-	console.log(`  ${item.title} — ${item.processStatus}`);
+	console.log(`  ${item.prompt.slice(0, 50)}... — ${item.status}`);
+}
+
+function sleep(ms: number) {
+	return new Promise((r) => setTimeout(r, ms));
 }
