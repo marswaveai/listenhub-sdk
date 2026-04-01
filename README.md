@@ -36,10 +36,15 @@ const client = new ListenHubClient({
 
 ## Examples
 
-| File                                                 | Description                                    |
-| ---------------------------------------------------- | ---------------------------------------------- |
-| [`examples/basic.ts`](examples/basic.ts)             | Static token, API calls, error handling, hooks |
-| [`examples/oauth-login.ts`](examples/oauth-login.ts) | Browser-based OAuth login flow                 |
+| File                                                                       | Description                              |
+| -------------------------------------------------------------------------- | ---------------------------------------- |
+| [`examples/basic.ts`](examples/basic.ts)                                   | Static token, API calls, error handling  |
+| [`examples/oauth-login.ts`](examples/oauth-login.ts)                       | Browser-based OAuth login flow           |
+| [`examples/create-podcast.ts`](examples/create-podcast.ts)                 | Create a duo podcast and poll for result |
+| [`examples/create-tts.ts`](examples/create-tts.ts)                         | Text-to-speech from plain text           |
+| [`examples/create-explainer-video.ts`](examples/create-explainer-video.ts) | Explainer video from a URL               |
+| [`examples/create-slides.ts`](examples/create-slides.ts)                   | Slide deck presentation                  |
+| [`examples/create-ai-image.ts`](examples/create-ai-image.ts)               | AI image generation from a prompt        |
 
 ## Documentation
 

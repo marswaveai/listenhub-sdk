@@ -2,6 +2,8 @@
 
 export type Language = 'en' | 'zh' | 'ja';
 
+export type ProcessStatus = 'pending' | 'success' | 'fail';
+
 export interface UrlSourceMetadata {
 	title?: string;
 	ogTitle?: string;
@@ -128,7 +130,7 @@ export interface EpisodeItem {
 	videoUrl: string;
 	input: EpisodeInput;
 	inputSources: ContentSource[];
-	processStatus: string;
+	processStatus: ProcessStatus;
 	stepStatus: string;
 	failCode: number;
 	playedStatus: number;
@@ -235,7 +237,7 @@ export interface EpisodeDetail {
 	};
 	credits: number;
 	failCode: number;
-	processStatus: string;
+	processStatus: ProcessStatus;
 	language: string;
 	speakers: EpisodeSpeaker[];
 	topicDetail: {

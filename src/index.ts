@@ -6,6 +6,7 @@ export type {ApiKeyResponse} from './types/settings.js';
 export type {CheckinResponse, CheckinStatusResponse} from './types/checkin.js';
 export type {
 	Language,
+	ProcessStatus,
 	UrlSourceMetadata,
 	ContentSource,
 	EpisodeSpeaker,
