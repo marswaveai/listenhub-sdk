@@ -1,19 +1,20 @@
 // --- Shared base types ---
 
+export type Language = 'en' | 'zh' | 'ja';
+
+export interface UrlSourceMetadata {
+	title?: string;
+	ogTitle?: string;
+	faviconUrl?: string;
+	ogImageUrl?: string;
+	ogSiteName?: string;
+}
+
 export interface ContentSource {
-	type: 'url' | 'text' | 'file' | 'episode';
+	type: 'url' | 'text';
 	uri?: string;
 	content?: string;
-	metadata?: {
-		title?: string;
-		ogTitle?: string;
-		faviconUrl?: string;
-		ogImageUrl?: string;
-		ogSiteName?: string;
-		mimeType?: string;
-		name?: string;
-		size?: number;
-	};
+	metadata?: UrlSourceMetadata;
 }
 
 export interface EpisodeSpeaker {
@@ -37,13 +38,13 @@ export interface CreateEpisodeResponse {
 
 export interface CreatePodcastParams {
 	type: 'podcast-solo' | 'podcast-duo';
-	query: string;
+	query?: string;
 	sources?: ContentSource[];
 	template: {
 		type: 'podcast';
 		mode: 'quick' | 'deep' | 'debate';
 		speakers: string[];
-		language: string;
+		language: Language;
 	};
 }
 
@@ -53,66 +54,79 @@ export interface CreateSpeechParams {
 		type: 'flowspeech';
 		mode: 'smart' | 'direct';
 		speakers: string[];
-		language: string;
+		language: Language;
 	};
 }
 
+export type ImageSize = '2K' | '4K';
+export type ImageAspectRatio = '1:1' | '9:16' | '16:9' | '4:3' | '2:3' | '3:2' | '3:4' | '21:9';
+export type SlideAspectRatio = '16:9';
+
 export interface CreateExplainerVideoParams {
-	query: string;
+	query?: string;
 	sources?: ContentSource[];
-	mode: 'info' | 'story';
-	imageConfig: {
-		size: '2K' | '4K';
-		aspectRatio: '1:1' | '9:16' | '16:9' | '4:3' | '2:3' | '3:2' | '3:4' | '21:9';
-	};
 	style?: string;
-	skipAudio?: boolean;
+	styleOverride?: string;
+	imageConfig?: {
+		size: ImageSize;
+		aspectRatio: ImageAspectRatio;
+	};
 	template: {
 		type: 'storybook';
 		mode: 'info' | 'story';
 		speakers: string[];
-		language: string;
+		language: Language;
 		style?: string;
-		size: '2K' | '4K';
-		aspectRatio: '1:1' | '9:16' | '16:9' | '4:3' | '2:3' | '3:2' | '3:4' | '21:9';
+		size?: ImageSize;
+		aspectRatio?: ImageAspectRatio;
 		pageCount?: number;
 	};
 }
 
 export interface CreateSlidesParams {
-	query: string;
+	query?: string;
 	sources?: ContentSource[];
-	mode: 'slides';
-	imageConfig: {
-		size: '2K' | '4K';
-		aspectRatio: '16:9';
-	};
 	style?: string;
-	skipAudio?: boolean;
+	styleOverride?: string;
+	imageConfig?: {
+		size: ImageSize;
+		aspectRatio: SlideAspectRatio;
+	};
 	template: {
 		type: 'storybook';
 		mode: 'slides';
 		speakers: string[];
-		language: string;
+		language: Language;
 		style?: string;
-		size: '2K' | '4K';
-		aspectRatio: '16:9';
+		size?: ImageSize;
+		aspectRatio?: SlideAspectRatio;
 		pageCount?: number;
 	};
 }
 
 // --- List / Detail ---
 
+export interface EpisodeImageConfig {
+	size: string;
+	aspectRatio: string;
+}
+
+export interface EpisodeInput {
+	query?: string;
+	sources: ContentSource[];
+}
+
 export interface EpisodeItem {
 	id: string;
 	type: string;
 	status: string;
 	title: string;
+	summary: string;
 	cover: string;
 	audioUrl: string;
 	audioDuration: number;
 	videoUrl: string;
-	input: string;
+	input: EpisodeInput;
 	inputSources: ContentSource[];
 	processStatus: string;
 	stepStatus: string;
@@ -126,6 +140,7 @@ export interface EpisodeItem {
 	mode: string;
 	speakers: EpisodeSpeaker[];
 	language: string;
+	imageConfig?: EpisodeImageConfig;
 	createdAt: number;
 }
 

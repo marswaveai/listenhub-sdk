@@ -69,10 +69,42 @@ const client = new ListenHubClient({
 
 ### Settings
 
-| Method               | Description                                     |
-| -------------------- | ----------------------------------------------- |
-| `getApiKey()`        | Get current API key                             |
-| `regenerateApiKey()` | Regenerate API key (triggers `onApiKeyChanged`) |
+| Method                        | Description                                     |
+| ----------------------------- | ----------------------------------------------- |
+| `getApiKey()`                 | Get current API key                             |
+| `regenerateApiKey()`          | Regenerate API key (triggers `onApiKeyChanged`) |
+| `getSettings()`               | Get episode template settings per product type  |
+| `updateEpisodeConfig(params)` | Update speakers, language, mode for a type      |
+
+### Content creation
+
+| Method                         | Description                         |
+| ------------------------------ | ----------------------------------- |
+| `createPodcast(params)`        | Create a podcast episode (solo/duo) |
+| `createSpeech(params)`         | Create a FlowSpeech audio           |
+| `createExplainerVideo(params)` | Create a storybook explainer video  |
+| `createSlides(params)`         | Create a slides presentation        |
+
+### Episodes
+
+| Method                  | Description                   |
+| ----------------------- | ----------------------------- |
+| `listEpisodes(params?)` | List episodes with pagination |
+| `getEpisode(episodeId)` | Get full episode detail       |
+| `deleteEpisodes({ids})` | Batch delete episodes         |
+
+### Users
+
+| Method              | Description                            |
+| ------------------- | -------------------------------------- |
+| `getCurrentUser()`  | Get current user profile               |
+| `getSubscription()` | Get subscription and credit usage info |
+
+### Speakers
+
+| Method                  | Description                         |
+| ----------------------- | ----------------------------------- |
+| `listSpeakers(params?)` | List available speakers by language |
 
 ### Custom requests
 

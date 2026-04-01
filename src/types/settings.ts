@@ -40,4 +40,5 @@ export interface UpdateEpisodeConfigParams {
 	type?: 'speech' | 'podcast_duo' | 'podcast_solo' | 'storybook';
 	duration?: string;
 	mode?: string;
+	enabledShare?: boolean;
 }

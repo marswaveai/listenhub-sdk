@@ -5,6 +5,8 @@ export type {ConnectInitResponse, TokenResponse, StoredCredentials} from './type
 export type {ApiKeyResponse} from './types/settings.js';
 export type {CheckinResponse, CheckinStatusResponse} from './types/checkin.js';
 export type {
+	Language,
+	UrlSourceMetadata,
 	ContentSource,
 	EpisodeSpeaker,
 	EpisodeCreator,
@@ -13,6 +15,11 @@ export type {
 	CreateSpeechParams,
 	CreateExplainerVideoParams,
 	CreateSlidesParams,
+	ImageSize,
+	ImageAspectRatio,
+	SlideAspectRatio,
+	EpisodeImageConfig,
+	EpisodeInput,
 	EpisodeItem,
 	EpisodeDetail,
 	ListEpisodesParams,
