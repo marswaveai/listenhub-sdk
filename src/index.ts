@@ -17,7 +17,6 @@ export type {
 	CreateExplainerVideoParams,
 	CreateSlidesParams,
 	ImageSize,
-	ImageAspectRatio,
 	SlideAspectRatio,
 	EpisodeImageConfig,
 	EpisodeInput,

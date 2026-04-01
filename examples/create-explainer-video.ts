@@ -21,7 +21,7 @@ const {episodeId} = await client.createExplainerVideo({
 		language: 'en',
 		size: '2K',
 		aspectRatio: '16:9',
-		pageCount: 8,
+		pageCount: 2,
 	},
 });
 console.log(`Created explainer video: ${episodeId}`);
@@ -37,8 +37,22 @@ while (status === 'pending') {
 if (status === 'success') {
 	const detail = await client.getCreation(episodeId);
 	console.log(`Title: ${detail.topicDetail.title.data}`);
-	console.log(`Video: ${detail.topicDetail.video.data.videoUrl}`);
 	console.log(`Pages: ${detail.topicDetail.pages.data.length}`);
+
+	// Export video (async — poll videoStatus until done)
+	await client.exportExplainerVideo(episodeId);
+	console.log('Video export triggered, polling...');
+
+	let videoStatus = detail.topicDetail.video.data.videoStatus;
+	while (videoStatus !== 'success') {
+		await sleep(5000);
+		const updated = await client.getCreation(episodeId);
+		videoStatus = updated.topicDetail.video.data.videoStatus;
+		console.log(`Video status: ${videoStatus}`);
+	}
+
+	const final = await client.getCreation(episodeId);
+	console.log(`Video URL: ${final.topicDetail.video.data.videoUrl}`);
 }
 
 function sleep(ms: number) {

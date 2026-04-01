@@ -11,10 +11,11 @@ export type AIImageAspectRatio =
 	| '3:4'
 	| '4:1'
 	| '4:3'
-	| '8:1'
 	| '9:16'
 	| '16:9'
-	| '21:9';
+	| '21:9'
+	| '8:1' // Only works on gemini-3.1-flash-image-preview
+	| '1:8'; // Only works on gemini-3.1-flash-image-preview
 
 export type AIImageSize = '1K' | '2K' | '4K';
 

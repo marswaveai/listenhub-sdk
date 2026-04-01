@@ -61,8 +61,8 @@ export interface CreateTTSParams {
 }
 
 export type ImageSize = '2K' | '4K';
-export type ImageAspectRatio = '1:1' | '9:16' | '16:9' | '4:3' | '2:3' | '3:2' | '3:4' | '21:9';
-export type SlideAspectRatio = '16:9';
+
+export type SlideAspectRatio = '16:9' | '9:16' | '1:1';
 
 export interface CreateExplainerVideoParams {
 	query?: string;
@@ -72,7 +72,7 @@ export interface CreateExplainerVideoParams {
 	skipAudio?: boolean;
 	imageConfig?: {
 		size: ImageSize;
-		aspectRatio: ImageAspectRatio;
+		aspectRatio: SlideAspectRatio;
 	};
 	template: {
 		type: 'storybook';
@@ -81,7 +81,7 @@ export interface CreateExplainerVideoParams {
 		language: Language;
 		style?: string;
 		size?: ImageSize;
-		aspectRatio?: ImageAspectRatio;
+		aspectRatio?: SlideAspectRatio;
 		pageCount?: number;
 	};
 }
@@ -253,9 +253,15 @@ export interface EpisodeDetail {
 		preprocessResult: EpisodeDetailTopicData<EpisodeDetailPreprocess>;
 		scripts?: EpisodeDetailTopicData<EpisodeDetailScript[]>;
 		seoMeta?: EpisodeDetailTopicData<EpisodeDetailSeoMeta>;
-		slides?: EpisodeDetailTopicData<{slidesUrl: string; slidesStatus: string}>;
+		slides?: EpisodeDetailTopicData<{
+			slidesUrl: string;
+			slidesStatus: string;
+		}>;
 		pptx?: EpisodeDetailTopicData<{pptxUrl: string; pptxStatus: string}>;
-		resource?: EpisodeDetailTopicData<{resourceUrl?: string; resourceStatus: string}>;
+		resource?: EpisodeDetailTopicData<{
+			resourceUrl?: string;
+			resourceStatus: string;
+		}>;
 	};
 }
 

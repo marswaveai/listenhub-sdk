@@ -89,6 +89,12 @@ export class ListenHubClient {
 		return this.api.post('v1/episodes/storybook', {json: params}).json<CreateEpisodeResponse>();
 	}
 
+	async exportExplainerVideo(episodeId: string): Promise<void> {
+		await this.api.post(`v1/episodes/${episodeId}/storybook/video`, {
+			json: {},
+		});
+	}
+
 	async createSlides(params: CreateSlidesParams): Promise<CreateEpisodeResponse> {
 		return this.api
 			.post('v1/episodes/storybook', {json: {skipAudio: true, ...params}})

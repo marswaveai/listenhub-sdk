@@ -18,11 +18,14 @@ const {episodeId} = await client.createPodcast({
 	type: 'podcast-duo',
 	query: 'Explain how transformers work in LLMs',
 	sources: [
-		{type: 'url', uri: 'https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)'},
+		{
+			type: 'url',
+			uri: 'https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)',
+		},
 	],
 	template: {
 		type: 'podcast',
-		mode: 'deep',
+		mode: 'quick',
 		speakers: [host.speakerInnerId, guest.speakerInnerId],
 		language: 'en',
 	},
@@ -42,6 +45,8 @@ if (status === 'success') {
 	const detail = await client.getCreation(episodeId);
 	console.log(`Title: ${detail.topicDetail.title.data}`);
 	console.log(`Audio: ${detail.topicDetail.audio.data.audioUrl}`);
+	console.log(`Outline: ${detail.topicDetail.outline}`);
+	console.log(`Scripts: ${detail.topicDetail.scripts?.data}`);
 } else {
 	console.error('Generation failed');
 }
