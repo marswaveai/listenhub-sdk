@@ -69,6 +69,7 @@ export interface CreateExplainerVideoParams {
 	sources?: ContentSource[];
 	style?: string;
 	styleOverride?: string;
+	skipAudio?: boolean;
 	imageConfig?: {
 		size: ImageSize;
 		aspectRatio: ImageAspectRatio;
@@ -90,6 +91,8 @@ export interface CreateSlidesParams {
 	sources?: ContentSource[];
 	style?: string;
 	styleOverride?: string;
+	/** Skip audio generation (visual only). Defaults to true. */
+	skipAudio?: boolean;
 	imageConfig?: {
 		size: ImageSize;
 		aspectRatio: SlideAspectRatio;

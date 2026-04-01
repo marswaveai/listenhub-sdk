@@ -90,7 +90,9 @@ export class ListenHubClient {
 	}
 
 	async createSlides(params: CreateSlidesParams): Promise<CreateEpisodeResponse> {
-		return this.api.post('v1/episodes/storybook', {json: params}).json<CreateEpisodeResponse>();
+		return this.api
+			.post('v1/episodes/storybook', {json: {skipAudio: true, ...params}})
+			.json<CreateEpisodeResponse>();
 	}
 
 	// --- List by product ---
