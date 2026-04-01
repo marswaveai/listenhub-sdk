@@ -54,9 +54,9 @@ describe('Episode methods', () => {
 		expect(result).toEqual({episodeId: 'ep-1'});
 	});
 
-	it('createSpeech sends POST /v1/episodes/flow-speech and returns episodeId', async () => {
+	it('createTTS sends POST /v1/episodes/flow-speech and returns episodeId', async () => {
 		mockJsonResponse({episodeId: 'ep-2'});
-		const result = await client.createSpeech({
+		const result = await client.createTTS({
 			sources: [{type: 'text', content: 'Hello world'}],
 			template: {
 				type: 'flowspeech',
@@ -75,7 +75,6 @@ describe('Episode methods', () => {
 		mockJsonResponse({episodeId: 'ep-3'});
 		const result = await client.createExplainerVideo({
 			query: 'How does AI work',
-			mode: 'info',
 			imageConfig: {size: '2K', aspectRatio: '16:9'},
 			template: {
 				type: 'storybook',
@@ -89,7 +88,7 @@ describe('Episode methods', () => {
 		const req = await capturedRequest();
 		expect(req.url).toBe('https://api.test.com/api/v1/episodes/storybook');
 		expect(req.method).toBe('POST');
-		expect((req.body as any).mode).toBe('info');
+		expect((req.body as any).template.mode).toBe('info');
 		expect(result).toEqual({episodeId: 'ep-3'});
 	});
 
@@ -97,7 +96,6 @@ describe('Episode methods', () => {
 		mockJsonResponse({episodeId: 'ep-4'});
 		const result = await client.createSlides({
 			query: 'Intro to TypeScript',
-			mode: 'slides',
 			imageConfig: {size: '4K', aspectRatio: '16:9'},
 			template: {
 				type: 'storybook',
@@ -111,7 +109,7 @@ describe('Episode methods', () => {
 		const req = await capturedRequest();
 		expect(req.url).toBe('https://api.test.com/api/v1/episodes/storybook');
 		expect(req.method).toBe('POST');
-		expect((req.body as any).mode).toBe('slides');
+		expect((req.body as any).template.mode).toBe('slides');
 		expect(result).toEqual({episodeId: 'ep-4'});
 	});
 

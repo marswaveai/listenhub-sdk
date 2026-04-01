@@ -69,21 +69,21 @@ const client = new ListenHubClient({
 
 ### Settings
 
-| Method                        | Description                                     |
-| ----------------------------- | ----------------------------------------------- |
-| `getApiKey()`                 | Get current API key                             |
-| `regenerateApiKey()`          | Regenerate API key (triggers `onApiKeyChanged`) |
-| `getSettings()`               | Get episode template settings per product type  |
-| `updateEpisodeConfig(params)` | Update speakers, language, mode for a type      |
+| Method               | Description                                     |
+| -------------------- | ----------------------------------------------- |
+| `getApiKey()`        | Get current API key                             |
+| `regenerateApiKey()` | Regenerate API key (triggers `onApiKeyChanged`) |
+| `getSettings()`      | Get episode template settings per product type  |
 
 ### Content creation
 
-| Method                         | Description                         |
-| ------------------------------ | ----------------------------------- |
-| `createPodcast(params)`        | Create a podcast episode (solo/duo) |
-| `createSpeech(params)`         | Create a FlowSpeech audio           |
-| `createExplainerVideo(params)` | Create a storybook explainer video  |
-| `createSlides(params)`         | Create a slides presentation        |
+| Method                         | Description                        |
+| ------------------------------ | ---------------------------------- |
+| `createPodcast(params)`        | Create a podcast (solo/duo)        |
+| `createTTS(params)`            | Create a text-to-speech audio      |
+| `createExplainerVideo(params)` | Create an explainer video          |
+| `createSlides(params)`         | Create a slides presentation       |
+| `createAIImage(params)`        | Generate an AI image from a prompt |
 
 ### Episodes
 

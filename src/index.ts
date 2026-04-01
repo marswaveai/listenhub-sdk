@@ -12,7 +12,7 @@ export type {
 	EpisodeCreator,
 	CreateEpisodeResponse,
 	CreatePodcastParams,
-	CreateSpeechParams,
+	CreateTTSParams,
 	CreateExplainerVideoParams,
 	CreateSlidesParams,
 	ImageSize,
@@ -40,6 +40,13 @@ export type {
 	SettingsResponse,
 	SettingsSpeaker,
 	StyleImage,
-	UpdateEpisodeConfigParams,
 } from './types/settings.js';
 export type {Speaker, ListSpeakersParams, ListSpeakersResponse} from './types/speakers.js';
+export type {
+	CreateAIImageParams,
+	CreateAIImageResponse,
+	ImageModel,
+	ImagePromptLanguage,
+	AIImageAspectRatio,
+	AIImageSize,
+} from './types/images.js';

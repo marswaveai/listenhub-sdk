@@ -13,23 +13,6 @@ function jsonResponse(data: unknown) {
 	});
 }
 
-async function capturedRequest(index = 0): Promise<{url: string; method: string; body: unknown}> {
-	const req: Request = mockFetch.mock.calls[index][0];
-	return {
-		url: req.url,
-		method: req.method,
-		body: (req as any)._bodyForTest,
-	};
-}
-
-function mockJsonResponse(data: unknown) {
-	mockFetch.mockImplementationOnce(async (req: Request) => {
-		const text = await req.text();
-		(req as any)._bodyForTest = text ? JSON.parse(text) : undefined;
-		return jsonResponse(data);
-	});
-}
-
 describe('Settings methods', () => {
 	it('getApiKey sends GET /v1/settings/api-key and returns key', async () => {
 		const client = new ListenHubClient({
@@ -87,24 +70,5 @@ describe('Settings methods', () => {
 		expect(req.method).toBe('GET');
 		expect(result.items).toHaveLength(1);
 		expect(result.items[0].type).toBe('podcast');
-	});
-
-	it('updateEpisodeConfig sends POST /v1/settings/episode-config with speakers/language/type', async () => {
-		const client = new ListenHubClient({
-			baseURL: 'https://api.test.com/api',
-			accessToken: 'test-token',
-		});
-		mockJsonResponse(null);
-		await client.updateEpisodeConfig({
-			speakers: ['speaker-1', 'speaker-2'],
-			language: 'en',
-			type: 'podcast_duo',
-		});
-		const req = await capturedRequest();
-		expect(req.url).toBe('https://api.test.com/api/v1/settings/episode-config');
-		expect(req.method).toBe('POST');
-		expect((req.body as any).speakers).toEqual(['speaker-1', 'speaker-2']);
-		expect((req.body as any).language).toBe('en');
-		expect((req.body as any).type).toBe('podcast_duo');
 	});
 });

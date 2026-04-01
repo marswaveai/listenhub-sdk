@@ -33,12 +33,3 @@ export interface SettingsItem {
 export interface SettingsResponse {
 	items: SettingsItem[];
 }
-
-export interface UpdateEpisodeConfigParams {
-	speakers: string[];
-	language: string;
-	type?: 'speech' | 'podcast_duo' | 'podcast_solo' | 'storybook';
-	duration?: string;
-	mode?: string;
-	enabledShare?: boolean;
-}

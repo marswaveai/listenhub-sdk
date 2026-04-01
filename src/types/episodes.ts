@@ -48,7 +48,7 @@ export interface CreatePodcastParams {
 	};
 }
 
-export interface CreateSpeechParams {
+export interface CreateTTSParams {
 	sources: ContentSource[];
 	template: {
 		type: 'flowspeech';
