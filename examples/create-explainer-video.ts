@@ -21,6 +21,7 @@ const {episodeId} = await client.createExplainerVideo({
 		language: 'en',
 		size: '2K',
 		aspectRatio: '16:9',
+		pageCount: 8,
 	},
 });
 console.log(`Created explainer video: ${episodeId}`);
