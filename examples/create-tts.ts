@@ -1,12 +1,11 @@
 // Create a text-to-speech audio from plain text.
 //
-// Run: LISTENHUB_ACCESS_TOKEN=xxx npx tsx examples/create-tts.ts
+// Run: pnpm exec tsx examples/create-tts.ts
 
-import {ListenHubClient, type ProcessStatus} from '../src/index.js';
+import type {ProcessStatus} from '../src/index.js';
+import {login} from './_login.js';
 
-const client = new ListenHubClient({
-	accessToken: process.env['LISTENHUB_ACCESS_TOKEN'],
-});
+const client = await login();
 
 const speakers = await client.listSpeakers({language: 'zh'});
 const speaker = speakers.items[0]!;

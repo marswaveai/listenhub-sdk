@@ -1,13 +1,11 @@
 // Basic API usage — demonstrates core SDK features.
 //
-// Prerequisites: pnpm install
-// Run: LISTENHUB_ACCESS_TOKEN=xxx npx tsx examples/basic.ts
+// Run: pnpm exec tsx examples/basic.ts
 
-import {ListenHubClient, ListenHubError} from '../src/index.js';
+import {ListenHubError} from '../src/index.js';
+import {login} from './_login.js';
 
-const client = new ListenHubClient({
-	accessToken: process.env['LISTENHUB_ACCESS_TOKEN'],
-});
+const client = await login();
 
 // Checkin
 try {

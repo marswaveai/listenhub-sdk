@@ -1,12 +1,10 @@
 // Generate an AI image from a text prompt.
 //
-// Run: LISTENHUB_ACCESS_TOKEN=xxx npx tsx examples/create-ai-image.ts
+// Run: pnpm exec tsx examples/create-ai-image.ts
 
-import {ListenHubClient} from '../src/index.js';
+import {login} from './_login.js';
 
-const client = new ListenHubClient({
-	accessToken: process.env['LISTENHUB_ACCESS_TOKEN'],
-});
+const client = await login();
 
 const {imageId} = await client.createAIImage({
 	prompt: 'A cozy Japanese coffee shop on a rainy afternoon, warm lighting, watercolor style',
