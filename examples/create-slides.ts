@@ -20,7 +20,7 @@ const {episodeId} = await client.createSlides({
 		language: 'en',
 		size: '2K',
 		aspectRatio: '16:9',
-		pageCount: 10,
+		pageCount: 2,
 	},
 });
 console.log(`Created slides: ${episodeId}`);
@@ -36,7 +36,7 @@ while (status === 'pending') {
 if (status === 'success') {
 	const detail = await client.getCreation(episodeId);
 	console.log(`Title: ${detail.topicDetail.title.data}`);
-	console.log(`Slides: ${detail.topicDetail.slides.data.slidesUrl}`);
+	console.log(`Pages: ${detail.topicDetail.pages.data.length}`);
 }
 
 function sleep(ms: number) {

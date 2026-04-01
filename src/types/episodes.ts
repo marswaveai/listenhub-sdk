@@ -251,9 +251,10 @@ export interface EpisodeDetail {
 		video: EpisodeDetailTopicData<EpisodeDetailVideo>;
 		pages: EpisodeDetailTopicData<EpisodeDetailPage[]>;
 		preprocessResult: EpisodeDetailTopicData<EpisodeDetailPreprocess>;
-		scripts: EpisodeDetailTopicData<EpisodeDetailScript[]>;
-		seoMeta: EpisodeDetailTopicData<EpisodeDetailSeoMeta>;
-		slides: EpisodeDetailTopicData<{slidesUrl: string; slidesStatus: string}>;
+		scripts?: EpisodeDetailTopicData<EpisodeDetailScript[]>;
+		seoMeta?: EpisodeDetailTopicData<EpisodeDetailSeoMeta>;
+		slides?: EpisodeDetailTopicData<{slidesUrl: string; slidesStatus: string}>;
+		pptx?: EpisodeDetailTopicData<{pptxUrl: string; pptxStatus: string}>;
 		resource?: EpisodeDetailTopicData<{resourceUrl?: string; resourceStatus: string}>;
 	};
 }
