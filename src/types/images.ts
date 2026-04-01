@@ -32,3 +32,38 @@ export interface CreateAIImageParams {
 export interface CreateAIImageResponse {
 	imageId: string;
 }
+
+export interface AIImageItem {
+	id: string;
+	prompt: string;
+	referenceImageUrls: string[];
+	imageUrl: string;
+	thumbnailUrl: string;
+	aspectRatio: string;
+	imageSize: string;
+	language: string;
+	isLossless: boolean;
+	status: string;
+	reviewStatus: string;
+	tags: string[];
+	createdAt: number;
+	updatedAt: number;
+	creator: {
+		nickname: string;
+		avatar: string;
+	};
+}
+
+export interface ListAIImagesParams {
+	page?: number;
+	pageSize?: number;
+}
+
+export interface ListAIImagesResponse {
+	items: AIImageItem[];
+	pagination: {
+		page: number;
+		pageSize: number;
+		total: number;
+	};
+}

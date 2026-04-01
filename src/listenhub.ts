@@ -18,7 +18,12 @@ import type {
 import type {UserProfile, SubscriptionInfo} from './types/users.js';
 import type {SettingsResponse} from './types/settings.js';
 import type {ListSpeakersParams, ListSpeakersResponse} from './types/speakers.js';
-import type {CreateAIImageParams, CreateAIImageResponse} from './types/images.js';
+import type {
+	CreateAIImageParams,
+	CreateAIImageResponse,
+	ListAIImagesParams,
+	ListAIImagesResponse,
+} from './types/images.js';
 
 export class ListenHubClient {
 	public readonly api: KyInstance;
@@ -116,10 +121,6 @@ export class ListenHubClient {
 		return this.listByProduct('slideDeck', params);
 	}
 
-	async listAIImages(params: ListEpisodesParams = {}): Promise<ListEpisodesResponse> {
-		return this.listByProduct('aiImage', params);
-	}
-
 	async getCreation(episodeId: string): Promise<EpisodeDetail> {
 		return this.api.get(`v5/episodes/${episodeId}/detail`).json<EpisodeDetail>();
 	}
@@ -155,6 +156,14 @@ export class ListenHubClient {
 	}
 
 	// --- Images ---
+
+	async listAIImages(params: ListAIImagesParams = {}): Promise<ListAIImagesResponse> {
+		return this.api
+			.get('v1/images', {
+				searchParams: params as Record<string, string | number | boolean>,
+			})
+			.json<ListAIImagesResponse>();
+	}
 
 	async createAIImage(params: CreateAIImageParams): Promise<CreateAIImageResponse> {
 		return this.api.post('v1/images', {json: params}).json<CreateAIImageResponse>();

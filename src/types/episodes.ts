@@ -146,7 +146,7 @@ export interface EpisodeItem {
 	createdAt: number;
 }
 
-export type ProductId = 'aiPodcast' | 'textToSpeech' | 'explainerVideo' | 'slideDeck' | 'aiImage';
+export type ProductId = 'aiPodcast' | 'textToSpeech' | 'explainerVideo' | 'slideDeck';
 
 export interface ListEpisodesParams {
 	page?: number;

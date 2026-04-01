@@ -47,6 +47,9 @@ export type {Speaker, ListSpeakersParams, ListSpeakersResponse} from './types/sp
 export type {
 	CreateAIImageParams,
 	CreateAIImageResponse,
+	AIImageItem,
+	ListAIImagesParams,
+	ListAIImagesResponse,
 	ImageModel,
 	ImagePromptLanguage,
 	AIImageAspectRatio,
