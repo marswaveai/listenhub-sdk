@@ -70,41 +70,33 @@ export class ListenHubClient {
 	// --- Content Creation ---
 
 	async createPodcast(params: CreatePodcastParams): Promise<CreateEpisodeResponse> {
-		return this.api
-			.post('v1/episodes/all-in-one', {json: params})
-			.json<CreateEpisodeResponse>();
+		return this.api.post('v1/episodes/all-in-one', {json: params}).json<CreateEpisodeResponse>();
 	}
 
 	async createSpeech(params: CreateSpeechParams): Promise<CreateEpisodeResponse> {
-		return this.api
-			.post('v1/episodes/flow-speech', {json: params})
-			.json<CreateEpisodeResponse>();
+		return this.api.post('v1/episodes/flow-speech', {json: params}).json<CreateEpisodeResponse>();
 	}
 
 	async createExplainerVideo(params: CreateExplainerVideoParams): Promise<CreateEpisodeResponse> {
-		return this.api
-			.post('v1/episodes/storybook', {json: params})
-			.json<CreateEpisodeResponse>();
+		return this.api.post('v1/episodes/storybook', {json: params}).json<CreateEpisodeResponse>();
 	}
 
 	async createSlides(params: CreateSlidesParams): Promise<CreateEpisodeResponse> {
-		return this.api
-			.post('v1/episodes/storybook', {json: params})
-			.json<CreateEpisodeResponse>();
+		return this.api.post('v1/episodes/storybook', {json: params}).json<CreateEpisodeResponse>();
 	}
 
 	// --- Episodes ---
 
 	async listEpisodes(params: ListEpisodesParams = {}): Promise<ListEpisodesResponse> {
 		return this.api
-			.get('v1/episodes', {searchParams: params as Record<string, string | number | boolean | undefined>})
+			.get('v1/episodes', {
+				searchParams: params as Record<string, string | number | boolean | undefined>,
+			})
 			.json<ListEpisodesResponse>();
 	}
 
 	async getEpisode(episodeId: string): Promise<EpisodeDetail> {
-		return this.api
-			.get(`v5/episodes/${episodeId}/detail`)
-			.json<EpisodeDetail>();
+		return this.api.get(`v5/episodes/${episodeId}/detail`).json<EpisodeDetail>();
 	}
 
 	async deleteEpisodes(params: DeleteEpisodesParams): Promise<void> {
@@ -135,7 +127,9 @@ export class ListenHubClient {
 
 	async listSpeakers(params: ListSpeakersParams = {}): Promise<ListSpeakersResponse> {
 		return this.api
-			.get('v1/settings/speakers', {searchParams: params as Record<string, string | number | boolean | undefined>})
+			.get('v1/settings/speakers', {
+				searchParams: params as Record<string, string | number | boolean | undefined>,
+			})
 			.json<ListSpeakersResponse>();
 	}
 }
