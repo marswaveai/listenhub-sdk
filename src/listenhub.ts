@@ -197,17 +197,13 @@ export class ListenHubClient {
 
 	// --- Music ---
 
-	async createMusicGenerate(
-		params: CreateMusicGenerateParams,
-	): Promise<CreateMusicTaskResponse> {
+	async createMusicGenerate(params: CreateMusicGenerateParams): Promise<CreateMusicTaskResponse> {
 		return this.api
 			.post('v1/music/generate', {json: {...params, provider: 'default'}})
 			.json<CreateMusicTaskResponse>();
 	}
 
-	async createMusicCover(
-		params: CreateMusicCoverParams,
-	): Promise<CreateMusicTaskResponse> {
+	async createMusicCover(params: CreateMusicCoverParams): Promise<CreateMusicTaskResponse> {
 		return this.api
 			.post('v1/music/cover', {json: {...params, provider: 'default'}})
 			.json<CreateMusicTaskResponse>();
@@ -217,9 +213,7 @@ export class ListenHubClient {
 		return this.api.get(`v1/music/tasks/${taskId}`).json<MusicTaskDetail>();
 	}
 
-	async listMusicTasks(
-		params: ListMusicTasksParams = {},
-	): Promise<ListMusicTasksResponse> {
+	async listMusicTasks(params: ListMusicTasksParams = {}): Promise<ListMusicTasksResponse> {
 		return this.api
 			.get('v1/music/tasks', {
 				searchParams: params as Record<string, string | number | boolean>,
@@ -229,17 +223,11 @@ export class ListenHubClient {
 
 	// --- Files ---
 
-	async createFileUpload(
-		params: CreateFileUploadParams,
-	): Promise<CreateFileUploadResponse> {
-		return this.api
-			.post('v1/files', {json: params})
-			.json<CreateFileUploadResponse>();
+	async createFileUpload(params: CreateFileUploadParams): Promise<CreateFileUploadResponse> {
+		return this.api.post('v1/files', {json: params}).json<CreateFileUploadResponse>();
 	}
 
 	async getFileDownloadUrl(fileUrl: string): Promise<GetFileDownloadUrlResponse> {
-		return this.api
-			.get('v1/files', {searchParams: {fileUrl}})
-			.json<GetFileDownloadUrlResponse>();
+		return this.api.get('v1/files', {searchParams: {fileUrl}}).json<GetFileDownloadUrlResponse>();
 	}
 }

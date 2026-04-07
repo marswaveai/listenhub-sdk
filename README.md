@@ -93,18 +93,12 @@ const client = new ListenHubClient({
 
 ### Music
 
-| Method                          | Description                               |
-| ------------------------------- | ----------------------------------------- |
-| `createMusicGenerate(params)`   | Generate music from a text prompt         |
-| `createMusicCover(params)`      | Create a cover from a reference audio URL |
-| `getMusicTask(taskId)`          | Get music task status and details         |
-| `listMusicTasks(params?)`       | List music tasks with optional filtering  |
-
-### Files
-
-| Method                        | Description                                        |
-| ----------------------------- | -------------------------------------------------- |
-| `createFileUpload(params)`    | Get a presigned upload URL for a file              |
+| Method                        | Description                               |
+| ----------------------------- | ----------------------------------------- |
+| `createMusicGenerate(params)` | Generate music from a text prompt         |
+| `createMusicCover(params)`    | Create a cover from a reference audio URL |
+| `getMusicTask(taskId)`        | Get music task status and details         |
+| `listMusicTasks(params?)`     | List music tasks with optional filtering  |
 
 ### List by product
 

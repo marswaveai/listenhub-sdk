@@ -1,11 +1,6 @@
 export type MusicTaskType = 'GENERATE' | 'COVER';
 
-export type MusicTaskStatus =
-	| 'pending'
-	| 'generating'
-	| 'uploading'
-	| 'success'
-	| 'failed';
+export type MusicTaskStatus = 'pending' | 'generating' | 'uploading' | 'success' | 'failed';
 
 export interface CreateMusicGenerateParams {
 	prompt: string;
