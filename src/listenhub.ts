@@ -25,6 +25,18 @@ import type {
 	ListAIImagesParams,
 	ListAIImagesResponse,
 } from './types/images.js';
+import type {
+	CreateMusicGenerateParams,
+	CreateMusicCoverParams,
+	CreateMusicTaskResponse,
+	MusicTaskDetail,
+	ListMusicTasksParams,
+	ListMusicTasksResponse,
+} from './types/music.js';
+import type {
+	CreateFileUploadParams,
+	CreateFileUploadResponse,
+} from './types/files.js';
 
 export class ListenHubClient {
 	public readonly api: KyInstance;
@@ -180,5 +192,47 @@ export class ListenHubClient {
 
 	async createAIImage(params: CreateAIImageParams): Promise<CreateAIImageResponse> {
 		return this.api.post('v1/images', {json: params}).json<CreateAIImageResponse>();
+	}
+
+	// --- Music ---
+
+	async createMusicGenerate(
+		params: CreateMusicGenerateParams,
+	): Promise<CreateMusicTaskResponse> {
+		return this.api
+			.post('v1/music/generate', {json: {...params, provider: 'default'}})
+			.json<CreateMusicTaskResponse>();
+	}
+
+	async createMusicCover(
+		params: CreateMusicCoverParams,
+	): Promise<CreateMusicTaskResponse> {
+		return this.api
+			.post('v1/music/cover', {json: {...params, provider: 'default'}})
+			.json<CreateMusicTaskResponse>();
+	}
+
+	async getMusicTask(taskId: string): Promise<MusicTaskDetail> {
+		return this.api.get(`v1/music/tasks/${taskId}`).json<MusicTaskDetail>();
+	}
+
+	async listMusicTasks(
+		params: ListMusicTasksParams = {},
+	): Promise<ListMusicTasksResponse> {
+		return this.api
+			.get('v1/music/tasks', {
+				searchParams: params as Record<string, string | number | boolean>,
+			})
+			.json<ListMusicTasksResponse>();
+	}
+
+	// --- Files ---
+
+	async createFileUpload(
+		params: CreateFileUploadParams,
+	): Promise<CreateFileUploadResponse> {
+		return this.api
+			.post('v1/files', {json: params})
+			.json<CreateFileUploadResponse>();
 	}
 }

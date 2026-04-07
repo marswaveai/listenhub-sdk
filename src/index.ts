@@ -54,3 +54,18 @@ export type {
 	AIImageAspectRatio,
 	AIImageSize,
 } from './types/images.js';
+export type {
+	MusicTaskType,
+	MusicTaskStatus,
+	CreateMusicGenerateParams,
+	CreateMusicCoverParams,
+	CreateMusicTaskResponse,
+	MusicTrack,
+	MusicTaskDetail,
+	ListMusicTasksParams,
+	ListMusicTasksResponse,
+} from './types/music.js';
+export type {
+	CreateFileUploadParams,
+	CreateFileUploadResponse,
+} from './types/files.js';
