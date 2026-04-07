@@ -45,6 +45,7 @@ const client = new ListenHubClient({
 | [`examples/create-explainer-video.ts`](examples/create-explainer-video.ts) | Explainer video from a URL               |
 | [`examples/create-slides.ts`](examples/create-slides.ts)                   | Slide deck presentation                  |
 | [`examples/create-ai-image.ts`](examples/create-ai-image.ts)               | AI image generation from a prompt        |
+| [`examples/music.ts`](examples/music.ts)                                   | Music generation and cover from audio    |
 
 ## Documentation
 
@@ -89,6 +90,15 @@ const client = new ListenHubClient({
 | `createExplainerVideo(params)` | Create an explainer video          |
 | `createSlides(params)`         | Create a slides presentation       |
 | `createAIImage(params)`        | Generate an AI image from a prompt |
+
+### Music
+
+| Method                        | Description                               |
+| ----------------------------- | ----------------------------------------- |
+| `createMusicGenerate(params)` | Generate music from a text prompt         |
+| `createMusicCover(params)`    | Create a cover from a reference audio URL |
+| `getMusicTask(taskId)`        | Get music task status and details         |
+| `listMusicTasks(params?)`     | List music tasks with optional filtering  |
 
 ### List by product
 
