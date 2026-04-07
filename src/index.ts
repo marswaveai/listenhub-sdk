@@ -68,4 +68,5 @@ export type {
 export type {
 	CreateFileUploadParams,
 	CreateFileUploadResponse,
+	GetFileDownloadUrlResponse,
 } from './types/files.js';

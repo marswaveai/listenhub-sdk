@@ -8,3 +8,7 @@ export interface CreateFileUploadResponse {
 	presignedUrl: string;
 	fileUrl: string;
 }
+
+export interface GetFileDownloadUrlResponse {
+	downloadUrl: string;
+}

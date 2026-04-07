@@ -36,6 +36,7 @@ import type {
 import type {
 	CreateFileUploadParams,
 	CreateFileUploadResponse,
+	GetFileDownloadUrlResponse,
 } from './types/files.js';
 
 export class ListenHubClient {
@@ -234,5 +235,11 @@ export class ListenHubClient {
 		return this.api
 			.post('v1/files', {json: params})
 			.json<CreateFileUploadResponse>();
+	}
+
+	async getFileDownloadUrl(fileUrl: string): Promise<GetFileDownloadUrlResponse> {
+		return this.api
+			.get('v1/files', {searchParams: {fileUrl}})
+			.json<GetFileDownloadUrlResponse>();
 	}
 }
