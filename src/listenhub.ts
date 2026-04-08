@@ -110,7 +110,7 @@ export class ListenHubClient {
 
 	async createSlides(params: CreateSlidesParams): Promise<CreateEpisodeResponse> {
 		return this.api
-			.post('v1/episodes/storybook', {json: {skipAudio: true, ...params}})
+			.post('v1/episodes/storybook', {json: {mode: 'slides', skipAudio: true, ...params}})
 			.json<CreateEpisodeResponse>();
 	}
 
