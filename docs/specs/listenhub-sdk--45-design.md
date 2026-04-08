@@ -71,9 +71,9 @@ async createSlides(params: CreateSlidesParams): Promise<CreateEpisodeResponse> {
 
 ## 边界情况
 
-| 场景 | 预期行为 |
-|------|---------|
-| 用户在 `params` 中传了 `skipAudio: false` | `...params` 展开覆盖前面的 `skipAudio: true`，允许用户自定义 |
+| 场景                                           | 预期行为                                                                          |
+| ---------------------------------------------- | --------------------------------------------------------------------------------- |
+| 用户在 `params` 中传了 `skipAudio: false`      | `...params` 展开覆盖前面的 `skipAudio: true`，允许用户自定义                      |
 | `mode` 与 `template.mode` 值不一致（理论场景） | 不会发生——`mode` 由方法硬编码为 `'slides'`，`template.mode` 类型约束为 `'slides'` |
 
 ## 测试策略
