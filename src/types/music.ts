@@ -1,4 +1,4 @@
-export type MusicTaskType = 'GENERATE' | 'COVER';
+export type MusicTaskType = 'GENERATE' | 'COVER' | 'EXTEND';
 
 export type MusicTaskStatus = 'pending' | 'generating' | 'uploading' | 'success' | 'failed';
 
@@ -15,6 +15,21 @@ export interface CreateMusicCoverParams {
 	style?: string;
 	title?: string;
 	instrumental?: boolean;
+}
+
+export interface CreateMusicExtendParams {
+	uploadUrl: string;
+	model: 'V4' | 'V4_5' | 'V4_5PLUS' | 'V4_5ALL' | 'V5' | 'V5_5';
+	continueAt: number;
+	prompt?: string;
+	style?: string;
+	title?: string;
+	instrumental?: boolean;
+	negativeTags?: string;
+	vocalGender?: 'm' | 'f';
+	styleWeight?: number;
+	weirdnessConstraint?: number;
+	audioWeight?: number;
 }
 
 export interface CreateMusicTaskResponse {

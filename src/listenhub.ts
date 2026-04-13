@@ -28,6 +28,7 @@ import type {
 import type {
 	CreateMusicGenerateParams,
 	CreateMusicCoverParams,
+	CreateMusicExtendParams,
 	CreateMusicTaskResponse,
 	MusicTaskDetail,
 	ListMusicTasksParams,
@@ -206,6 +207,12 @@ export class ListenHubClient {
 	async createMusicCover(params: CreateMusicCoverParams): Promise<CreateMusicTaskResponse> {
 		return this.api
 			.post('v1/music/cover', {json: {...params, provider: 'default'}})
+			.json<CreateMusicTaskResponse>();
+	}
+
+	async createMusicExtend(params: CreateMusicExtendParams): Promise<CreateMusicTaskResponse> {
+		return this.api
+			.post('v1/music/extend', {json: {...params, provider: 'default'}})
 			.json<CreateMusicTaskResponse>();
 	}
 
