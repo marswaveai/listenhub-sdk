@@ -28,6 +28,7 @@ import type {
 import type {
 	CreateMusicGenerateParams,
 	CreateMusicCoverParams,
+	CreateMusicExtendParams,
 	CreateMusicTaskResponse,
 	MusicTaskDetail,
 	ListMusicTasksParams,
@@ -38,6 +39,13 @@ import type {
 	CreateFileUploadResponse,
 	GetFileDownloadUrlResponse,
 } from './types/files.js';
+import type {
+	CreateLyricsParams,
+	CreateLyricsTaskResponse,
+	LyricsTaskDetail,
+	ListLyricsTasksParams,
+	ListLyricsTasksResponse,
+} from './types/lyrics.js';
 
 export class ListenHubClient {
 	public readonly api: KyInstance;
@@ -209,6 +217,12 @@ export class ListenHubClient {
 			.json<CreateMusicTaskResponse>();
 	}
 
+	async createMusicExtend(params: CreateMusicExtendParams): Promise<CreateMusicTaskResponse> {
+		return this.api
+			.post('v1/music/extend', {json: {...params, provider: 'default'}})
+			.json<CreateMusicTaskResponse>();
+	}
+
 	async getMusicTask(taskId: string): Promise<MusicTaskDetail> {
 		return this.api.get(`v1/music/tasks/${taskId}`).json<MusicTaskDetail>();
 	}
@@ -229,5 +243,23 @@ export class ListenHubClient {
 
 	async getFileDownloadUrl(fileUrl: string): Promise<GetFileDownloadUrlResponse> {
 		return this.api.get('v1/files', {searchParams: {fileUrl}}).json<GetFileDownloadUrlResponse>();
+	}
+
+	// --- Lyrics ---
+
+	async createLyrics(params: CreateLyricsParams): Promise<CreateLyricsTaskResponse> {
+		return this.api.post('v1/lyrics/generate', {json: params}).json<CreateLyricsTaskResponse>();
+	}
+
+	async getLyricsTask(taskId: string): Promise<LyricsTaskDetail> {
+		return this.api.get(`v1/lyrics/tasks/${taskId}`).json<LyricsTaskDetail>();
+	}
+
+	async listLyricsTasks(params: ListLyricsTasksParams = {}): Promise<ListLyricsTasksResponse> {
+		return this.api
+			.get('v1/lyrics/tasks', {
+				searchParams: params as Record<string, string | number | boolean>,
+			})
+			.json<ListLyricsTasksResponse>();
 	}
 }

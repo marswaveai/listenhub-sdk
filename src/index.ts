@@ -59,12 +59,22 @@ export type {
 	MusicTaskStatus,
 	CreateMusicGenerateParams,
 	CreateMusicCoverParams,
+	CreateMusicExtendParams,
 	CreateMusicTaskResponse,
 	MusicTrack,
 	MusicTaskDetail,
 	ListMusicTasksParams,
 	ListMusicTasksResponse,
 } from './types/music.js';
+export type {
+	LyricsTaskStatus,
+	CreateLyricsParams,
+	CreateLyricsTaskResponse,
+	LyricsVariant,
+	LyricsTaskDetail,
+	ListLyricsTasksParams,
+	ListLyricsTasksResponse,
+} from './types/lyrics.js';
 export type {
 	CreateFileUploadParams,
 	CreateFileUploadResponse,
