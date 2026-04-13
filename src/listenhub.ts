@@ -248,9 +248,7 @@ export class ListenHubClient {
 	// --- Lyrics ---
 
 	async createLyrics(params: CreateLyricsParams): Promise<CreateLyricsTaskResponse> {
-		return this.api
-			.post('v1/lyrics/generate', {json: params})
-			.json<CreateLyricsTaskResponse>();
+		return this.api.post('v1/lyrics/generate', {json: params}).json<CreateLyricsTaskResponse>();
 	}
 
 	async getLyricsTask(taskId: string): Promise<LyricsTaskDetail> {
