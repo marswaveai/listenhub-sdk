@@ -73,4 +73,7 @@ export interface ListMusicTasksParams {
 
 export interface ListMusicTasksResponse {
 	items: MusicTaskDetail[];
+	page: number;
+	pageSize: number;
+	total: number;
 }
