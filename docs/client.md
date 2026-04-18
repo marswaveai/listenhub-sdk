@@ -15,22 +15,22 @@ The core HTTP client (`src/client.ts`) configures a ky instance via hooks. All c
 ## Usage
 
 ```ts
-import { ListenHubClient } from "@marswave/listenhub-sdk";
+import {ListenHubClient} from '@marswave/listenhub-sdk';
 
 // Static token
 const client = new ListenHubClient({
-  baseUrl: "https://api.example.com",
-  accessToken: "my-token",
+	baseUrl: 'https://api.example.com',
+	accessToken: 'my-token',
 });
 
 // Token getter (called on every request)
 const client = new ListenHubClient({
-  baseUrl: "https://api.example.com",
-  accessToken: () => getTokenFromStorage(),
+	baseUrl: 'https://api.example.com',
+	accessToken: () => getTokenFromStorage(),
 });
 
 // Advanced: direct ky access
-const raw = await client.api.get("v1/custom-endpoint").json();
+const raw = await client.api.get('v1/custom-endpoint').json();
 ```
 
 ## accessToken

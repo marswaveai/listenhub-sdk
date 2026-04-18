@@ -2,45 +2,45 @@
 //
 // Run: pnpm exec tsx examples/create-tts.ts
 
-import type { ProcessStatus } from "../src/index.js";
-import { login } from "./_login.js";
+import type {ProcessStatus} from '../src/index.js';
+import {login} from './_login.js';
 
 const client = await login();
 
-const speakers = await client.listSpeakers({ language: "zh" });
+const speakers = await client.listSpeakers({language: 'zh'});
 const speaker = speakers.items[0]!;
 console.log(`Speaker: ${speaker.name}`);
 
-const { episodeId } = await client.createTTS({
-  sources: [
-    {
-      type: "text",
-      content:
-        "人工智能正在改变我们的生活方式。从智能助手到自动驾驶，AI 技术已经深入到日常的方方面面。",
-    },
-  ],
-  template: {
-    type: "flowspeech",
-    mode: "smart",
-    speakers: [speaker.speakerInnerId],
-    language: "zh",
-  },
+const {episodeId} = await client.createTTS({
+	sources: [
+		{
+			type: 'text',
+			content:
+				'人工智能正在改变我们的生活方式。从智能助手到自动驾驶，AI 技术已经深入到日常的方方面面。',
+		},
+	],
+	template: {
+		type: 'flowspeech',
+		mode: 'smart',
+		speakers: [speaker.speakerInnerId],
+		language: 'zh',
+	},
 });
 console.log(`Created TTS: ${episodeId}`);
 
-let status: ProcessStatus = "pending";
-while (status === "pending") {
-  await sleep(3000);
-  const detail = await client.getCreation(episodeId);
-  status = detail.processStatus;
-  console.log(`Status: ${status}`);
+let status: ProcessStatus = 'pending';
+while (status === 'pending') {
+	await sleep(3000);
+	const detail = await client.getCreation(episodeId);
+	status = detail.processStatus;
+	console.log(`Status: ${status}`);
 }
 
-if (status === "success") {
-  const detail = await client.getCreation(episodeId);
-  console.log(`Audio: ${detail.topicDetail.audio.data.audioUrl}`);
+if (status === 'success') {
+	const detail = await client.getCreation(episodeId);
+	console.log(`Audio: ${detail.topicDetail.audio.data.audioUrl}`);
 }
 
 function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
+	return new Promise((r) => setTimeout(r, ms));
 }

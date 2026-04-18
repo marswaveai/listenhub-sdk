@@ -27,10 +27,10 @@ npx tsx examples/oauth-login.ts
 
 ```ts
 const client = new ListenHubClient({
-  accessToken: "token", // static string or () => string | undefined
-  baseURL: "https://api.listenhub.ai/api",
-  timeout: 30_000, // request timeout in ms
-  maxRetries: 2, // max retries on 429 (default: 2)
+	accessToken: 'token', // static string or () => string | undefined
+	baseURL: 'https://api.listenhub.ai/api',
+	timeout: 30_000, // request timeout in ms
+	maxRetries: 2, // max retries on 429 (default: 2)
 });
 ```
 
@@ -130,7 +130,7 @@ const client = new ListenHubClient({
 `client.api` exposes the underlying [ky](https://github.com/sindresorhus/ky) instance for endpoints not yet covered by the SDK:
 
 ```ts
-const user = await client.api.get("v1/users/me").json();
+const user = await client.api.get('v1/users/me').json();
 ```
 
 ## Rate limiting

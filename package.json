@@ -1,58 +1,58 @@
 {
-  "name": "@marswave/listenhub-sdk",
-  "version": "0.0.4",
-  "description": "JavaScript SDK for ListenHub API",
-  "homepage": "https://github.com/marswaveai/listenhub-sdk#readme",
-  "bugs": {
-    "url": "https://github.com/marswaveai/listenhub-sdk/issues"
-  },
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/marswaveai/listenhub-sdk.git"
-  },
-  "files": [
-    "dist",
-    "docs"
-  ],
-  "type": "module",
-  "types": "dist/index.d.mts",
-  "exports": "./dist/index.mjs",
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "dev": "vp pack --watch",
-    "build": "vp pack --dts --platform node",
-    "lint": "vp lint",
-    "lint:fix": "vp lint --fix",
-    "fmt": "vp fmt",
-    "fmt:check": "vp fmt --check",
-    "check": "vp check",
-    "test": "vp test run --exclude 'tests/e2e/**'",
-    "test:watch": "vp test --exclude 'tests/e2e/**'",
-    "test:e2e": "vp test run tests/e2e/client.test.ts tests/e2e/checkin.test.ts tests/e2e/episodes.test.ts --mode staging",
-    "test:login": "vp test run tests/e2e/login.test.ts --mode staging",
-    "prepublishOnly": "pnpm run build"
-  },
-  "dependencies": {
-    "ky": "^1.14.3"
-  },
-  "devDependencies": {
-    "@sindresorhus/tsconfig": "^8.1.0",
-    "@types/express": "^5.0.6",
-    "@types/node": "^25.5.0",
-    "express": "^5.2.1",
-    "get-port": "^7.2.0",
-    "open": "^11.0.0",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.3",
-    "vite-plus": "^0.1.18",
-    "vitest": "^4.0.0"
-  },
-  "engines": {
-    "node": ">=20"
-  },
-  "packageManager": "pnpm@10.32.1"
+	"name": "@marswave/listenhub-sdk",
+	"version": "0.0.4",
+	"description": "JavaScript SDK for ListenHub API",
+	"homepage": "https://github.com/marswaveai/listenhub-sdk#readme",
+	"bugs": {
+		"url": "https://github.com/marswaveai/listenhub-sdk/issues"
+	},
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/marswaveai/listenhub-sdk.git"
+	},
+	"files": [
+		"dist",
+		"docs"
+	],
+	"type": "module",
+	"types": "dist/index.d.mts",
+	"exports": "./dist/index.mjs",
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"dev": "vp pack --watch",
+		"build": "vp pack --dts --platform node",
+		"lint": "vp lint",
+		"lint:fix": "vp lint --fix",
+		"fmt": "vp fmt",
+		"fmt:check": "vp fmt --check",
+		"check": "vp check",
+		"test": "vp test run --exclude 'tests/e2e/**'",
+		"test:watch": "vp test --exclude 'tests/e2e/**'",
+		"test:e2e": "vp test run tests/e2e/client.test.ts tests/e2e/checkin.test.ts tests/e2e/episodes.test.ts --mode staging",
+		"test:login": "vp test run tests/e2e/login.test.ts --mode staging",
+		"prepublishOnly": "pnpm run build"
+	},
+	"dependencies": {
+		"ky": "^1.14.3"
+	},
+	"devDependencies": {
+		"@sindresorhus/tsconfig": "^8.1.0",
+		"@types/express": "^5.0.6",
+		"@types/node": "^25.5.0",
+		"express": "^5.2.1",
+		"get-port": "^7.2.0",
+		"open": "^11.0.0",
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3",
+		"vite": "^8.0.3",
+		"vite-plus": "^0.1.18",
+		"vitest": "^4.0.0"
+	},
+	"engines": {
+		"node": ">=20"
+	},
+	"packageManager": "pnpm@10.32.1"
 }
