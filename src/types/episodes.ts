@@ -1,270 +1,270 @@
 // --- Shared base types ---
 
-export type Language = 'en' | 'zh' | 'ja';
+export type Language = "en" | "zh" | "ja";
 
-export type ProcessStatus = 'pending' | 'success' | 'fail';
+export type ProcessStatus = "pending" | "success" | "fail";
 
 export interface UrlSourceMetadata {
-	title?: string;
-	ogTitle?: string;
-	faviconUrl?: string;
-	ogImageUrl?: string;
-	ogSiteName?: string;
+  title?: string;
+  ogTitle?: string;
+  faviconUrl?: string;
+  ogImageUrl?: string;
+  ogSiteName?: string;
 }
 
 export interface ContentSource {
-	type: 'url' | 'text';
-	uri?: string;
-	content?: string;
-	metadata?: UrlSourceMetadata;
+  type: "url" | "text";
+  uri?: string;
+  content?: string;
+  metadata?: UrlSourceMetadata;
 }
 
 export interface EpisodeSpeaker {
-	name: string;
-	speakerInnerId: string;
-	gender: string;
+  name: string;
+  speakerInnerId: string;
+  gender: string;
 }
 
 export interface EpisodeCreator {
-	nickname: string;
-	avatar: string;
+  nickname: string;
+  avatar: string;
 }
 
 // --- Create responses ---
 
 export interface CreateEpisodeResponse {
-	episodeId: string;
+  episodeId: string;
 }
 
 // --- Create params ---
 
 export interface CreatePodcastParams {
-	type: 'podcast-solo' | 'podcast-duo';
-	query?: string;
-	sources?: ContentSource[];
-	template: {
-		type: 'podcast';
-		mode: 'quick' | 'deep' | 'debate';
-		speakers: string[];
-		language: Language;
-	};
+  type: "podcast-solo" | "podcast-duo";
+  query?: string;
+  sources?: ContentSource[];
+  template: {
+    type: "podcast";
+    mode: "quick" | "deep" | "debate";
+    speakers: string[];
+    language: Language;
+  };
 }
 
 export interface CreateTTSParams {
-	sources: ContentSource[];
-	template: {
-		type: 'flowspeech';
-		mode: 'smart' | 'direct';
-		speakers: string[];
-		language: Language;
-	};
+  sources: ContentSource[];
+  template: {
+    type: "flowspeech";
+    mode: "smart" | "direct";
+    speakers: string[];
+    language: Language;
+  };
 }
 
-export type ImageSize = '2K' | '4K';
+export type ImageSize = "2K" | "4K";
 
-export type SlideAspectRatio = '16:9' | '9:16' | '1:1';
+export type SlideAspectRatio = "16:9" | "9:16" | "1:1";
 
 export interface CreateExplainerVideoParams {
-	query?: string;
-	sources?: ContentSource[];
-	style?: string;
-	styleOverride?: string;
-	skipAudio?: boolean;
-	imageConfig?: {
-		size: ImageSize;
-		aspectRatio: SlideAspectRatio;
-	};
-	template: {
-		type: 'storybook';
-		mode: 'info' | 'story';
-		speakers: string[];
-		language: Language;
-		style?: string;
-		size?: ImageSize;
-		aspectRatio?: SlideAspectRatio;
-		pageCount?: number;
-	};
+  query?: string;
+  sources?: ContentSource[];
+  style?: string;
+  styleOverride?: string;
+  skipAudio?: boolean;
+  imageConfig?: {
+    size: ImageSize;
+    aspectRatio: SlideAspectRatio;
+  };
+  template: {
+    type: "storybook";
+    mode: "info" | "story";
+    speakers: string[];
+    language: Language;
+    style?: string;
+    size?: ImageSize;
+    aspectRatio?: SlideAspectRatio;
+    pageCount?: number;
+  };
 }
 
 export interface CreateSlidesParams {
-	query?: string;
-	sources?: ContentSource[];
-	style?: string;
-	styleOverride?: string;
-	/** Skip audio generation (visual only). Defaults to true. */
-	skipAudio?: boolean;
-	imageConfig?: {
-		size: ImageSize;
-		aspectRatio: SlideAspectRatio;
-	};
-	template: {
-		type: 'storybook';
-		mode: 'slides';
-		speakers: string[];
-		language: Language;
-		style?: string;
-		size?: ImageSize;
-		aspectRatio?: SlideAspectRatio;
-		pageCount?: number;
-	};
+  query?: string;
+  sources?: ContentSource[];
+  style?: string;
+  styleOverride?: string;
+  /** Skip audio generation (visual only). Defaults to true. */
+  skipAudio?: boolean;
+  imageConfig?: {
+    size: ImageSize;
+    aspectRatio: SlideAspectRatio;
+  };
+  template: {
+    type: "storybook";
+    mode: "slides";
+    speakers: string[];
+    language: Language;
+    style?: string;
+    size?: ImageSize;
+    aspectRatio?: SlideAspectRatio;
+    pageCount?: number;
+  };
 }
 
 // --- List / Detail ---
 
 export interface EpisodeImageConfig {
-	size: string;
-	aspectRatio: string;
+  size: string;
+  aspectRatio: string;
 }
 
 export interface EpisodeInput {
-	query?: string;
-	sources: ContentSource[];
+  query?: string;
+  sources: ContentSource[];
 }
 
 export interface EpisodeItem {
-	id: string;
-	type: string;
-	status: string;
-	title: string;
-	summary: string;
-	cover: string;
-	audioUrl: string;
-	audioDuration: number;
-	videoUrl: string;
-	input: EpisodeInput;
-	inputSources: ContentSource[];
-	processStatus: ProcessStatus;
-	stepStatus: string;
-	failCode: number;
-	playedStatus: number;
-	slidesStatus: string;
-	creator: EpisodeCreator;
-	playCount: number;
-	generationType: string;
-	enabledShare: boolean;
-	mode: string;
-	speakers: EpisodeSpeaker[];
-	language: string;
-	imageConfig?: EpisodeImageConfig;
-	createdAt: number;
+  id: string;
+  type: string;
+  status: string;
+  title: string;
+  summary: string;
+  cover: string;
+  audioUrl: string;
+  audioDuration: number;
+  videoUrl: string;
+  input: EpisodeInput;
+  inputSources: ContentSource[];
+  processStatus: ProcessStatus;
+  stepStatus: string;
+  failCode: number;
+  playedStatus: number;
+  slidesStatus: string;
+  creator: EpisodeCreator;
+  playCount: number;
+  generationType: string;
+  enabledShare: boolean;
+  mode: string;
+  speakers: EpisodeSpeaker[];
+  language: string;
+  imageConfig?: EpisodeImageConfig;
+  createdAt: number;
 }
 
-export type ProductId = 'aiPodcast' | 'textToSpeech' | 'explainerVideo' | 'slideDeck';
+export type ProductId = "aiPodcast" | "textToSpeech" | "explainerVideo" | "slideDeck";
 
 export interface ListEpisodesParams {
-	page?: number;
-	pageSize?: number;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface ListEpisodesResponse {
-	items: EpisodeItem[];
-	pagination: {
-		page: number;
-		pageSize: number;
-		total?: number;
-	};
+  items: EpisodeItem[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total?: number;
+  };
 }
 
 export interface EpisodeDetailTopicData<T> {
-	inputType: string;
-	data: T;
+  inputType: string;
+  data: T;
 }
 
 export interface EpisodeDetailAudio {
-	audioUrl: string;
-	audioDuration: number;
-	audioHlsUrl: string;
+  audioUrl: string;
+  audioDuration: number;
+  audioHlsUrl: string;
 }
 
 export interface EpisodeDetailVideo {
-	videoUrl: string;
-	videoStatus: string;
+  videoUrl: string;
+  videoStatus: string;
 }
 
 export interface EpisodeDetailPage {
-	text: string;
-	pageNumber: number;
-	imageUrl: string;
-	audioTimestamp: number;
+  text: string;
+  pageNumber: number;
+  imageUrl: string;
+  audioTimestamp: number;
 }
 
 export interface EpisodeDetailReference {
-	type: string;
-	url_citation: {
-		title: string;
-		exactQuote: string;
-		url: string;
-		dateTime: string;
-		favicon: string;
-	};
+  type: string;
+  url_citation: {
+    title: string;
+    exactQuote: string;
+    url: string;
+    dateTime: string;
+    favicon: string;
+  };
 }
 
 export interface EpisodeDetailPreprocess {
-	deepsearchEnabled: boolean;
-	content: string;
-	references: EpisodeDetailReference[];
+  deepsearchEnabled: boolean;
+  content: string;
+  references: EpisodeDetailReference[];
 }
 
 export interface EpisodeDetailScript {
-	content: string;
-	speakerInnerId: string;
+  content: string;
+  speakerInnerId: string;
 }
 
 export interface EpisodeDetailSeoMeta {
-	keywords: string;
-	meta_description: string;
+  keywords: string;
+  meta_description: string;
 }
 
 export interface EpisodeDetail {
-	id: string;
-	generationType: string;
-	generationMode: string;
-	sseEvent: string[];
-	ownerMatch: boolean;
-	sourceType: string;
-	createdAt: number;
-	completedAt: number;
-	enabledShare: boolean;
-	playedStatus: number;
-	creator: EpisodeCreator;
-	playCount: number;
-	input: {
-		query?: string;
-		sources: Array<{
-			type: string;
-			uri?: string;
-			content: string;
-			scrapeStatus?: boolean;
-			metadata?: Record<string, unknown>;
-		}>;
-	};
-	credits: number;
-	failCode: number;
-	processStatus: ProcessStatus;
-	language: string;
-	speakers: EpisodeSpeaker[];
-	topicDetail: {
-		title: EpisodeDetailTopicData<string>;
-		outline: EpisodeDetailTopicData<string>;
-		cover: EpisodeDetailTopicData<string>;
-		audio: EpisodeDetailTopicData<EpisodeDetailAudio>;
-		video: EpisodeDetailTopicData<EpisodeDetailVideo>;
-		pages: EpisodeDetailTopicData<EpisodeDetailPage[]>;
-		preprocessResult: EpisodeDetailTopicData<EpisodeDetailPreprocess>;
-		scripts?: EpisodeDetailTopicData<EpisodeDetailScript[]>;
-		seoMeta?: EpisodeDetailTopicData<EpisodeDetailSeoMeta>;
-		slides?: EpisodeDetailTopicData<{
-			slidesUrl: string;
-			slidesStatus: string;
-		}>;
-		pptx?: EpisodeDetailTopicData<{pptxUrl: string; pptxStatus: string}>;
-		resource?: EpisodeDetailTopicData<{
-			resourceUrl?: string;
-			resourceStatus: string;
-		}>;
-	};
+  id: string;
+  generationType: string;
+  generationMode: string;
+  sseEvent: string[];
+  ownerMatch: boolean;
+  sourceType: string;
+  createdAt: number;
+  completedAt: number;
+  enabledShare: boolean;
+  playedStatus: number;
+  creator: EpisodeCreator;
+  playCount: number;
+  input: {
+    query?: string;
+    sources: Array<{
+      type: string;
+      uri?: string;
+      content: string;
+      scrapeStatus?: boolean;
+      metadata?: Record<string, unknown>;
+    }>;
+  };
+  credits: number;
+  failCode: number;
+  processStatus: ProcessStatus;
+  language: string;
+  speakers: EpisodeSpeaker[];
+  topicDetail: {
+    title: EpisodeDetailTopicData<string>;
+    outline: EpisodeDetailTopicData<string>;
+    cover: EpisodeDetailTopicData<string>;
+    audio: EpisodeDetailTopicData<EpisodeDetailAudio>;
+    video: EpisodeDetailTopicData<EpisodeDetailVideo>;
+    pages: EpisodeDetailTopicData<EpisodeDetailPage[]>;
+    preprocessResult: EpisodeDetailTopicData<EpisodeDetailPreprocess>;
+    scripts?: EpisodeDetailTopicData<EpisodeDetailScript[]>;
+    seoMeta?: EpisodeDetailTopicData<EpisodeDetailSeoMeta>;
+    slides?: EpisodeDetailTopicData<{
+      slidesUrl: string;
+      slidesStatus: string;
+    }>;
+    pptx?: EpisodeDetailTopicData<{ pptxUrl: string; pptxStatus: string }>;
+    resource?: EpisodeDetailTopicData<{
+      resourceUrl?: string;
+      resourceStatus: string;
+    }>;
+  };
 }
 
 export interface DeleteEpisodesParams {
-	ids: string[];
+  ids: string[];
 }
