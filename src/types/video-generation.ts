@@ -4,7 +4,12 @@ export type VideoGenerationResolution = '480p' | '720p' | '1080p';
 
 export type VideoGenerationRatio = '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9';
 
-export type VideoGenerationTaskStatus = 'pending' | 'generating' | 'uploading' | 'success' | 'failed';
+export type VideoGenerationTaskStatus =
+	| 'pending'
+	| 'generating'
+	| 'uploading'
+	| 'success'
+	| 'failed';
 
 export type VideoContentRole =
 	| 'first_frame'

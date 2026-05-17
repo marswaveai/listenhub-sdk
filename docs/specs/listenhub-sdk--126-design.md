@@ -9,12 +9,12 @@
 
 ## 接口契约（来自 API server main）
 
-| 端点 | 方法 | 用途 |
-|------|------|------|
-| `/v1/video-generation/generate` | POST | 创建视频生成任务 |
-| `/v1/video-generation/tasks` | GET | 列出用户的视频任务 |
-| `/v1/video-generation/tasks/:taskId` | GET | 获取单个任务详情 |
-| `/v1/video-generation/estimate-credits` | POST | 预估积分消耗 |
+| 端点                                    | 方法 | 用途               |
+| --------------------------------------- | ---- | ------------------ |
+| `/v1/video-generation/generate`         | POST | 创建视频生成任务   |
+| `/v1/video-generation/tasks`            | GET  | 列出用户的视频任务 |
+| `/v1/video-generation/tasks/:taskId`    | GET  | 获取单个任务详情   |
+| `/v1/video-generation/estimate-credits` | POST | 预估积分消耗       |
 
 ## 新增文件
 
@@ -29,143 +29,148 @@ export type VideoGenerationResolution = '480p' | '720p' | '1080p';
 
 export type VideoGenerationRatio = '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9';
 
-export type VideoGenerationTaskStatus = 'pending' | 'generating' | 'uploading' | 'success' | 'failed';
+export type VideoGenerationTaskStatus =
+	| 'pending'
+	| 'generating'
+	| 'uploading'
+	| 'success'
+	| 'failed';
 
 export type VideoContentRole =
-  | 'first_frame'
-  | 'last_frame'
-  | 'reference_image'
-  | 'reference_video'
-  | 'reference_audio';
+	| 'first_frame'
+	| 'last_frame'
+	| 'reference_image'
+	| 'reference_video'
+	| 'reference_audio';
 
 // --- Content 条目（discriminated union） ---
 
 export interface VideoContentText {
-  type: 'text';
-  text: string;
+	type: 'text';
+	text: string;
 }
 
 export interface VideoContentImageUrl {
-  type: 'image_url';
-  image_url: { url: string };
-  role: 'first_frame' | 'last_frame' | 'reference_image';
+	type: 'image_url';
+	image_url: {url: string};
+	role: 'first_frame' | 'last_frame' | 'reference_image';
 }
 
 export interface VideoContentVideoUrl {
-  type: 'video_url';
-  video_url: { url: string };
-  role: 'reference_video';
+	type: 'video_url';
+	video_url: {url: string};
+	role: 'reference_video';
 }
 
 export interface VideoContentAudioUrl {
-  type: 'audio_url';
-  audio_url: { url: string };
-  role: 'reference_audio';
+	type: 'audio_url';
+	audio_url: {url: string};
+	role: 'reference_audio';
 }
 
 export type VideoContentItem =
-  | VideoContentText
-  | VideoContentImageUrl
-  | VideoContentVideoUrl
-  | VideoContentAudioUrl;
+	| VideoContentText
+	| VideoContentImageUrl
+	| VideoContentVideoUrl
+	| VideoContentAudioUrl;
 
 // --- 请求参数 ---
 
 export interface CreateVideoGenerationParams {
-  model?: VideoGenerationModel;
-  content: VideoContentItem[];
-  resolution?: VideoGenerationResolution;
-  ratio?: VideoGenerationRatio;
-  duration?: number; // 4-15, 默认 5
-  generateAudio?: boolean;
-  seed?: number;
-  inputVideoDuration?: number; // 有 video_url 时必填，2-15
+	model?: VideoGenerationModel;
+	content: VideoContentItem[];
+	resolution?: VideoGenerationResolution;
+	ratio?: VideoGenerationRatio;
+	duration?: number; // 4-15, 默认 5
+	generateAudio?: boolean;
+	seed?: number;
+	inputVideoDuration?: number; // 有 video_url 时必填，2-15
 }
 
 export interface ListVideoGenerationTasksParams {
-  page?: number;
-  pageSize?: number;
-  status?: VideoGenerationTaskStatus;
+	page?: number;
+	pageSize?: number;
+	status?: VideoGenerationTaskStatus;
 }
 
 export interface EstimateVideoGenerationCreditsParams {
-  model: VideoGenerationModel;
-  resolution: VideoGenerationResolution;
-  duration: number;
-  hasVideoInput?: boolean;
-  inputVideoDuration?: number;
-  ratio?: VideoGenerationRatio;
+	model: VideoGenerationModel;
+	resolution: VideoGenerationResolution;
+	duration: number;
+	hasVideoInput?: boolean;
+	inputVideoDuration?: number;
+	ratio?: VideoGenerationRatio;
 }
 
 // --- 响应类型 ---
 
 export interface CreateVideoGenerationResponse {
-  taskId: string;
-  status: VideoGenerationTaskStatus;
+	taskId: string;
+	status: VideoGenerationTaskStatus;
 }
 
 export interface VideoGenerationTaskDetail {
-  id: string;
-  status: VideoGenerationTaskStatus;
-  model: string;
-  params: {
-    content: VideoContentItem[];
-    resolution: string;
-    ratio: string;
-    duration: number;
-    generateAudio: boolean;
-    seed: number;
-  };
-  videoUrl?: string;
-  providerVideoUrl?: string;
-  duration?: number;
-  resolution?: string;
-  ratio?: string;
-  seed?: number;
-  creditCharged: number;
-  createdAt: number;
-  updatedAt: number;
+	id: string;
+	status: VideoGenerationTaskStatus;
+	model: string;
+	params: {
+		content: VideoContentItem[];
+		resolution: string;
+		ratio: string;
+		duration: number;
+		generateAudio: boolean;
+		seed: number;
+	};
+	videoUrl?: string;
+	providerVideoUrl?: string;
+	duration?: number;
+	resolution?: string;
+	ratio?: string;
+	seed?: number;
+	creditCharged: number;
+	createdAt: number;
+	updatedAt: number;
 }
 
 export interface VideoGenerationTaskListItem {
-  id: string;
-  status: VideoGenerationTaskStatus;
-  model: string;
-  params: {
-    resolution: string;
-    ratio: string;
-    duration: number;
-  };
-  videoUrl?: string;
-  providerVideoUrl?: string;
-  seed?: number;
-  creditCharged: number;
-  createdAt: number;
+	id: string;
+	status: VideoGenerationTaskStatus;
+	model: string;
+	params: {
+		resolution: string;
+		ratio: string;
+		duration: number;
+	};
+	videoUrl?: string;
+	providerVideoUrl?: string;
+	seed?: number;
+	creditCharged: number;
+	createdAt: number;
 }
 
 export interface ListVideoGenerationTasksResponse {
-  items: VideoGenerationTaskListItem[];
-  page: number;
-  pageSize: number;
-  total: number;
+	items: VideoGenerationTaskListItem[];
+	page: number;
+	pageSize: number;
+	total: number;
 }
 
 export interface EstimateVideoGenerationCreditsResponse {
-  tokens: number;
-  credits: number;
+	tokens: number;
+	credits: number;
 }
 
 // --- 错误码 ---
 
 export type VideoGenerationErrorCode =
-  | '32001'  // TASK_NOT_FOUND
-  | '32002'  // NOT_ENOUGH_CREDIT
-  | '32003'  // PROVIDER_ERROR
-  | '32004'  // INVALID_PARAMS
-  | '32005'  // TASK_ACCESS_DENIED
-  | '32006'  // AUDIO_REQUIRES_VISUAL
-  | '32007'  // RATE_LIMITED
-  | '32008'; // CONTENT_MODERATION
+	| '32001' // TASK_NOT_FOUND
+	| '32002' // NOT_ENOUGH_CREDIT
+	| '32003' // PROVIDER_ERROR
+	| '32004' // INVALID_PARAMS
+	| '32005' // TASK_ACCESS_DENIED
+	| '32006' // AUDIO_REQUIRES_VISUAL
+	| '32007' // RATE_LIMITED
+	| '32008'; // CONTENT_MODERATION
 ```
 
 SDK 使用现有的 `ListenHubError` 类统一处理错误（`error.code` 为字符串形式的数字），同时导出 `VideoGenerationErrorCode` 类型，方便消费者做类型安全的错误码判断。
@@ -204,25 +209,25 @@ async estimateVideoGenerationCredits(params: EstimateVideoGenerationCreditsParam
 
 ```typescript
 export type {
-  VideoGenerationModel,
-  VideoGenerationResolution,
-  VideoGenerationRatio,
-  VideoGenerationTaskStatus,
-  VideoGenerationErrorCode,
-  VideoContentRole,
-  VideoContentText,
-  VideoContentImageUrl,
-  VideoContentVideoUrl,
-  VideoContentAudioUrl,
-  VideoContentItem,
-  CreateVideoGenerationParams,
-  ListVideoGenerationTasksParams,
-  EstimateVideoGenerationCreditsParams,
-  CreateVideoGenerationResponse,
-  VideoGenerationTaskDetail,
-  VideoGenerationTaskListItem,
-  ListVideoGenerationTasksResponse,
-  EstimateVideoGenerationCreditsResponse,
+	VideoGenerationModel,
+	VideoGenerationResolution,
+	VideoGenerationRatio,
+	VideoGenerationTaskStatus,
+	VideoGenerationErrorCode,
+	VideoContentRole,
+	VideoContentText,
+	VideoContentImageUrl,
+	VideoContentVideoUrl,
+	VideoContentAudioUrl,
+	VideoContentItem,
+	CreateVideoGenerationParams,
+	ListVideoGenerationTasksParams,
+	EstimateVideoGenerationCreditsParams,
+	CreateVideoGenerationResponse,
+	VideoGenerationTaskDetail,
+	VideoGenerationTaskListItem,
+	ListVideoGenerationTasksResponse,
+	EstimateVideoGenerationCreditsResponse,
 } from './types/video-generation.js';
 ```
 
@@ -236,38 +241,39 @@ export type {
 ```typescript
 // 预估积分
 const estimate = await client.estimateVideoGenerationCredits({
-  model: 'doubao-seedance-2-fast',
-  resolution: '720p',
-  duration: 5,
+	model: 'doubao-seedance-2-fast',
+	resolution: '720p',
+	duration: 5,
 });
 console.log(`Estimated credits: ${estimate.credits}`);
 
 // 创建视频生成任务
 const task = await client.createVideoGeneration({
-  model: 'doubao-seedance-2-fast',
-  content: [
-    { type: 'text', text: '一只猫在花园里奔跑' },
-    { type: 'image_url', image_url: { url: 'https://example.com/cat.jpg' }, role: 'first_frame' },
-  ],
-  resolution: '720p',
-  duration: 5,
+	model: 'doubao-seedance-2-fast',
+	content: [
+		{type: 'text', text: '一只猫在花园里奔跑'},
+		{type: 'image_url', image_url: {url: 'https://example.com/cat.jpg'}, role: 'first_frame'},
+	],
+	resolution: '720p',
+	duration: 5,
 });
 console.log(`Task created: ${task.taskId}`);
 
 // 查询任务状态
 const detail = await client.getVideoGenerationTask(task.taskId);
 if (detail.status === 'success') {
-  console.log(`Video URL: ${detail.videoUrl}`);
+	console.log(`Video URL: ${detail.videoUrl}`);
 }
 
 // 列出所有任务
-const list = await client.listVideoGenerationTasks({ page: 1, pageSize: 10 });
+const list = await client.listVideoGenerationTasks({page: 1, pageSize: 10});
 ```
 ````
 
 ## 测试
 
 新增 `tests/unit/video-generation.test.ts`，与现有 `tests/unit/episodes.test.ts` 的 mock fetch 模式对齐：
+
 - 类型正确性测试（确保类型编译通过）
 - 方法存在性断言
 - 请求参数构造验证（确保参数正确传递到 HTTP 层）

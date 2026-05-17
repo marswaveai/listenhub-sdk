@@ -12,13 +12,13 @@
 
 ## File Map
 
-| Action | Path | Responsibility |
-|--------|------|----------------|
-| Create | `src/types/video-generation.ts` | All type definitions for video generation |
-| Modify | `src/listenhub.ts` | Add 4 client methods |
-| Modify | `src/index.ts` | Re-export all new types |
-| Create | `tests/unit/video-generation.test.ts` | Unit tests for all 4 methods |
-| Modify | `README.md` | Add Video Generation API section and usage example |
+| Action | Path                                  | Responsibility                                     |
+| ------ | ------------------------------------- | -------------------------------------------------- |
+| Create | `src/types/video-generation.ts`       | All type definitions for video generation          |
+| Modify | `src/listenhub.ts`                    | Add 4 client methods                               |
+| Modify | `src/index.ts`                        | Re-export all new types                            |
+| Create | `tests/unit/video-generation.test.ts` | Unit tests for all 4 methods                       |
+| Modify | `README.md`                           | Add Video Generation API section and usage example |
 
 ---
 
@@ -36,6 +36,7 @@ Expected: Dependencies installed successfully, `node_modules` populated.
 ### Task 1: Create type definitions
 
 **Files:**
+
 - Create: `src/types/video-generation.ts`
 
 - [ ] **Step 1: Create the types file with all type definitions**
@@ -47,7 +48,12 @@ export type VideoGenerationResolution = '480p' | '720p' | '1080p';
 
 export type VideoGenerationRatio = '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9';
 
-export type VideoGenerationTaskStatus = 'pending' | 'generating' | 'uploading' | 'success' | 'failed';
+export type VideoGenerationTaskStatus =
+	| 'pending'
+	| 'generating'
+	| 'uploading'
+	| 'success'
+	| 'failed';
 
 export type VideoContentRole =
 	| 'first_frame'
@@ -195,6 +201,7 @@ git commit -m "feat(video-generation): add type definitions"
 ### Task 2: Add client methods to ListenHubClient
 
 **Files:**
+
 - Modify: `src/listenhub.ts` (add imports at top, methods at bottom of class)
 
 - [ ] **Step 1: Add type imports at the top of `src/listenhub.ts`**
@@ -256,6 +263,7 @@ git commit -m "feat(video-generation): add client methods"
 ### Task 3: Add re-exports to index.ts
 
 **Files:**
+
 - Modify: `src/index.ts`
 
 - [ ] **Step 1: Add video-generation type exports at the end of `src/index.ts`**
@@ -303,6 +311,7 @@ git commit -m "feat(video-generation): re-export types from index"
 ### Task 4: Write unit tests
 
 **Files:**
+
 - Create: `tests/unit/video-generation.test.ts`
 
 - [ ] **Step 1: Write the test file**
@@ -403,13 +412,27 @@ describe('Video Generation methods', () => {
 	it('listVideoGenerationTasks sends GET /v1/video-generation/tasks with query params', async () => {
 		mockFetch.mockResolvedValueOnce(
 			jsonResponse({
-				items: [{id: 'vt-1', status: 'success', model: 'SeeDance 2.0 Fast', params: {resolution: '720p', ratio: '16:9', duration: 5}, seed: 99, creditCharged: 18, createdAt: 1700000000000}],
+				items: [
+					{
+						id: 'vt-1',
+						status: 'success',
+						model: 'SeeDance 2.0 Fast',
+						params: {resolution: '720p', ratio: '16:9', duration: 5},
+						seed: 99,
+						creditCharged: 18,
+						createdAt: 1700000000000,
+					},
+				],
 				page: 1,
 				pageSize: 10,
 				total: 1,
 			}),
 		);
-		const result = await client.listVideoGenerationTasks({page: 1, pageSize: 10, status: 'success'});
+		const result = await client.listVideoGenerationTasks({
+			page: 1,
+			pageSize: 10,
+			status: 'success',
+		});
 		const req = mockFetch.mock.calls[0][0] as Request;
 		expect(req.method).toBe('GET');
 		expect(req.url).toContain('v1/video-generation/tasks');
@@ -473,62 +496,65 @@ git commit -m "test(video-generation): add unit tests for all 4 client methods"
 ### Task 5: Update README documentation
 
 **Files:**
+
 - Modify: `README.md`
 
 - [ ] **Step 1: Add Video Generation section to the API table**
 
 Insert after the Music section (after line 101) and before the "List by product" section:
 
-```markdown
+````markdown
 ### Video Generation (SeeDance2.0)
 
-| Method                                    | Description                                          |
-| ----------------------------------------- | ---------------------------------------------------- |
-| `createVideoGeneration(params)`           | Create a video generation task                       |
-| `getVideoGenerationTask(taskId)`          | Get video generation task status and details         |
-| `listVideoGenerationTasks(params?)`       | List video generation tasks with optional filtering  |
-| `estimateVideoGenerationCredits(params)`  | Estimate credit cost before generating               |
+| Method                                   | Description                                         |
+| ---------------------------------------- | --------------------------------------------------- |
+| `createVideoGeneration(params)`          | Create a video generation task                      |
+| `getVideoGenerationTask(taskId)`         | Get video generation task status and details        |
+| `listVideoGenerationTasks(params?)`      | List video generation tasks with optional filtering |
+| `estimateVideoGenerationCredits(params)` | Estimate credit cost before generating              |
 
 **Usage example:**
 
 ```ts
 // Estimate credits
 const estimate = await client.estimateVideoGenerationCredits({
-  model: 'doubao-seedance-2-fast',
-  resolution: '720p',
-  duration: 5,
+	model: 'doubao-seedance-2-fast',
+	resolution: '720p',
+	duration: 5,
 });
 console.log(`Estimated credits: ${estimate.credits}`);
 
 // Create a video generation task
 const task = await client.createVideoGeneration({
-  model: 'doubao-seedance-2-fast',
-  content: [
-    { type: 'text', text: '一只猫在花园里奔跑' },
-    { type: 'image_url', image_url: { url: 'https://example.com/cat.jpg' }, role: 'first_frame' },
-  ],
-  resolution: '720p',
-  duration: 5,
+	model: 'doubao-seedance-2-fast',
+	content: [
+		{type: 'text', text: '一只猫在花园里奔跑'},
+		{type: 'image_url', image_url: {url: 'https://example.com/cat.jpg'}, role: 'first_frame'},
+	],
+	resolution: '720p',
+	duration: 5,
 });
 console.log(`Task created: ${task.taskId}`);
 
 // Poll task status
 const detail = await client.getVideoGenerationTask(task.taskId);
 if (detail.status === 'success') {
-  console.log(`Video URL: ${detail.videoUrl}`);
+	console.log(`Video URL: ${detail.videoUrl}`);
 }
 
 // List all tasks
-const list = await client.listVideoGenerationTasks({ page: 1, pageSize: 10 });
+const list = await client.listVideoGenerationTasks({page: 1, pageSize: 10});
 ```
-```
+````
+
+````
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add README.md
 git commit -m "docs: add video generation API section and usage example to README"
-```
+````
 
 ---
 
@@ -554,6 +580,7 @@ Expected: All tests pass (existing + new video-generation tests)
 - [ ] **Step 4: Fix any issues and commit if needed**
 
 If lint or build found issues:
+
 ```bash
 git add -A
 git commit -m "fix: lint/build fixes"

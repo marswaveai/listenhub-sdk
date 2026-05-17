@@ -91,13 +91,27 @@ describe('Video Generation methods', () => {
 	it('listVideoGenerationTasks sends GET /v1/video-generation/tasks with query params', async () => {
 		mockFetch.mockResolvedValueOnce(
 			jsonResponse({
-				items: [{id: 'vt-1', status: 'success', model: 'SeeDance 2.0 Fast', params: {resolution: '720p', ratio: '16:9', duration: 5}, seed: 99, creditCharged: 18, createdAt: 1700000000000}],
+				items: [
+					{
+						id: 'vt-1',
+						status: 'success',
+						model: 'SeeDance 2.0 Fast',
+						params: {resolution: '720p', ratio: '16:9', duration: 5},
+						seed: 99,
+						creditCharged: 18,
+						createdAt: 1700000000000,
+					},
+				],
 				page: 1,
 				pageSize: 10,
 				total: 1,
 			}),
 		);
-		const result = await client.listVideoGenerationTasks({page: 1, pageSize: 10, status: 'success'});
+		const result = await client.listVideoGenerationTasks({
+			page: 1,
+			pageSize: 10,
+			status: 'success',
+		});
 		const req = mockFetch.mock.calls[0][0] as Request;
 		expect(req.method).toBe('GET');
 		expect(req.url).toContain('v1/video-generation/tasks');

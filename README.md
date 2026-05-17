@@ -102,44 +102,44 @@ const client = new ListenHubClient({
 
 ### Video Generation (SeeDance2.0)
 
-| Method                                    | Description                                          |
-| ----------------------------------------- | ---------------------------------------------------- |
-| `createVideoGeneration(params)`           | Create a video generation task                       |
-| `getVideoGenerationTask(taskId)`          | Get video generation task status and details         |
-| `listVideoGenerationTasks(params?)`       | List video generation tasks with optional filtering  |
-| `estimateVideoGenerationCredits(params)`  | Estimate credit cost before generating               |
+| Method                                   | Description                                         |
+| ---------------------------------------- | --------------------------------------------------- |
+| `createVideoGeneration(params)`          | Create a video generation task                      |
+| `getVideoGenerationTask(taskId)`         | Get video generation task status and details        |
+| `listVideoGenerationTasks(params?)`      | List video generation tasks with optional filtering |
+| `estimateVideoGenerationCredits(params)` | Estimate credit cost before generating              |
 
 **Usage example:**
 
 ```ts
 // Estimate credits
 const estimate = await client.estimateVideoGenerationCredits({
-  model: 'doubao-seedance-2-fast',
-  resolution: '720p',
-  duration: 5,
+	model: 'doubao-seedance-2-fast',
+	resolution: '720p',
+	duration: 5,
 });
 console.log(`Estimated credits: ${estimate.credits}`);
 
 // Create a video generation task
 const task = await client.createVideoGeneration({
-  model: 'doubao-seedance-2-fast',
-  content: [
-    { type: 'text', text: '一只猫在花园里奔跑' },
-    { type: 'image_url', image_url: { url: 'https://example.com/cat.jpg' }, role: 'first_frame' },
-  ],
-  resolution: '720p',
-  duration: 5,
+	model: 'doubao-seedance-2-fast',
+	content: [
+		{type: 'text', text: '一只猫在花园里奔跑'},
+		{type: 'image_url', image_url: {url: 'https://example.com/cat.jpg'}, role: 'first_frame'},
+	],
+	resolution: '720p',
+	duration: 5,
 });
 console.log(`Task created: ${task.taskId}`);
 
 // Poll task status
 const detail = await client.getVideoGenerationTask(task.taskId);
 if (detail.status === 'success') {
-  console.log(`Video URL: ${detail.videoUrl}`);
+	console.log(`Video URL: ${detail.videoUrl}`);
 }
 
 // List all tasks
-const list = await client.listVideoGenerationTasks({ page: 1, pageSize: 10 });
+const list = await client.listVideoGenerationTasks({page: 1, pageSize: 10});
 ```
 
 ### List by product
