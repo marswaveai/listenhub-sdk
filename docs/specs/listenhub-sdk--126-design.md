@@ -158,14 +158,14 @@ export interface EstimateVideoGenerationCreditsResponse {
 // --- 错误码 ---
 
 export type VideoGenerationErrorCode =
-  | 32001  // TASK_NOT_FOUND
-  | 32002  // NOT_ENOUGH_CREDIT
-  | 32003  // PROVIDER_ERROR
-  | 32004  // INVALID_PARAMS
-  | 32005  // TASK_ACCESS_DENIED
-  | 32006  // AUDIO_REQUIRES_VISUAL
-  | 32007  // RATE_LIMITED
-  | 32008; // CONTENT_MODERATION
+  | '32001'  // TASK_NOT_FOUND
+  | '32002'  // NOT_ENOUGH_CREDIT
+  | '32003'  // PROVIDER_ERROR
+  | '32004'  // INVALID_PARAMS
+  | '32005'  // TASK_ACCESS_DENIED
+  | '32006'  // AUDIO_REQUIRES_VISUAL
+  | '32007'  // RATE_LIMITED
+  | '32008'; // CONTENT_MODERATION
 ```
 
 SDK 使用现有的 `ListenHubError` 类统一处理错误（`error.code` 为字符串形式的数字），同时导出 `VideoGenerationErrorCode` 类型，方便消费者做类型安全的错误码判断。

@@ -22,6 +22,17 @@
 
 ---
 
+### Task 0: Install dependencies
+
+**Files:** (none — environment setup)
+
+- [ ] **Step 1: Install dependencies in the worktree**
+
+Run: `cd ~/coding/marswave/listenhub-sdk/.worktrees/listenhub-sdk--126 && pnpm install --frozen-lockfile`
+Expected: Dependencies installed successfully, `node_modules` populated.
+
+---
+
 ### Task 1: Create type definitions
 
 **Files:**
@@ -46,14 +57,14 @@ export type VideoContentRole =
 	| 'reference_audio';
 
 export type VideoGenerationErrorCode =
-	| 32001
-	| 32002
-	| 32003
-	| 32004
-	| 32005
-	| 32006
-	| 32007
-	| 32008;
+	| '32001'
+	| '32002'
+	| '32003'
+	| '32004'
+	| '32005'
+	| '32006'
+	| '32007'
+	| '32008';
 
 export interface VideoContentText {
 	type: 'text';
@@ -335,7 +346,7 @@ describe('Video Generation methods', () => {
 	const client = new ListenHubClient({baseURL: 'https://api.test.com/api'});
 
 	it('createVideoGeneration sends POST /v1/video-generation/generate with params', async () => {
-		mockJsonResponse({taskId: 'vt-1', status: 'pending'});
+		mockJsonResponse({taskId: 'vt-1', status: 'generating'});
 		const result = await client.createVideoGeneration({
 			model: 'doubao-seedance-2-fast',
 			content: [
@@ -354,7 +365,7 @@ describe('Video Generation methods', () => {
 		expect((req.body as any).content[1].role).toBe('first_frame');
 		expect((req.body as any).resolution).toBe('720p');
 		expect((req.body as any).duration).toBe(5);
-		expect(result).toEqual({taskId: 'vt-1', status: 'pending'});
+		expect(result).toEqual({taskId: 'vt-1', status: 'generating'});
 	});
 
 	it('getVideoGenerationTask sends GET /v1/video-generation/tasks/:taskId', async () => {
@@ -477,21 +488,46 @@ Insert after the Music section (after line 101) and before the "List by product"
 | `getVideoGenerationTask(taskId)`          | Get video generation task status and details         |
 | `listVideoGenerationTasks(params?)`       | List video generation tasks with optional filtering  |
 | `estimateVideoGenerationCredits(params)`  | Estimate credit cost before generating               |
+
+**Usage example:**
+
+```ts
+// Estimate credits
+const estimate = await client.estimateVideoGenerationCredits({
+  model: 'doubao-seedance-2-fast',
+  resolution: '720p',
+  duration: 5,
+});
+console.log(`Estimated credits: ${estimate.credits}`);
+
+// Create a video generation task
+const task = await client.createVideoGeneration({
+  model: 'doubao-seedance-2-fast',
+  content: [
+    { type: 'text', text: '一只猫在花园里奔跑' },
+    { type: 'image_url', image_url: { url: 'https://example.com/cat.jpg' }, role: 'first_frame' },
+  ],
+  resolution: '720p',
+  duration: 5,
+});
+console.log(`Task created: ${task.taskId}`);
+
+// Poll task status
+const detail = await client.getVideoGenerationTask(task.taskId);
+if (detail.status === 'success') {
+  console.log(`Video URL: ${detail.videoUrl}`);
+}
+
+// List all tasks
+const list = await client.listVideoGenerationTasks({ page: 1, pageSize: 10 });
+```
 ```
 
-- [ ] **Step 2: Add usage example to the Examples table**
-
-Insert a new row in the Examples table (after the music row on line 48):
-
-```markdown
-| [`examples/video-generation.ts`](examples/video-generation.ts) | Video generation with SeeDance2.0      |
-```
-
-- [ ] **Step 3: Commit**
+- [ ] **Step 2: Commit**
 
 ```bash
 git add README.md
-git commit -m "docs: add video generation API section to README"
+git commit -m "docs: add video generation API section and usage example to README"
 ```
 
 ---
