@@ -46,6 +46,7 @@ const client = new ListenHubClient({
 | [`examples/create-slides.ts`](examples/create-slides.ts)                   | Slide deck presentation                  |
 | [`examples/create-ai-image.ts`](examples/create-ai-image.ts)               | AI image generation from a prompt        |
 | [`examples/music.ts`](examples/music.ts)                                   | Music generation and cover from audio    |
+| [`examples/video-generation.ts`](examples/video-generation.ts)             | Video generation with SeeDance2.0        |
 
 ## Documentation
 
@@ -108,39 +109,6 @@ const client = new ListenHubClient({
 | `getVideoGenerationTask(taskId)`         | Get video generation task status and details        |
 | `listVideoGenerationTasks(params?)`      | List video generation tasks with optional filtering |
 | `estimateVideoGenerationCredits(params)` | Estimate credit cost before generating              |
-
-**Usage example:**
-
-```ts
-// Estimate credits
-const estimate = await client.estimateVideoGenerationCredits({
-	model: 'doubao-seedance-2-fast',
-	resolution: '720p',
-	duration: 5,
-});
-console.log(`Estimated credits: ${estimate.credits}`);
-
-// Create a video generation task
-const task = await client.createVideoGeneration({
-	model: 'doubao-seedance-2-fast',
-	content: [
-		{type: 'text', text: '一只猫在花园里奔跑'},
-		{type: 'image_url', image_url: {url: 'https://example.com/cat.jpg'}, role: 'first_frame'},
-	],
-	resolution: '720p',
-	duration: 5,
-});
-console.log(`Task created: ${task.taskId}`);
-
-// Poll task status
-const detail = await client.getVideoGenerationTask(task.taskId);
-if (detail.status === 'success') {
-	console.log(`Video URL: ${detail.videoUrl}`);
-}
-
-// List all tasks
-const list = await client.listVideoGenerationTasks({page: 1, pageSize: 10});
-```
 
 ### List by product
 
