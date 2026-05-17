@@ -46,6 +46,7 @@ const client = new ListenHubClient({
 | [`examples/create-slides.ts`](examples/create-slides.ts)                   | Slide deck presentation                  |
 | [`examples/create-ai-image.ts`](examples/create-ai-image.ts)               | AI image generation from a prompt        |
 | [`examples/music.ts`](examples/music.ts)                                   | Music generation and cover from audio    |
+| [`examples/video-generation.ts`](examples/video-generation.ts)             | Video generation with SeeDance2.0        |
 
 ## Documentation
 
@@ -99,6 +100,15 @@ const client = new ListenHubClient({
 | `createMusicCover(params)`    | Create a cover from a reference audio URL |
 | `getMusicTask(taskId)`        | Get music task status and details         |
 | `listMusicTasks(params?)`     | List music tasks with optional filtering  |
+
+### Video Generation (SeeDance2.0)
+
+| Method                                   | Description                                         |
+| ---------------------------------------- | --------------------------------------------------- |
+| `createVideoGeneration(params)`          | Create a video generation task                      |
+| `getVideoGenerationTask(taskId)`         | Get video generation task status and details        |
+| `listVideoGenerationTasks(params?)`      | List video generation tasks with optional filtering |
+| `estimateVideoGenerationCredits(params)` | Estimate credit cost before generating              |
 
 ### List by product
 
