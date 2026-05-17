@@ -109,9 +109,12 @@ export interface VideoGenerationTaskDetail {
   status: VideoGenerationTaskStatus;
   model: string;
   params: {
+    content: VideoContentItem[];
     resolution: string;
     ratio: string;
     duration: number;
+    generateAudio: boolean;
+    seed: number;
   };
   videoUrl?: string;
   providerVideoUrl?: string;
@@ -149,7 +152,21 @@ export interface EstimateVideoGenerationCreditsResponse {
   tokens: number;
   credits: number;
 }
+
+// --- 错误码 ---
+
+export type VideoGenerationErrorCode =
+  | 32001  // TASK_NOT_FOUND
+  | 32002  // NOT_ENOUGH_CREDIT
+  | 32003  // PROVIDER_ERROR
+  | 32004  // INVALID_PARAMS
+  | 32005  // TASK_ACCESS_DENIED
+  | 32006  // AUDIO_REQUIRES_VISUAL
+  | 32007  // RATE_LIMITED
+  | 32008; // CONTENT_MODERATION
 ```
+
+SDK 使用现有的 `ListenHubError` 类统一处理错误（`error.code` 为字符串形式的数字），同时导出 `VideoGenerationErrorCode` 类型，方便消费者做类型安全的错误码判断。
 
 ## SDK Client 方法
 
@@ -189,6 +206,7 @@ export type {
   VideoGenerationResolution,
   VideoGenerationRatio,
   VideoGenerationTaskStatus,
+  VideoGenerationErrorCode,
   VideoContentRole,
   VideoContentText,
   VideoContentImageUrl,
@@ -208,9 +226,9 @@ export type {
 
 ## 文档
 
-在 README.md 的 "Usage" 部分新增 Video Generation 段落：
+在 README.md 的 "Usage" 部分新增 Video Generation 段落，内容如下：
 
-```markdown
+````markdown
 ### Video Generation (SeeDance2.0)
 
 ```typescript
@@ -243,14 +261,15 @@ if (detail.status === 'success') {
 // 列出所有任务
 const list = await client.listVideoGenerationTasks({ page: 1, pageSize: 10 });
 ```
-```
+````
 
 ## 测试
 
-新增 `tests/video-generation.test.ts`，与现有 music 测试模式对齐：
+新增 `tests/unit/video-generation.test.ts`，与现有 `tests/unit/episodes.test.ts` 的 mock fetch 模式对齐：
 - 类型正确性测试（确保类型编译通过）
 - 方法存在性断言
 - 请求参数构造验证（确保参数正确传递到 HTTP 层）
+- 响应反序列化验证
 
 ## 验收标准
 
