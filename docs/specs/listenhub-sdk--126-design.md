@@ -121,6 +121,7 @@ export interface VideoGenerationTaskDetail {
   duration?: number;
   resolution?: string;
   ratio?: string;
+  seed?: number;
   creditCharged: number;
   createdAt: number;
   updatedAt: number;
@@ -137,6 +138,7 @@ export interface VideoGenerationTaskListItem {
   };
   videoUrl?: string;
   providerVideoUrl?: string;
+  seed?: number;
   creditCharged: number;
   createdAt: number;
 }
