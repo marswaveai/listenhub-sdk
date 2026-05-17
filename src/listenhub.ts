@@ -46,6 +46,15 @@ import type {
 	ListLyricsTasksParams,
 	ListLyricsTasksResponse,
 } from './types/lyrics.js';
+import type {
+	CreateVideoGenerationParams,
+	CreateVideoGenerationResponse,
+	VideoGenerationTaskDetail,
+	ListVideoGenerationTasksParams,
+	ListVideoGenerationTasksResponse,
+	EstimateVideoGenerationCreditsParams,
+	EstimateVideoGenerationCreditsResponse,
+} from './types/video-generation.js';
 
 export class ListenHubClient {
 	public readonly api: KyInstance;
@@ -261,5 +270,27 @@ export class ListenHubClient {
 				searchParams: params as Record<string, string | number | boolean>,
 			})
 			.json<ListLyricsTasksResponse>();
+	}
+
+	// --- Video Generation ---
+
+	async createVideoGeneration(params: CreateVideoGenerationParams): Promise<CreateVideoGenerationResponse> {
+		return this.api.post('v1/video-generation/generate', {json: params}).json<CreateVideoGenerationResponse>();
+	}
+
+	async getVideoGenerationTask(taskId: string): Promise<VideoGenerationTaskDetail> {
+		return this.api.get(`v1/video-generation/tasks/${taskId}`).json<VideoGenerationTaskDetail>();
+	}
+
+	async listVideoGenerationTasks(params: ListVideoGenerationTasksParams = {}): Promise<ListVideoGenerationTasksResponse> {
+		return this.api
+			.get('v1/video-generation/tasks', {
+				searchParams: params as Record<string, string | number | boolean>,
+			})
+			.json<ListVideoGenerationTasksResponse>();
+	}
+
+	async estimateVideoGenerationCredits(params: EstimateVideoGenerationCreditsParams): Promise<EstimateVideoGenerationCreditsResponse> {
+		return this.api.post('v1/video-generation/estimate-credits', {json: params}).json<EstimateVideoGenerationCreditsResponse>();
 	}
 }
