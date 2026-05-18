@@ -66,18 +66,25 @@ const client = new ListenHubClient({
 
 ## Examples
 
-| File                                                                       | Description                                 |
-| -------------------------------------------------------------------------- | ------------------------------------------- |
-| [`examples/openapi-basic.ts`](examples/openapi-basic.ts)                   | OpenAPI Key auth, create flow speech & poll |
-| [`examples/basic.ts`](examples/basic.ts)                                   | Static token, API calls, error handling     |
-| [`examples/oauth-login.ts`](examples/oauth-login.ts)                       | Browser-based OAuth login flow              |
-| [`examples/create-podcast.ts`](examples/create-podcast.ts)                 | Create a duo podcast and poll for result    |
-| [`examples/create-tts.ts`](examples/create-tts.ts)                         | Text-to-speech from plain text              |
-| [`examples/create-explainer-video.ts`](examples/create-explainer-video.ts) | Explainer video from a URL                  |
-| [`examples/create-slides.ts`](examples/create-slides.ts)                   | Slide deck presentation                     |
-| [`examples/create-ai-image.ts`](examples/create-ai-image.ts)               | AI image generation from a prompt           |
-| [`examples/music.ts`](examples/music.ts)                                   | Music generation and cover from audio       |
-| [`examples/video-generation.ts`](examples/video-generation.ts)             | Video generation with SeeDance2.0           |
+### OpenAPI Key
+
+| File                                                     | Description                                 |
+| -------------------------------------------------------- | ------------------------------------------- |
+| [`examples/openapi-basic.ts`](examples/openapi-basic.ts) | Create flow speech, poll, and check credits |
+
+### OAuth (ListenHubClient)
+
+| File                                                                       | Description                              |
+| -------------------------------------------------------------------------- | ---------------------------------------- |
+| [`examples/oauth-login.ts`](examples/oauth-login.ts)                       | Browser-based OAuth login flow           |
+| [`examples/basic.ts`](examples/basic.ts)                                   | Checkin, API key, error handling         |
+| [`examples/create-podcast.ts`](examples/create-podcast.ts)                 | Create a duo podcast and poll for result |
+| [`examples/create-tts.ts`](examples/create-tts.ts)                         | Text-to-speech from plain text           |
+| [`examples/create-explainer-video.ts`](examples/create-explainer-video.ts) | Explainer video from a URL               |
+| [`examples/create-slides.ts`](examples/create-slides.ts)                   | Slide deck presentation                  |
+| [`examples/create-ai-image.ts`](examples/create-ai-image.ts)               | AI image generation from a prompt        |
+| [`examples/music.ts`](examples/music.ts)                                   | Music generation and cover from audio    |
+| [`examples/video-generation.ts`](examples/video-generation.ts)             | Video generation with SeeDance2.0        |
 
 ## Documentation
 
