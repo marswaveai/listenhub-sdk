@@ -14,6 +14,25 @@ npm i @marswave/listenhub-sdk
 
 ## Quick start
 
+### OpenAPI Key (recommended for server-side)
+
+No OAuth flow required — just pass your API Key:
+
+```ts
+import {OpenAPIClient} from '@marswave/listenhub-sdk';
+
+const client = new OpenAPIClient({apiKey: 'lh_sk_...'});
+// or set LISTENHUB_API_KEY env var and call new OpenAPIClient()
+
+const {items: speakers} = await client.listSpeakers({language: 'en'});
+const {episodeId} = await client.createFlowSpeech({
+	sources: [{type: 'text', content: 'Hello world'}],
+	speakers: [{speakerId: speakers[0].speakerId}],
+});
+```
+
+### OAuth (for client-side apps)
+
 Clone the repo and run the OAuth login example — it opens a browser, handles the callback, and prints your tokens:
 
 ```sh
@@ -25,21 +44,40 @@ npx tsx examples/oauth-login.ts
 
 ## Client options
 
+The SDK provides two clients for different auth modes:
+
 ```ts
+// OpenAPI Key — server-side, no user login required
+const openapi = new OpenAPIClient({
+	apiKey: 'lh_sk_...', // or LISTENHUB_API_KEY env var
+	baseURL: 'https://api.marswave.ai/openapi', // or LISTENHUB_OPENAPI_URL env var
+	timeout: 60_000,
+	maxRetries: 2,
+});
+
+// OAuth access token — client-side, user login required
 const client = new ListenHubClient({
 	accessToken: 'token', // static string or () => string | undefined
 	baseURL: 'https://api.listenhub.ai/api',
-	timeout: 30_000, // request timeout in ms
-	maxRetries: 2, // max retries on 429 (default: 2)
+	timeout: 30_000,
+	maxRetries: 2,
 });
 ```
 
 ## Examples
 
+### OpenAPI Key
+
+| File                                                     | Description                                 |
+| -------------------------------------------------------- | ------------------------------------------- |
+| [`examples/openapi-basic.ts`](examples/openapi-basic.ts) | Create flow speech, poll, and check credits |
+
+### OAuth (ListenHubClient)
+
 | File                                                                       | Description                              |
 | -------------------------------------------------------------------------- | ---------------------------------------- |
-| [`examples/basic.ts`](examples/basic.ts)                                   | Static token, API calls, error handling  |
 | [`examples/oauth-login.ts`](examples/oauth-login.ts)                       | Browser-based OAuth login flow           |
+| [`examples/basic.ts`](examples/basic.ts)                                   | Checkin, API key, error handling         |
 | [`examples/create-podcast.ts`](examples/create-podcast.ts)                 | Create a duo podcast and poll for result |
 | [`examples/create-tts.ts`](examples/create-tts.ts)                         | Text-to-speech from plain text           |
 | [`examples/create-explainer-video.ts`](examples/create-explainer-video.ts) | Explainer video from a URL               |
@@ -142,6 +180,79 @@ const client = new ListenHubClient({
 ```ts
 const user = await client.api.get('v1/users/me').json();
 ```
+
+## OpenAPIClient API
+
+The `OpenAPIClient` provides access to all OpenAPI endpoints using API Key authentication.
+
+### Speakers
+
+| Method                  | Description                         |
+| ----------------------- | ----------------------------------- |
+| `listSpeakers(params?)` | List available speakers by language |
+
+### Flow Speech
+
+| Method                                      | Description                         |
+| ------------------------------------------- | ----------------------------------- |
+| `createFlowSpeech(params)`                  | Create a flow speech episode        |
+| `getFlowSpeech(episodeId)`                  | Get flow speech status and details  |
+| `getFlowSpeechTextStream(episodeId, event)` | Stream script or outline text (SSE) |
+| `createFlowSpeechTTS(params)`               | Create flow speech from scripts     |
+
+### Podcast
+
+| Method                                   | Description                          |
+| ---------------------------------------- | ------------------------------------ |
+| `createPodcast(params)`                  | Create a podcast episode             |
+| `getPodcast(episodeId)`                  | Get podcast status and details       |
+| `getPodcastTextStream(episodeId, event)` | Stream script or outline text (SSE)  |
+| `createPodcastTextContent(params)`       | Create text-only content (no audio)  |
+| `generatePodcastAudio(episodeId)`        | Generate audio for text-only episode |
+
+### TTS
+
+| Method                | Description                             |
+| --------------------- | --------------------------------------- |
+| `speech(params)`      | Multi-speaker speech, returns audio URL |
+| `tts(params)`         | Single-voice TTS, returns audio stream  |
+| `audioSpeech(params)` | OpenAI-compatible TTS, returns stream   |
+
+### Storybook
+
+| Method                              | Description                   |
+| ----------------------------------- | ----------------------------- |
+| `createStorybook(params)`           | Create a storybook episode    |
+| `getStorybook(episodeId)`           | Get storybook details         |
+| `generateStorybookVideo(episodeId)` | Generate video from storybook |
+
+### Image
+
+| Method                | Description                          |
+| --------------------- | ------------------------------------ |
+| `createImage(params)` | Generate an image (google or openai) |
+
+### Video Generation
+
+| Method                              | Description                            |
+| ----------------------------------- | -------------------------------------- |
+| `createVideoGeneration(params)`     | Create a video generation task         |
+| `getVideoGenerationTask(taskId)`    | Get task status and video URL          |
+| `listVideoGenerationTasks(params?)` | List tasks with optional filtering     |
+| `estimateVideoCredits(params)`      | Estimate credit cost before generating |
+
+### Content Extract
+
+| Method                         | Description                |
+| ------------------------------ | -------------------------- |
+| `createContentExtract(params)` | Extract content from a URL |
+| `getContentExtract(taskId)`    | Get extraction result      |
+
+### User
+
+| Method              | Description                            |
+| ------------------- | -------------------------------------- |
+| `getSubscription()` | Get subscription and credit usage info |
 
 ## Rate limiting
 
