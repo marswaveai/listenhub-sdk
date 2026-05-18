@@ -69,7 +69,7 @@ async (_request, _options, response) => {
 
 改动点：
 
-1. 新增 `DEFAULT_OPENAPI_BASE_URL` 常量：`https://api.listenhub.ai/openapi`
+1. 新增 `DEFAULT_OPENAPI_BASE_URL` 常量：`https://api.marswave.ai/openapi`
 2. 在 `createHttpClient` 函数入口**一次性解析** `effectiveApiKey`，后续 baseURL 选择和 header 注入使用同一个值：
    ```typescript
    const effectiveApiKey = opts.apiKey || process.env['LISTENHUB_API_KEY'];
@@ -113,11 +113,21 @@ export interface OpenAPICreateTextContentResponse { episodeId: string; message: 
 // --- Flow Speech ---
 export interface OpenAPICreateFlowSpeechParams { sources: Array<{ type: 'text' | 'url'; content?: string; uri?: string }>; speakers: Array<{ speakerId: string }>; language?: string; mode?: 'smart' | 'direct' }
 export interface OpenAPICreateFlowSpeechTTSParams { scripts: Array<{ content: string; speakerId: string }>; title?: string }
-export interface OpenAPIFlowSpeechDetail { episodeId: string; createdAt: number; processStatus: string; ... }
+export interface OpenAPIFlowSpeechDetail {
+  episodeId: string; createdAt: number; processStatus: string; message?: string; failCode?: number; completedTime?: number;
+  title?: string; outline?: string; cover?: string; audioUrl?: string; audioStreamUrl?: string; subtitlesUrl?: string; scripts?: string;
+  sourceProcessResult?: { content: string; references?: Array<{ type: string; urlCitation?: { title: string; url: string; favicon: string } }> }
+}
 
 // --- Podcast ---
 export interface OpenAPICreatePodcastParams { query?: string; sources?: Array<{ type: 'text' | 'url'; content: string }>; speakers: Array<{ speakerId: string }>; language?: string; mode?: string }
-export interface OpenAPIPodcastDetail { episodeId: string; createdAt: number; processStatus: string; contentStatus?: string; ... }
+export interface OpenAPIPodcastDetail {
+  episodeId: string; createdAt: number; processStatus: string; contentStatus?: string; message?: string; failCode?: number;
+  completedTime?: number; credits?: number; title?: string; outline?: string; cover?: string;
+  audioUrl?: string; audioStreamUrl?: string; subtitlesUrl?: string;
+  scripts?: Array<{ speakerId: string; speakerName: string; content: string }>;
+  sourceProcessResult?: { content: string; references?: Array<{ type: string; urlCitation?: { title: string; url: string; favicon: string } }> }
+}
 export interface OpenAPIGenerateAudioParams { scripts?: Array<{ content: string; speakerId: string }> }
 export interface OpenAPIGenerateAudioResponse { success: boolean; message: string; episodeId: string; status: string }
 
@@ -128,19 +138,53 @@ export interface OpenAPITTSParams { input: string; voice: string; response_forma
 
 // --- Storybook ---
 export interface OpenAPICreateStorybookParams { sources: Array<{ type: 'text' | 'url'; content: string }>; speakers?: Array<{ speakerId: string }>; skipAudio?: boolean; style?: string; language?: string; mode?: 'info' | 'story' | 'slides' }
-export interface OpenAPIStorybookDetail { episodeId: string; createdAt: number; processStatus: string; pages?: Array<{ text?: string; pageNumber?: number; imageUrl?: string; audioTimestamp?: number }>; videoUrl?: string; videoStatus?: string; ... }
+export interface OpenAPIStorybookDetail {
+  episodeId: string; createdAt: number; mode: string; processStatus: string; message?: string; failCode?: number;
+  completedTime?: number; credits?: number; title?: string; cover?: string;
+  audioUrl?: string; audioDuration?: number; videoUrl?: string; videoStatus?: 'not_generated' | 'pending' | 'success' | 'fail';
+  pages?: Array<{ text: string; pageNumber: number; imageUrl: string; audioTimestamp: number }>;
+  sourceProcessResult?: { query: string; content: string; imageSources?: string[] }
+}
 
 // --- Image ---
-export interface OpenAPICreateImageParams { provider: string; model?: string; prompt: string; referenceImages?: ...; imageConfig?: { imageSize?: string; aspectRatio?: string } }
-export interface OpenAPICreateImageResponse { ... }
+export interface OpenAPIImageReferenceFileData { fileUri: string; mimeType: string }
+export interface OpenAPIImageReferenceInlineData { data: string; mimeType: string }
+export interface OpenAPICreateImageParams {
+  provider: string; model?: string; prompt: string;
+  referenceImages?: Array<{ fileData?: OpenAPIImageReferenceFileData; inlineData?: OpenAPIImageReferenceInlineData }>;
+  imageConfig?: { imageSize?: '1K' | '2K' | '4K'; aspectRatio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' }
+}
+// Image endpoint returns raw provider JSON (no envelope). Shape depends on provider:
+// Gemini/GPT-Image: { candidates: Array<{ content: { parts: Array<{ inlineData: { mimeType: string; data: string } }> } }>, usageMetadata?: {...} }
+export type OpenAPICreateImageResponse = Record<string, unknown>
 
 // --- Video Generation ---
-export interface OpenAPICreateVideoGenerationParams { model?: string; content: Array<...>; resolution?: string; ratio?: string; duration?: number; generateAudio?: boolean; seed?: number; inputVideoDuration?: number }
-export interface OpenAPIVideoGenerationTaskDetail { ... }
-export interface OpenAPIListVideoGenerationTasksParams { page?: number; pageSize?: number; status?: string }
-export interface OpenAPIListVideoGenerationTasksResponse { ... }
-export interface OpenAPIEstimateVideoCreditsParams { model: string; resolution: string; duration: number; hasVideoInput?: boolean; inputVideoDuration?: number; ratio?: string }
-export interface OpenAPIEstimateVideoCreditsResponse { ... }
+export type VideoGenerationTaskStatus = 'pending' | 'generating' | 'uploading' | 'success' | 'failed'
+export interface OpenAPICreateVideoGenerationParams {
+  model?: 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast';
+  content: Array<
+    | { type: 'text'; text: string }
+    | { type: 'image_url'; image_url: { url: string }; role: 'first_frame' | 'last_frame' | 'reference_image' }
+    | { type: 'video_url'; video_url: { url: string }; role: 'reference_video' }
+    | { type: 'audio_url'; audio_url: { url: string }; role: 'reference_audio' }
+  >;
+  resolution?: '480p' | '720p' | '1080p'; ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9';
+  duration?: number; generateAudio?: boolean; seed?: number; inputVideoDuration?: number
+}
+export interface OpenAPICreateVideoGenerationResponse { taskId: string; status: VideoGenerationTaskStatus }
+export interface OpenAPIVideoGenerationTaskDetail {
+  id: string; status: VideoGenerationTaskStatus; model: string;
+  params: { content: OpenAPICreateVideoGenerationParams['content']; resolution: string; ratio: string; duration: number; generateAudio: boolean; seed: number };
+  videoUrl?: string; providerVideoUrl?: string; duration?: number; resolution?: string; ratio?: string; seed?: number;
+  creditCharged: number; createdAt: number; updatedAt: number
+}
+export interface OpenAPIListVideoGenerationTasksParams { page?: number; pageSize?: number; status?: VideoGenerationTaskStatus }
+export interface OpenAPIListVideoGenerationTasksResponse {
+  items: Array<{ id: string; status: VideoGenerationTaskStatus; model: string; params: { resolution: string; ratio: string; duration: number }; videoUrl?: string; providerVideoUrl?: string; seed?: number; creditCharged: number; createdAt: number }>;
+  page: number; pageSize: number; total: number
+}
+export interface OpenAPIEstimateVideoCreditsParams { model: 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast'; resolution: '480p' | '720p' | '1080p'; duration: number; hasVideoInput?: boolean; inputVideoDuration?: number; ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' }
+export interface OpenAPIEstimateVideoCreditsResponse { tokens: number; credits: number }
 
 // --- Content Extract ---
 export interface OpenAPICreateContentExtractParams { source: { type: 'url'; uri: string }; options?: { summarize?: boolean; maxLength?: number; twitter?: { count?: number } } }
@@ -285,7 +329,7 @@ async openapiGetSubscription(): Promise<OpenAPISubscriptionInfo> {
    - `effectiveApiKey` 在构造时固化，后续 env 变更不影响已有实例
 
 2. **baseURL 优先级**
-   - 有 `apiKey` 无 `baseURL` 无 env → 请求发到 `https://api.listenhub.ai/openapi/v1/...`
+   - 有 `apiKey` 无 `baseURL` 无 env → 请求发到 `https://api.marswave.ai/openapi/v1/...`
    - 有 `apiKey` + 显式 `baseURL` → 用显式值（staging 场景）
    - 有 `apiKey` + `LISTENHUB_API_URL` env → env 优先于 mode default
    - 仅 `accessToken` → 保持 `/api/v1/...`
@@ -351,3 +395,18 @@ Step 6-7 (tests)  ←  验证 Step 1-5
 - 修改代码：~30 行（client.ts + types/client.ts）
 - 新增测试：~250 行
 - 无 breaking change，minor 版本发布
+
+---
+
+## 验证命令（PR 提交前必须全部通过）
+
+```bash
+pnpm run lint          # ESLint 检查（无 error 即通过）
+pnpm run check         # TypeScript 类型检查（tsc --noEmit）
+pnpm test              # Vitest 单元测试（全部通过、覆盖率不降）
+```
+
+预期结果：
+- `pnpm run lint` — 0 errors, 0 warnings
+- `pnpm run check` — 无输出（exit 0）
+- `pnpm test` — 所有现有测试 + 新增 OpenAPI 测试全部 PASS

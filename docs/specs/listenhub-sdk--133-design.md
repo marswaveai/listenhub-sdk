@@ -74,7 +74,7 @@ export interface ClientOptions {
   accessToken?: string | (() => string | undefined);
   /** OpenAPI Key（新增，调 /openapi 前缀路由） */
   apiKey?: string;
-  /** 基础 URL，默认 https://api.listenhub.ai/api（内部）或 https://api.listenhub.ai/openapi（OpenAPI） */
+  /** 基础 URL，默认 https://api.marswave.ai/api（内部）或 https://api.marswave.ai/openapi（OpenAPI） */
   baseURL?: string;
   timeout?: number;
   maxRetries?: number;
@@ -84,19 +84,22 @@ export interface ClientOptions {
 **认证优先级**: `apiKey` > `accessToken`。两者同时提供时以 `apiKey` 为准。
 
 **baseURL 自动切换**:
-- 提供 `apiKey` 且未显式设置 `baseURL` → 默认 `https://api.listenhub.ai/openapi`
-- 提供 `accessToken` 且未显式设置 `baseURL` → 默认 `https://api.listenhub.ai/api`（现有行为）
+- 提供 `apiKey` 且未显式设置 `baseURL` → 默认 `https://api.marswave.ai/openapi`
+- 提供 `accessToken` 且未显式设置 `baseURL` → 默认 `https://api.marswave.ai/api`（现有行为）
 - 显式设置 `baseURL` → 使用用户提供的值
 
 #### 2. Header 注入
 
-在 `createHttpClient` 的 `beforeRequest` hook 中：
+在 `createHttpClient` 入口一次性解析 `effectiveApiKey`（与 baseURL 选择使用同一值），`beforeRequest` hook 使用闭包中已解析的值：
 
 ```typescript
+const effectiveApiKey = opts.apiKey || process.env['LISTENHUB_API_KEY'];
+
+// ... beforeRequest hook:
 beforeRequest: [
   async (request) => {
-    if (opts.apiKey) {
-      request.headers.set('Authorization', `Bearer ${opts.apiKey}`);
+    if (effectiveApiKey) {
+      request.headers.set('Authorization', `Bearer ${effectiveApiKey}`);
     } else {
       const token = typeof opts.accessToken === 'function'
         ? opts.accessToken()
@@ -108,6 +111,8 @@ beforeRequest: [
   },
 ],
 ```
+
+**关键约束**: `effectiveApiKey` 和 baseURL 在同一时刻从同一来源解析，保证一个 client 实例绑定一种认证模式，不因后续 env 变化而漂移。
 
 #### 3. 新增 OpenAPI 专用方法
 
