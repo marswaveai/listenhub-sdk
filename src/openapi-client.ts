@@ -109,7 +109,11 @@ export class OpenAPIClient {
 
 	// --- Speakers ---
 	async listSpeakers(params?: OpenAPIListSpeakersParams): Promise<OpenAPIListSpeakersResponse> {
-		return this.api.get('v1/speakers/list', {searchParams: params as any}).json();
+		return this.api
+			.get('v1/speakers/list', {
+				searchParams: params as Record<string, string | number | boolean | undefined>,
+			})
+			.json();
 	}
 
 	// --- Flow Speech ---
@@ -195,7 +199,11 @@ export class OpenAPIClient {
 	async listVideoGenerationTasks(
 		params?: OpenAPIListVideoGenerationTasksParams,
 	): Promise<OpenAPIListVideoGenerationTasksResponse> {
-		return this.api.get('v1/video-generation/tasks', {searchParams: params as any}).json();
+		return this.api
+			.get('v1/video-generation/tasks', {
+				searchParams: params as Record<string, string | number | boolean | undefined>,
+			})
+			.json();
 	}
 	async estimateVideoCredits(
 		params: OpenAPIEstimateVideoCreditsParams,
