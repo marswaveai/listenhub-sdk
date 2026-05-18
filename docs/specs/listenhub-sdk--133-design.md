@@ -64,138 +64,147 @@ API Key 认证失败返回标准 BizError 格式：
 
 ## 设计方案
 
-### 核心改动：双模式认证 + OpenAPI 基路径
+### 核心架构：双 Client 实例，完全隔离
 
-#### 1. 扩展 ClientOptions
+平台登录调用（accessToken → `/api`）和 OpenAPI Key 调用（apiKey → `/openapi`）是两种完全独立的模式。SDK 通过独立的 `OpenAPIClient` 类实现隔离，两者互不影响：
 
 ```typescript
-export interface ClientOptions {
-  /** OAuth access token（现有方式，调内部 API） */
-  accessToken?: string | (() => string | undefined);
-  /** OpenAPI Key（新增，调 /openapi 前缀路由） */
+import { ListenHubClient, OpenAPIClient } from '@marswave/listenhub-sdk';
+
+// 平台登录调用（现有方式，不变）
+const client = new ListenHubClient({ accessToken: 'eyJ...' });
+client.createPodcast(...);
+
+// OpenAPI Key 调用（新增，独立 client）
+const openapi = new OpenAPIClient({ apiKey: 'lh_sk_xxx_yyy' });
+openapi.createFlowSpeech(...);
+openapi.listSpeakers();
+```
+
+#### 1. 新增 OpenAPIClientOptions
+
+```typescript
+export interface OpenAPIClientOptions {
+  /** OpenAPI Key（format: lh_sk_<keyId>_<secret>）。未传入时从 LISTENHUB_API_KEY 环境变量读取。 */
   apiKey?: string;
-  /** 基础 URL，默认 https://api.marswave.ai/api（内部）或 https://api.marswave.ai/openapi（OpenAPI） */
+  /** 基础 URL，默认 https://api.marswave.ai/openapi */
   baseURL?: string;
   timeout?: number;
   maxRetries?: number;
 }
 ```
 
-**认证优先级**: `apiKey` > `accessToken`。两者同时提供时以 `apiKey` 为准。
+**现有 `ClientOptions` 不变**，不新增 `apiKey` 字段，保持 `ListenHubClient` 纯粹面向平台登录场景。
 
-**baseURL 自动切换**:
-- 提供 `apiKey` 且未显式设置 `baseURL` → 默认 `https://api.marswave.ai/openapi`
-- 提供 `accessToken` 且未显式设置 `baseURL` → 默认 `https://api.marswave.ai/api`（现有行为）
-- 显式设置 `baseURL` → 使用用户提供的值
+#### 2. OpenAPIClient 认证
 
-#### 2. Header 注入
-
-在 `createHttpClient` 入口一次性解析 `effectiveApiKey`（与 baseURL 选择使用同一值），`beforeRequest` hook 使用闭包中已解析的值：
+`OpenAPIClient` 内部创建独立的 HTTP client 实例，固定 baseURL 为 `https://api.marswave.ai/openapi`：
 
 ```typescript
 const effectiveApiKey = opts.apiKey || process.env['LISTENHUB_API_KEY'];
 
-// ... beforeRequest hook:
+if (!effectiveApiKey) {
+  throw new Error('OpenAPIClient requires an apiKey (or set LISTENHUB_API_KEY env var)');
+}
+
+// beforeRequest hook:
 beforeRequest: [
   async (request) => {
-    if (effectiveApiKey) {
-      request.headers.set('Authorization', `Bearer ${effectiveApiKey}`);
-    } else {
-      const token = typeof opts.accessToken === 'function'
-        ? opts.accessToken()
-        : opts.accessToken;
-      if (token) {
-        request.headers.set('Authorization', `Bearer ${token}`);
-      }
-    }
+    request.headers.set('Authorization', `Bearer ${effectiveApiKey}`);
   },
 ],
 ```
 
-**关键约束**: `effectiveApiKey` 和 baseURL 在同一时刻从同一来源解析，保证一个 client 实例绑定一种认证模式，不因后续 env 变化而漂移。
+**与 ListenHubClient 的关键区别：**
+- `ListenHubClient` 走 `/api` + accessToken（现有行为零改动）
+- `OpenAPIClient` 走 `/openapi` + apiKey（新增，独立类）
+- 两者可同时实例化，互不影响
+- `LISTENHUB_API_KEY` 环境变量只影响 `OpenAPIClient`
 
-#### 3. 新增 OpenAPI 专用方法
+#### 3. OpenAPIClient 方法
 
-在 `ListenHubClient` 中新增覆盖 server 端所有 OpenAPI 接口的方法（与现有内部 API 方法并存）：
+`OpenAPIClient` 只暴露 OpenAPI 端可用的方法，命名不带 `openapi` 前缀（因为类本身已表明语境）：
 
 ```typescript
-// --- OpenAPI: Flow Speech ---
-async openapiCreateFlowSpeech(params: OpenAPICreateFlowSpeechParams): Promise<OpenAPICreateEpisodeResponse>
-async openapiGetFlowSpeech(episodeId: string): Promise<OpenAPIFlowSpeechDetail>
+class OpenAPIClient {
+  // --- Speakers ---
+  async listSpeakers(params?: ListSpeakersParams): Promise<ListSpeakersResponse>
 
-// --- OpenAPI: Podcast ---
-async openapiCreatePodcast(params: OpenAPICreatePodcastParams): Promise<OpenAPICreateEpisodeResponse>
-async openapiGetPodcast(episodeId: string): Promise<OpenAPIPodcastDetail>
-async openapiCreatePodcastTextContent(params: OpenAPICreatePodcastParams): Promise<OpenAPICreateEpisodeResponse>
-async openapiGeneratePodcastAudio(episodeId: string, params?: OpenAPIGenerateAudioParams): Promise<OpenAPIGenerateAudioResponse>
+  // --- Flow Speech ---
+  async createFlowSpeech(params: CreateFlowSpeechParams): Promise<CreateEpisodeResponse>
+  async getFlowSpeech(episodeId: string): Promise<FlowSpeechDetail>
+  async getFlowSpeechTextStream(episodeId: string, event: 'script' | 'outline'): Promise<Response>
+  async createFlowSpeechTTS(params: CreateFlowSpeechTTSParams): Promise<CreateEpisodeResponse>
 
-// --- OpenAPI: TTS ---
-async openapiSpeech(params: OpenAPISpeechParams): Promise<OpenAPISpeechResponse>
-async openapiTTS(params: OpenAPITTSParams): Promise<Response> // 流式二进制
+  // --- Podcast ---
+  async createPodcast(params: CreatePodcastParams): Promise<CreateEpisodeResponse>
+  async getPodcast(episodeId: string): Promise<PodcastDetail>
+  async getPodcastTextStream(episodeId: string, event: 'script' | 'outline'): Promise<Response>
+  async createPodcastTextContent(params: CreatePodcastParams): Promise<CreateTextContentResponse>
+  async generatePodcastAudio(episodeId: string, params?: GenerateAudioParams): Promise<GenerateAudioResponse>
 
-// --- OpenAPI: Storybook ---
-async openapiCreateStorybook(params: OpenAPICreateStorybookParams): Promise<OpenAPICreateEpisodeResponse>
-async openapiGetStorybook(episodeId: string): Promise<OpenAPIStorybookDetail>
-async openapiGenerateStorybookVideo(episodeId: string): Promise<{success: boolean}>
+  // --- TTS ---
+  async speech(params: SpeechParams): Promise<SpeechResponse>
+  async tts(params: TTSParams): Promise<Response>
+  async audioSpeech(params: TTSParams): Promise<Response>
 
-// --- OpenAPI: Image ---
-async openapiCreateImage(params: OpenAPICreateImageParams): Promise<OpenAPICreateImageResponse>
+  // --- Storybook ---
+  async createStorybook(params: CreateStorybookParams): Promise<CreateEpisodeResponse>
+  async getStorybook(episodeId: string): Promise<StorybookDetail>
+  async generateStorybookVideo(episodeId: string): Promise<{ success: boolean }>
 
-// --- OpenAPI: Video Generation ---
-async openapiCreateVideoGeneration(params: OpenAPICreateVideoGenerationParams): Promise<OpenAPICreateVideoGenerationResponse>
-async openapiGetVideoGenerationTask(taskId: string): Promise<OpenAPIVideoGenerationTaskDetail>
-async openapiListVideoGenerationTasks(params?: OpenAPIListVideoGenerationTasksParams): Promise<OpenAPIListVideoGenerationTasksResponse>
-async openapiEstimateVideoCredits(params: OpenAPIEstimateVideoCreditsParams): Promise<OpenAPIEstimateVideoCreditsResponse>
+  // --- Image ---
+  async createImage(params: CreateImageParams): Promise<CreateImageResponse>
 
-// --- OpenAPI: Content ---
-async openapiCreateContentExtract(params: OpenAPICreateContentExtractParams): Promise<{taskId: string}>
-async openapiGetContentExtract(taskId: string): Promise<OpenAPIContentExtractDetail>
+  // --- Video Generation ---
+  async createVideoGeneration(params: CreateVideoGenerationParams): Promise<CreateVideoGenerationResponse>
+  async getVideoGenerationTask(taskId: string): Promise<VideoGenerationTaskDetail>
+  async listVideoGenerationTasks(params?: ListVideoGenerationTasksParams): Promise<ListVideoGenerationTasksResponse>
+  async estimateVideoCredits(params: EstimateVideoCreditsParams): Promise<EstimateVideoCreditsResponse>
 
-// --- OpenAPI: User ---
-async openapiGetSubscription(): Promise<OpenAPISubscriptionInfo>
+  // --- Content Extract ---
+  async createContentExtract(params: CreateContentExtractParams): Promise<{ taskId: string }>
+  async getContentExtract(taskId: string): Promise<ContentExtractDetail>
 
-// --- OpenAPI: Speakers ---
-async openapiListSpeakers(params?: OpenAPIListSpeakersParams): Promise<OpenAPIListSpeakersResponse>
+  // --- User ---
+  async getSubscription(): Promise<SubscriptionInfo>
+}
 ```
 
 #### 4. 类型定义
 
-在 `src/types/` 下新增 `openapi.ts`，定义所有 OpenAPI 接口的参数和响应类型。类型命名以 `OpenAPI` 前缀区分。
-
-#### 5. 便捷工厂函数
-
-提供快捷创建方式：
+在 `src/types/openapi.ts` 中定义所有 OpenAPI 接口的参数和响应类型。类型命名不带 `OpenAPI` 前缀，而是通过模块导入路径区分：
 
 ```typescript
-import { ListenHubClient } from '@marswave/listenhub-sdk';
-
-// OpenAPI Key 模式（推荐给外部开发者）
-const client = new ListenHubClient({ apiKey: 'lh_sk_xxx_yyy' });
-
-// 现有 OAuth 模式（不变）
-const client = new ListenHubClient({ accessToken: 'eyJ...' });
+import type { CreateFlowSpeechParams, FlowSpeechDetail } from '@marswave/listenhub-sdk/types/openapi';
 ```
 
-#### 6. 环境变量支持
+#### 5. 环境变量
 
-```typescript
-const DEFAULT_API_KEY = process.env['LISTENHUB_API_KEY'];
-const DEFAULT_BASE_URL = process.env['LISTENHUB_API_URL'] || ...;
-```
+| 变量 | 用途 | 影响范围 |
+|------|------|---------|
+| `LISTENHUB_API_KEY` | OpenAPI Key fallback | 仅 `OpenAPIClient` |
+| `LISTENHUB_API_URL` | 自定义 base URL | 仅 `ListenHubClient`（现有行为） |
+| `LISTENHUB_OPENAPI_URL` | 自定义 OpenAPI base URL | 仅 `OpenAPIClient` |
 
-如果未传入 `apiKey` 参数，自动从 `LISTENHUB_API_KEY` 环境变量读取。
+#### 6. Envelope unwrap 兼容
+
+`OpenAPIClient` 的 HTTP client 需要处理两种响应格式：
+- 标准 envelope `{ code: 0, data: {...} }` — unwrap 为 data
+- 原始 JSON（如 image 接口代理 provider 响应）— 原样透传
+
+判断逻辑：仅当 JSON body 包含数字类型 `code` 字段时执行 envelope unwrap。
 
 ### 文件变更清单
 
 | 文件 | 改动 |
 |------|------|
-| `src/types/client.ts` | 新增 `apiKey` 字段 |
 | `src/types/openapi.ts` | **新增** — 所有 OpenAPI 类型定义 |
-| `src/client.ts` | 认证逻辑支持双模式 + baseURL 自动切换 |
-| `src/listenhub.ts` | 新增 `openapi*` 系列方法 |
-| `src/index.ts` | 导出新类型 |
-| `tests/unit/client.test.ts` | 新增 apiKey 认证测试 |
-| `tests/unit/openapi.test.ts` | **新增** — OpenAPI 方法单元测试 |
+| `src/openapi-client.ts` | **新增** — `OpenAPIClient` 类实现 |
+| `src/index.ts` | 导出 `OpenAPIClient` + 新类型 |
+| `tests/unit/openapi-client.test.ts` | **新增** — OpenAPIClient 单元测试 |
+
+**不改动**：`src/client.ts`、`src/listenhub.ts`、`src/types/client.ts`（ListenHubClient 完全不受影响）
 
 ### 不在本期范围
 
@@ -205,16 +214,17 @@ const DEFAULT_BASE_URL = process.env['LISTENHUB_API_URL'] || ...;
 
 ## 兼容性
 
-- **完全向后兼容**：现有 `accessToken` 方式不受影响
-- **零 breaking change**：`ClientOptions` 只新增可选字段
-- **npm semver**：可作为 minor 版本发布（0.0.7 或 0.1.0）
+- **完全向后兼容**：`ListenHubClient` 零改动，现有代码无需任何修改
+- **零 breaking change**：纯增量新增 `OpenAPIClient` 导出
+- **npm semver**：minor 版本发布
 
 ## 验收标准
 
-1. `new ListenHubClient({ apiKey: 'lh_sk_...' })` 能正确设置 Authorization header 并请求 `/openapi` 前缀路由
-2. 所有 `openapi*` 方法能正确调用对应的 server 端 OpenAPI 接口
-3. 429 响应自动重试机制在 OpenAPI 模式下同样生效
-4. 认证失败（无效 key、过期 key）能正确抛出 `ListenHubError`
-5. 环境变量 `LISTENHUB_API_KEY` 自动生效
-6. 单元测试覆盖认证逻辑和接口调用
-7. TypeScript 类型完整导出，IDE 补全可用
+1. `new OpenAPIClient({ apiKey: 'lh_sk_...' })` 能正确设置 Authorization header 并请求 `https://api.marswave.ai/openapi` 前缀路由
+2. `new ListenHubClient({ accessToken })` 行为完全不变，不受 `LISTENHUB_API_KEY` 环境变量影响
+3. 所有 `OpenAPIClient` 方法能正确调用对应的 server 端 OpenAPI 接口
+4. 429 响应自动重试机制生效
+5. 认证失败（无效 key、过期 key）正确抛出 `ListenHubError`
+6. 环境变量 `LISTENHUB_API_KEY` 作为 `OpenAPIClient` 的 fallback 生效
+7. 单元测试覆盖认证逻辑和接口调用
+8. TypeScript 类型完整导出，IDE 补全可用
