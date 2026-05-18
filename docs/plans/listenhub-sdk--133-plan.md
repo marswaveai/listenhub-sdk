@@ -21,7 +21,49 @@ export interface ClientOptions {
 
 ---
 
-### Step 2: 修改 HTTP Client 支持双模式认证
+### Step 2: 修改 HTTP Client — 双模式认证 + envelope unwrap 兼容
+
+**⚠️ 关键问题：`afterResponse` hook 的 envelope unwrap 对非包装 JSON 响应会误报错误。**
+
+Server 端大部分 OpenAPI 接口使用 `ctx.setSuccessRes(data)` 返回 `{ code: 0, message: "Success", data: {...} }` 包装格式。但 **image 接口** (`POST /v1/images/generation`) 直接代理上游 provider 原始 JSON 到 `ctx.body`（如 `{ candidates: [...] }` 或 `{ data: [...] }`），不走 ListenHub envelope。
+
+当前 SDK 的 `afterResponse` hook 对所有 `application/json` 响应执行 `body.code !== 0` 检查。对于无 `code` 字段的原始 JSON，`undefined !== 0` 为 true → 错误地抛出 `ListenHubError`。
+
+**修复方案**: 仅当 JSON body 明确包含数字类型 `code` 字段时才执行 envelope unwrap；否则原样透传：
+
+```typescript
+// Hook 1: {code, data} unwrap (ok responses only)
+async (_request, _options, response) => {
+  if (!response.ok) return;
+  if (response.status === 204) return;
+  if (!response.headers.get('content-type')?.includes('application/json')) return;
+
+  const body = await response.clone().json();
+
+  // Only unwrap if response follows ListenHub envelope format
+  if (typeof body.code !== 'number') return; // raw JSON — pass through unchanged
+
+  if (body.code !== 0) {
+    throw new ListenHubError({
+      status: response.status,
+      code: String(body.code),
+      message: body.message ?? `Error ${body.code}`,
+      requestId: body.request_id,
+    });
+  }
+
+  return new Response(JSON.stringify(body.data), {
+    status: response.status,
+    headers: response.headers,
+  });
+},
+```
+
+这个改动对现有内部 API 无影响（所有内部接口都有 `code` 字段），同时让 image 等直接代理 provider 响应的接口能正常工作。
+
+---
+
+### Step 2b: 修改 HTTP Client 支持双模式认证
 
 **文件**: `src/client.ts`
 
@@ -252,8 +294,15 @@ async openapiGetSubscription(): Promise<OpenAPISubscriptionInfo> {
    - 每个 `openapi*` 方法发出正确的 method + path + body
    - 响应正确解析（含 `OpenAPICreateTextContentResponse` 的 `{ episodeId, message }`）
    - 流式方法（`openapiTTS`、`openapiAudioSpeech`、`openapiGetFlowSpeechTextStream`、`openapiGetPodcastTextStream`）返回 raw Response
+   - `openapiCreateImage` 返回 raw provider JSON（如 `{ candidates: [...] }`）— mock 无 `code` 字段响应，验证不被 envelope unwrap 误判为错误
 
-4. **错误处理**
+4. **envelope unwrap 兼容性**
+   - 标准 `{ code: 0, data: {...} }` 正常 unwrap 为 data
+   - 标准 `{ code: 40001, message: "..." }` 抛出 ListenHubError
+   - 非 envelope JSON（无 `code` 字段或 `code` 非 number）原样透传
+   - 确保现有内部 API 测试全部通过（向后兼容）
+
+5. **错误处理**
    - 无效 API Key 返回 ListenHubError
    - 429 重试逻辑在 apiKey 模式下同样生效
 
@@ -272,11 +321,13 @@ async openapiGetSubscription(): Promise<OpenAPISubscriptionInfo> {
 ```
 Step 1 (types/client.ts)
   ↓
-Step 2 (client.ts)  ←  无其他依赖，可独立验证
+Step 2 (client.ts — envelope unwrap 兼容)  ←  独立修复，可先跑现有测试验证
+  ↓
+Step 2b (client.ts — 双模式认证 + baseURL)  ←  依赖 Step 1
   ↓
 Step 3 (types/openapi.ts)  ←  纯类型，无运行时依赖
   ↓
-Step 4 (listenhub.ts)  ←  依赖 Step 2 + 3
+Step 4 (listenhub.ts)  ←  依赖 Step 2b + 3
   ↓
 Step 5 (index.ts)  ←  依赖 Step 3
   ↓
