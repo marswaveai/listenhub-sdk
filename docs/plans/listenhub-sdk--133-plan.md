@@ -28,19 +28,32 @@ export interface ClientOptions {
 改动点：
 
 1. 新增 `DEFAULT_OPENAPI_BASE_URL` 常量：`https://api.listenhub.ai/openapi`
-2. 读取环境变量 `LISTENHUB_API_KEY` 作为 fallback
-3. `createHttpClient` 中根据认证方式自动确定 baseURL：
-   - 有 `apiKey`（含 env fallback）且无显式 `baseURL` → 用 openapi 基址
-   - 否则保持现有逻辑
-4. `beforeRequest` hook 中优先使用 `apiKey`：
+2. 在 `createHttpClient` 函数入口**一次性解析** `effectiveApiKey`，后续 baseURL 选择和 header 注入使用同一个值：
    ```typescript
    const effectiveApiKey = opts.apiKey || process.env['LISTENHUB_API_KEY'];
-   if (effectiveApiKey) {
-     request.headers.set('Authorization', `Bearer ${effectiveApiKey}`);
-   } else {
-     // 现有 accessToken 逻辑
-   }
    ```
+3. baseURL 优先级（从高到低）：
+   - `opts.baseURL`（用户显式指定，尊重任何环境包括 staging/local）
+   - `process.env['LISTENHUB_API_URL']`（现有行为，向后兼容）
+   - 如果 `effectiveApiKey` 存在 → `DEFAULT_OPENAPI_BASE_URL`
+   - 否则 → `DEFAULT_BASE_URL`（现有 `/api` 路径）
+4. `beforeRequest` hook 使用闭包中已解析的 `effectiveApiKey`（不再重复读 env）：
+   ```typescript
+   beforeRequest: [
+     async (request) => {
+       if (effectiveApiKey) {
+         request.headers.set('Authorization', `Bearer ${effectiveApiKey}`);
+       } else {
+         const token = typeof opts.accessToken === 'function' ? opts.accessToken() : opts.accessToken;
+         if (token) {
+           request.headers.set('Authorization', `Bearer ${token}`);
+         }
+       }
+     },
+   ],
+   ```
+
+**关键约束**: `effectiveApiKey` 和 baseURL 在同一时刻从同一来源解析，不会因后续 env 变化而漂移。一个 client 实例绑定一种认证模式。
 
 ---
 
@@ -53,14 +66,16 @@ export interface ClientOptions {
 ```typescript
 // --- 通用 ---
 export interface OpenAPICreateEpisodeResponse { episodeId: string }
+export interface OpenAPICreateTextContentResponse { episodeId: string; message: string }
 
 // --- Flow Speech ---
-export interface OpenAPICreateFlowSpeechParams { ... }
-export interface OpenAPIFlowSpeechDetail { ... }
+export interface OpenAPICreateFlowSpeechParams { sources: Array<{ type: 'text' | 'url'; content?: string; uri?: string }>; speakers: Array<{ speakerId: string }>; language?: string; mode?: 'smart' | 'direct' }
+export interface OpenAPICreateFlowSpeechTTSParams { scripts: Array<{ content: string; speakerId: string }>; title?: string }
+export interface OpenAPIFlowSpeechDetail { episodeId: string; createdAt: number; processStatus: string; ... }
 
 // --- Podcast ---
-export interface OpenAPICreatePodcastParams { ... }
-export interface OpenAPIPodcastDetail { ... }
+export interface OpenAPICreatePodcastParams { query?: string; sources?: Array<{ type: 'text' | 'url'; content: string }>; speakers: Array<{ speakerId: string }>; language?: string; mode?: string }
+export interface OpenAPIPodcastDetail { episodeId: string; createdAt: number; processStatus: string; contentStatus?: string; ... }
 export interface OpenAPIGenerateAudioParams { scripts?: Array<{ content: string; speakerId: string }> }
 export interface OpenAPIGenerateAudioResponse { success: boolean; message: string; episodeId: string; status: string }
 
@@ -70,30 +85,30 @@ export interface OpenAPISpeechResponse { audioUrl: string; audioDuration: number
 export interface OpenAPITTSParams { input: string; voice: string; response_format?: 'mp3' | 'opus' | 'aac' | 'flac' | 'wav' | 'pcm' }
 
 // --- Storybook ---
-export interface OpenAPICreateStorybookParams { ... }
-export interface OpenAPIStorybookDetail { ... }
+export interface OpenAPICreateStorybookParams { sources: Array<{ type: 'text' | 'url'; content: string }>; speakers?: Array<{ speakerId: string }>; skipAudio?: boolean; style?: string; language?: string; mode?: 'info' | 'story' | 'slides' }
+export interface OpenAPIStorybookDetail { episodeId: string; createdAt: number; processStatus: string; pages?: Array<{ text?: string; pageNumber?: number; imageUrl?: string; audioTimestamp?: number }>; videoUrl?: string; videoStatus?: string; ... }
 
 // --- Image ---
-export interface OpenAPICreateImageParams { provider: string; model?: string; prompt: string; referenceImages?: ...; imageConfig?: ... }
+export interface OpenAPICreateImageParams { provider: string; model?: string; prompt: string; referenceImages?: ...; imageConfig?: { imageSize?: string; aspectRatio?: string } }
 export interface OpenAPICreateImageResponse { ... }
 
 // --- Video Generation ---
-export interface OpenAPICreateVideoGenerationParams { ... }
+export interface OpenAPICreateVideoGenerationParams { model?: string; content: Array<...>; resolution?: string; ratio?: string; duration?: number; generateAudio?: boolean; seed?: number; inputVideoDuration?: number }
 export interface OpenAPIVideoGenerationTaskDetail { ... }
 export interface OpenAPIListVideoGenerationTasksParams { page?: number; pageSize?: number; status?: string }
 export interface OpenAPIListVideoGenerationTasksResponse { ... }
-export interface OpenAPIEstimateVideoCreditsParams { ... }
+export interface OpenAPIEstimateVideoCreditsParams { model: string; resolution: string; duration: number; hasVideoInput?: boolean; inputVideoDuration?: number; ratio?: string }
 export interface OpenAPIEstimateVideoCreditsResponse { ... }
 
 // --- Content Extract ---
-export interface OpenAPICreateContentExtractParams { source: { type: 'url'; uri: string }; options?: { summarize?: boolean; maxLength?: number } }
-export interface OpenAPIContentExtractDetail { taskId: string; status: 'processing' | 'completed' | 'failed'; data?: { content?: string; metadata?: Record<string, unknown>; references?: unknown[] }; credits?: number }
+export interface OpenAPICreateContentExtractParams { source: { type: 'url'; uri: string }; options?: { summarize?: boolean; maxLength?: number; twitter?: { count?: number } } }
+export interface OpenAPIContentExtractDetail { taskId: string; status: 'processing' | 'completed' | 'failed'; createdAt?: number; data?: { content?: string; metadata?: Record<string, unknown>; references?: unknown[] }; credits?: number; failCode?: number; message?: string }
 
 // --- User ---
-export interface OpenAPISubscriptionInfo { totalAvailableCredits: number; ... }
+export interface OpenAPISubscriptionInfo { totalAvailableCredits: number; subscriptionStartedAt?: number; subscriptionExpiresAt?: number; usageAvailableMonthlyCredits?: number; usageTotalMonthlyCredits?: number; usageAvailablePermanentCredits?: number; usageTotalPermanentCredits?: number; usageAvailableLimitedTimeCredits?: number; resetAt?: number; platform?: string; renewStatus?: boolean; paidStatus?: boolean; subscriptionPlan?: { name?: string; duration?: string; platform?: string } }
 
 // --- Speakers ---
-export interface OpenAPISpeaker { name: string; speakerId: string; demoAudioUrl: string; gender: string; language: string; profile?: { ... } }
+export interface OpenAPISpeaker { name: string; speakerId: string; demoAudioUrl: string; gender: string; language: string; profile?: { pitch?: string[]; speed?: string[]; traits?: string[]; styles?: string[]; scenes?: string[]; accent?: string; description?: string; descriptionLocalized?: Record<string, string> } }
 export interface OpenAPIListSpeakersParams { language?: string; status?: number }
 export interface OpenAPIListSpeakersResponse { items: OpenAPISpeaker[] }
 ```
@@ -121,6 +136,14 @@ async openapiCreateFlowSpeech(params: OpenAPICreateFlowSpeechParams): Promise<Op
 async openapiGetFlowSpeech(episodeId: string): Promise<OpenAPIFlowSpeechDetail> {
   return this.api.get(`v1/flow-speech/episodes/${episodeId}`).json();
 }
+/** SSE text stream (script/outline). Returns raw Response for caller to consume as stream. */
+async openapiGetFlowSpeechTextStream(episodeId: string, event: 'script' | 'outline'): Promise<Response> {
+  return this.api.get(`v1/flow-speech/episodes/${episodeId}/text-stream`, { searchParams: { event } });
+}
+/** Multi-speaker direct TTS mode — POST /v1/flow-speech/episodes/tts */
+async openapiCreateFlowSpeechTTS(params: OpenAPICreateFlowSpeechTTSParams): Promise<OpenAPICreateEpisodeResponse> {
+  return this.api.post('v1/flow-speech/episodes/tts', { json: params }).json();
+}
 
 // --- OpenAPI: Podcast ---
 async openapiCreatePodcast(params: OpenAPICreatePodcastParams): Promise<OpenAPICreateEpisodeResponse> {
@@ -129,7 +152,11 @@ async openapiCreatePodcast(params: OpenAPICreatePodcastParams): Promise<OpenAPIC
 async openapiGetPodcast(episodeId: string): Promise<OpenAPIPodcastDetail> {
   return this.api.get(`v1/podcast/episodes/${episodeId}`).json();
 }
-async openapiCreatePodcastTextContent(params: OpenAPICreatePodcastParams): Promise<OpenAPICreateEpisodeResponse> {
+/** SSE text stream (script/outline). Returns raw Response for caller to consume as stream. */
+async openapiGetPodcastTextStream(episodeId: string, event: 'script' | 'outline'): Promise<Response> {
+  return this.api.get(`v1/podcast/episodes/${episodeId}/text-stream`, { searchParams: { event } });
+}
+async openapiCreatePodcastTextContent(params: OpenAPICreatePodcastParams): Promise<OpenAPICreateTextContentResponse> {
   return this.api.post('v1/podcast/episodes/text-content', { json: params }).json();
 }
 async openapiGeneratePodcastAudio(episodeId: string, params?: OpenAPIGenerateAudioParams): Promise<OpenAPIGenerateAudioResponse> {
@@ -140,8 +167,13 @@ async openapiGeneratePodcastAudio(episodeId: string, params?: OpenAPIGenerateAud
 async openapiSpeech(params: OpenAPISpeechParams): Promise<OpenAPISpeechResponse> {
   return this.api.post('v1/speech', { json: params }).json();
 }
+/** OpenAI-compatible TTS — returns raw binary audio Response. */
 async openapiTTS(params: OpenAPITTSParams): Promise<Response> {
   return this.api.post('v1/tts', { json: params });
+}
+/** Alias of openapiTTS at /v1/audio/speech (OpenAI SDK path convention). */
+async openapiAudioSpeech(params: OpenAPITTSParams): Promise<Response> {
+  return this.api.post('v1/audio/speech', { json: params });
 }
 
 // --- OpenAPI: Storybook ---
@@ -208,15 +240,18 @@ async openapiGetSubscription(): Promise<OpenAPISubscriptionInfo> {
    - 提供 `apiKey` 时 Authorization header 设置正确
    - `apiKey` 优先级高于 `accessToken`
    - 环境变量 `LISTENHUB_API_KEY` fallback 生效
+   - `effectiveApiKey` 在构造时固化，后续 env 变更不影响已有实例
 
-2. **baseURL 自动切换**
-   - 有 `apiKey` 无 `baseURL` → 请求发到 `/openapi/v1/...`
-   - 有 `apiKey` + 显式 `baseURL` → 用显式值
+2. **baseURL 优先级**
+   - 有 `apiKey` 无 `baseURL` 无 env → 请求发到 `https://api.listenhub.ai/openapi/v1/...`
+   - 有 `apiKey` + 显式 `baseURL` → 用显式值（staging 场景）
+   - 有 `apiKey` + `LISTENHUB_API_URL` env → env 优先于 mode default
    - 仅 `accessToken` → 保持 `/api/v1/...`
 
 3. **OpenAPI 方法调用**
    - 每个 `openapi*` 方法发出正确的 method + path + body
-   - 响应正确解析
+   - 响应正确解析（含 `OpenAPICreateTextContentResponse` 的 `{ episodeId, message }`）
+   - 流式方法（`openapiTTS`、`openapiAudioSpeech`、`openapiGetFlowSpeechTextStream`、`openapiGetPodcastTextStream`）返回 raw Response
 
 4. **错误处理**
    - 无效 API Key 返回 ListenHubError
@@ -254,12 +289,14 @@ Step 6-7 (tests)  ←  验证 Step 1-5
 |------|------|------|
 | OpenAPI 方法命名 | `openapi*` 前缀 | 与现有内部 API 方法（`createPodcast` 等）区分，避免歧义 |
 | baseURL 切换时机 | 构造函数内一次性决定 | 简单可靠，一个 client 实例只对应一种认证模式 |
-| TTS 流式接口返回类型 | `Response` | 允许调用方自行处理 `arrayBuffer()` / `blob()` / `stream` |
+| effectiveApiKey 解析 | `createHttpClient` 入口一次性解析 | 保证 baseURL 和 Authorization header 始终一致，不因运行时 env 变化而漂移 |
+| baseURL 优先级 | `opts.baseURL > LISTENHUB_API_URL > mode default` | 支持 staging/local 开发，同时自动切换 production 路径 |
+| 流式/二进制接口返回类型 | `Response` | text-stream 和 audio/speech 都返回原始 Response，调用方自行处理 stream/arrayBuffer |
 | env fallback | `LISTENHUB_API_KEY` | 与 `LISTENHUB_API_URL` 命名对齐，开发者直觉 |
 
 ## 预计改动量
 
-- 新增代码：~400 行（types 占大头）
-- 修改代码：~20 行（client.ts + types/client.ts）
-- 新增测试：~200 行
+- 新增代码：~500 行（types 占大头，新增方法约 25 个）
+- 修改代码：~30 行（client.ts + types/client.ts）
+- 新增测试：~250 行
 - 无 breaking change，minor 版本发布
