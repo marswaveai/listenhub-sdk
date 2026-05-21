@@ -179,7 +179,11 @@ describe('Video Generation methods', () => {
 			model: 'happyhorse',
 			content: [
 				{type: 'text', text: '将背景替换为星空'},
-				{type: 'video_url', video_url: {url: 'https://example.com/video.mp4'}, role: 'reference_video'},
+				{
+					type: 'video_url',
+					video_url: {url: 'https://example.com/video.mp4'},
+					role: 'reference_video',
+				},
 			],
 			resolution: '720p',
 			ratio: '16:9',

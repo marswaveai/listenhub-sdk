@@ -1,4 +1,7 @@
-export type VideoGenerationModel = 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast' | 'happyhorse';
+export type VideoGenerationModel =
+	| 'doubao-seedance-2-pro'
+	| 'doubao-seedance-2-fast'
+	| 'happyhorse';
 
 export type VideoGenerationResolution = '480p' | '720p' | '1080p';
 

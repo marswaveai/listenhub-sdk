@@ -155,35 +155,35 @@ Supported models: `doubao-seedance-2-pro`, `doubao-seedance-2-fast`, `happyhorse
 ```ts
 // Text-to-Video
 await client.createVideoGeneration({
-  model: 'happyhorse',
-  content: [{ type: 'text', text: '一只猫在月球上跳舞' }],
-  resolution: '720p',
-  ratio: '4:5',
-  duration: 5,
+	model: 'happyhorse',
+	content: [{type: 'text', text: '一只猫在月球上跳舞'}],
+	resolution: '720p',
+	ratio: '4:5',
+	duration: 5,
 });
 
 // Image-to-Video
 await client.createVideoGeneration({
-  model: 'happyhorse',
-  content: [
-    { type: 'text', text: '让画面动起来' },
-    { type: 'image_url', image_url: { url: 'https://...' }, role: 'first_frame' },
-  ],
-  resolution: '1080p',
-  duration: 5,
+	model: 'happyhorse',
+	content: [
+		{type: 'text', text: '让画面动起来'},
+		{type: 'image_url', image_url: {url: 'https://...'}, role: 'first_frame'},
+	],
+	resolution: '1080p',
+	duration: 5,
 });
 
 // Video-Edit
 await client.createVideoGeneration({
-  model: 'happyhorse',
-  content: [
-    { type: 'text', text: '将背景替换为星空' },
-    { type: 'video_url', video_url: { url: 'https://...' }, role: 'reference_video' },
-  ],
-  resolution: '720p',
-  duration: 5,
-  inputVideoDuration: 10,
-  audioSetting: 'origin',
+	model: 'happyhorse',
+	content: [
+		{type: 'text', text: '将背景替换为星空'},
+		{type: 'video_url', video_url: {url: 'https://...'}, role: 'reference_video'},
+	],
+	resolution: '720p',
+	duration: 5,
+	inputVideoDuration: 10,
+	audioSetting: 'origin',
 });
 ```
 
