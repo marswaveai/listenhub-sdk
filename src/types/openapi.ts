@@ -164,7 +164,7 @@ export type OpenAPIVideoGenerationTaskStatus =
 	| 'success'
 	| 'failed';
 export interface OpenAPICreateVideoGenerationParams {
-	model?: 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast';
+	model?: 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast' | 'happyhorse';
 	content: Array<
 		| {type: 'text'; text: string}
 		| {
@@ -176,11 +176,13 @@ export interface OpenAPICreateVideoGenerationParams {
 		| {type: 'audio_url'; audio_url: {url: string}; role: 'reference_audio'}
 	>;
 	resolution?: '480p' | '720p' | '1080p';
-	ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9';
+	ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4';
 	duration?: number;
 	generateAudio?: boolean;
 	seed?: number;
 	inputVideoDuration?: number;
+	/** Audio handling for happyhorse video-edit mode. Only effective when model is 'happyhorse' and content includes a video_url. */
+	audioSetting?: 'auto' | 'origin';
 }
 export interface OpenAPICreateVideoGenerationResponse {
 	taskId: string;
@@ -230,12 +232,12 @@ export interface OpenAPIListVideoGenerationTasksResponse {
 	total: number;
 }
 export interface OpenAPIEstimateVideoCreditsParams {
-	model: 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast';
+	model: 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast' | 'happyhorse';
 	resolution: '480p' | '720p' | '1080p';
 	duration: number;
 	hasVideoInput?: boolean;
 	inputVideoDuration?: number;
-	ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9';
+	ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4';
 }
 export interface OpenAPIEstimateVideoCreditsResponse {
 	tokens: number;

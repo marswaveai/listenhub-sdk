@@ -139,7 +139,7 @@ const client = new ListenHubClient({
 | `getMusicTask(taskId)`        | Get music task status and details         |
 | `listMusicTasks(params?)`     | List music tasks with optional filtering  |
 
-### Video Generation (SeeDance2.0)
+### Video Generation (SeeDance2.0 / HappyHorse)
 
 | Method                                   | Description                                         |
 | ---------------------------------------- | --------------------------------------------------- |
@@ -147,6 +147,45 @@ const client = new ListenHubClient({
 | `getVideoGenerationTask(taskId)`         | Get video generation task status and details        |
 | `listVideoGenerationTasks(params?)`      | List video generation tasks with optional filtering |
 | `estimateVideoGenerationCredits(params)` | Estimate credit cost before generating              |
+
+Supported models: `doubao-seedance-2-pro`, `doubao-seedance-2-fast`, `happyhorse`
+
+**HappyHorse examples:**
+
+```ts
+// Text-to-Video
+await client.createVideoGeneration({
+	model: 'happyhorse',
+	content: [{type: 'text', text: '一只猫在月球上跳舞'}],
+	resolution: '720p',
+	ratio: '4:5',
+	duration: 5,
+});
+
+// Image-to-Video
+await client.createVideoGeneration({
+	model: 'happyhorse',
+	content: [
+		{type: 'text', text: '让画面动起来'},
+		{type: 'image_url', image_url: {url: 'https://...'}, role: 'first_frame'},
+	],
+	resolution: '1080p',
+	duration: 5,
+});
+
+// Video-Edit
+await client.createVideoGeneration({
+	model: 'happyhorse',
+	content: [
+		{type: 'text', text: '将背景替换为星空'},
+		{type: 'video_url', video_url: {url: 'https://...'}, role: 'reference_video'},
+	],
+	resolution: '720p',
+	duration: 5,
+	inputVideoDuration: 10,
+	audioSetting: 'origin',
+});
+```
 
 ### List by product
 

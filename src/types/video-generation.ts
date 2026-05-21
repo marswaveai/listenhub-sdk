@@ -1,8 +1,11 @@
-export type VideoGenerationModel = 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast';
+export type VideoGenerationModel =
+	| 'doubao-seedance-2-pro'
+	| 'doubao-seedance-2-fast'
+	| 'happyhorse';
 
 export type VideoGenerationResolution = '480p' | '720p' | '1080p';
 
-export type VideoGenerationRatio = '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9';
+export type VideoGenerationRatio = '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4';
 
 export type VideoGenerationTaskStatus =
 	| 'pending'
@@ -57,6 +60,15 @@ export type VideoContentItem =
 	| VideoContentVideoUrl
 	| VideoContentAudioUrl;
 
+/**
+ * Parameters for creating a video generation task.
+ *
+ * Model-specific constraints (enforced server-side):
+ * - `happyhorse`: no 480p resolution; no `last_frame` or `audio_url` content; ratio supports 4:5/5:4;
+ *   min duration 3s; max prompt length 2500 chars; inputVideoDuration range [3,60]
+ * - `doubao-seedance-*`: min duration 4s; max prompt length 500 chars; inputVideoDuration range [2,15];
+ *   1080p only available on `doubao-seedance-2-pro`
+ */
 export interface CreateVideoGenerationParams {
 	model?: VideoGenerationModel;
 	content: VideoContentItem[];
@@ -66,6 +78,8 @@ export interface CreateVideoGenerationParams {
 	generateAudio?: boolean;
 	seed?: number;
 	inputVideoDuration?: number;
+	/** Audio handling for happyhorse video-edit mode. Only effective when model is 'happyhorse' and content includes a video_url. */
+	audioSetting?: 'auto' | 'origin';
 }
 
 export interface ListVideoGenerationTasksParams {
