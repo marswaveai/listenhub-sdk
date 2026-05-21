@@ -155,4 +155,57 @@ describe('Video Generation methods', () => {
 		expect((req.body as any).ratio).toBe('16:9');
 		expect(result).toEqual({tokens: 3320, credits: 10});
 	});
+
+	it('createVideoGeneration with happyhorse model sends correct params', async () => {
+		mockJsonResponse({taskId: 'vt-hh-1', status: 'generating'});
+		const result = await client.createVideoGeneration({
+			model: 'happyhorse',
+			content: [{type: 'text', text: '一只猫在月球上跳舞'}],
+			resolution: '720p',
+			ratio: '4:5',
+			duration: 5,
+		});
+		const req = await capturedRequest();
+		expect(req.url).toBe('https://api.test.com/api/v1/video-generation/generate');
+		expect(req.method).toBe('POST');
+		expect((req.body as any).model).toBe('happyhorse');
+		expect((req.body as any).ratio).toBe('4:5');
+		expect(result).toEqual({taskId: 'vt-hh-1', status: 'generating'});
+	});
+
+	it('createVideoGeneration with happyhorse video-edit sends audioSetting', async () => {
+		mockJsonResponse({taskId: 'vt-hh-2', status: 'generating'});
+		const result = await client.createVideoGeneration({
+			model: 'happyhorse',
+			content: [
+				{type: 'text', text: '将背景替换为星空'},
+				{type: 'video_url', video_url: {url: 'https://example.com/video.mp4'}, role: 'reference_video'},
+			],
+			resolution: '720p',
+			ratio: '16:9',
+			duration: 5,
+			inputVideoDuration: 10,
+			audioSetting: 'origin',
+		});
+		const req = await capturedRequest();
+		expect((req.body as any).model).toBe('happyhorse');
+		expect((req.body as any).audioSetting).toBe('origin');
+		expect((req.body as any).inputVideoDuration).toBe(10);
+		expect((req.body as any).content[1].type).toBe('video_url');
+		expect(result).toEqual({taskId: 'vt-hh-2', status: 'generating'});
+	});
+
+	it('estimateVideoGenerationCredits with happyhorse model', async () => {
+		mockJsonResponse({tokens: 5000, credits: 15});
+		const result = await client.estimateVideoGenerationCredits({
+			model: 'happyhorse',
+			resolution: '720p',
+			duration: 5,
+			ratio: '4:5',
+		});
+		const req = await capturedRequest();
+		expect((req.body as any).model).toBe('happyhorse');
+		expect((req.body as any).ratio).toBe('4:5');
+		expect(result).toEqual({tokens: 5000, credits: 15});
+	});
 });
