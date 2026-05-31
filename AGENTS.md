@@ -2,6 +2,13 @@
 
 JavaScript SDK for ListenHub API. Flat architecture: all endpoint methods live directly on the client class, backed by a ky-native hooks-based HTTP layer.
 
+## Coding Guardrails
+
+- Think before coding: restate the goal, surface assumptions and trade-offs, and ask when requirements are ambiguous.
+- Keep it simple: choose the smallest working change; avoid speculative abstractions, configurability, or broad rewrites.
+- Make surgical edits: touch only the files and lines required, follow local style, and leave unrelated cleanup alone.
+- Verify against the goal: define the relevant checks up front, run the focused validation, and keep iterating until the stated goal is satisfied.
+
 ## Architecture
 
 - **Dependency direction**: `listenhub.ts → client.ts → types/` (one-way, never reverse)
