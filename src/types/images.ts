@@ -1,4 +1,4 @@
-export type ImageModel = 'gemini-3-pro-image-preview' | 'gemini-3.1-flash-image-preview';
+export type ImageModel = 'gemini-3-pro-image' | 'gemini-3.1-flash-image';
 
 export type ImagePromptLanguage = 'auto' | 'en' | 'ja' | 'ko' | 'hi' | 'zh' | 'pt' | 'es';
 
@@ -14,8 +14,8 @@ export type AIImageAspectRatio =
 	| '9:16'
 	| '16:9'
 	| '21:9'
-	| '8:1' // Only works on gemini-3.1-flash-image-preview
-	| '1:8'; // Only works on gemini-3.1-flash-image-preview
+	| '8:1' // Only works on gemini-3.1-flash-image
+	| '1:8'; // Only works on gemini-3.1-flash-image
 
 export type AIImageSize = '1K' | '2K' | '4K';
 

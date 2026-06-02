@@ -10,7 +10,7 @@ const {imageId} = await client.createAIImage({
 	prompt: 'A cozy Japanese coffee shop on a rainy afternoon, warm lighting, watercolor style',
 	aspectRatio: '16:9',
 	imageSize: '2K',
-	model: 'gemini-3-pro-image-preview',
+	model: 'gemini-3-pro-image',
 });
 console.log(`Created image: ${imageId}`);
 
