@@ -1,4 +1,5 @@
 import {createHttpClient, type KyInstance} from './client.js';
+import {appendMusicField} from './music-form.js';
 import type {ClientOptions} from './types/client.js';
 import type {ConnectInitResponse, TokenResponse} from './types/auth.js';
 import type {CheckinResponse, CheckinStatusResponse} from './types/checkin.js';
@@ -65,12 +66,6 @@ import type {
 	EstimateVideoGenerationCreditsParams,
 	EstimateVideoGenerationCreditsResponse,
 } from './types/video-generation.js';
-
-/** Append a defined scalar field to FormData, stringifying numbers/booleans. */
-function appendMusicField(form: FormData, key: string, value: string | number | boolean | undefined): void {
-	if (value === undefined || value === null) return;
-	form.append(key, String(value));
-}
 
 export class ListenHubClient {
 	public readonly api: KyInstance;
