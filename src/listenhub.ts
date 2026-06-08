@@ -1,4 +1,5 @@
 import {createHttpClient, type KyInstance} from './client.js';
+import {appendMusicField} from './music-form.js';
 import type {ClientOptions} from './types/client.js';
 import type {ConnectInitResponse, TokenResponse} from './types/auth.js';
 import type {CheckinResponse, CheckinStatusResponse} from './types/checkin.js';
@@ -29,6 +30,16 @@ import type {
 	CreateMusicGenerateParams,
 	CreateMusicCoverParams,
 	CreateMusicExtendParams,
+	CreateMusicRemixParams,
+	CreateMusicInstrumentalParams,
+	CreateMusicSoundtrackParams,
+	CreateMusicTrackParams,
+	RecognizeMusicParams,
+	RecognizeMusicResponse,
+	DescribeMusicParams,
+	DescribeMusicResponse,
+	StemMusicParams,
+	StemMusicResponse,
 	CreateMusicTaskResponse,
 	MusicTaskDetail,
 	ListMusicTasksParams,
@@ -242,6 +253,82 @@ export class ListenHubClient {
 				searchParams: params as Record<string, string | number | boolean>,
 			})
 			.json<ListMusicTasksResponse>();
+	}
+
+	/** Remix an existing song with new lyrics (Mureka). Async — poll via getMusicTask. */
+	async createMusicRemix(params: CreateMusicRemixParams): Promise<CreateMusicTaskResponse> {
+		const form = new FormData();
+		if (params.audio) form.append('audio', params.audio, params.audioFilename ?? 'audio.mp3');
+		appendMusicField(form, 'audioUrl', params.audioUrl);
+		appendMusicField(form, 'providerSongId', params.providerSongId);
+		appendMusicField(form, 'lyrics', params.lyrics);
+		appendMusicField(form, 'prompt', params.prompt);
+		return this.api.post('v1/music/remix', {body: form}).json<CreateMusicTaskResponse>();
+	}
+
+	/** Generate a standalone instrumental (Mureka). prompt XOR referenceAudio. Async. */
+	async createMusicInstrumental(
+		params: CreateMusicInstrumentalParams,
+	): Promise<CreateMusicTaskResponse> {
+		const form = new FormData();
+		if (params.referenceAudio) {
+			form.append(
+				'referenceAudio',
+				params.referenceAudio,
+				params.referenceAudioFilename ?? 'reference.mp3',
+			);
+		}
+		appendMusicField(form, 'prompt', params.prompt);
+		appendMusicField(form, 'model', params.model);
+		return this.api.post('v1/music/instrumental', {body: form}).json<CreateMusicTaskResponse>();
+	}
+
+	/** Generate music from an image or video (Mureka). image XOR video. Async. */
+	async createMusicSoundtrack(
+		params: CreateMusicSoundtrackParams,
+	): Promise<CreateMusicTaskResponse> {
+		const form = new FormData();
+		if (params.image) form.append('image', params.image, params.imageFilename ?? 'image.png');
+		if (params.video) form.append('video', params.video, params.videoFilename ?? 'video.mp4');
+		appendMusicField(form, 'prompt', params.prompt);
+		appendMusicField(form, 'model', params.model);
+		return this.api.post('v1/music/soundtrack', {body: form}).json<CreateMusicTaskResponse>();
+	}
+
+	/** Generate a single instrument/vocal track (Mureka). audio XOR providerSongId. Async. */
+	async createMusicTrack(params: CreateMusicTrackParams): Promise<CreateMusicTaskResponse> {
+		const form = new FormData();
+		if (params.audio) form.append('audio', params.audio, params.audioFilename ?? 'audio.mp3');
+		appendMusicField(form, 'providerSongId', params.providerSongId);
+		appendMusicField(form, 'generateType', params.generateType);
+		appendMusicField(form, 'prompt', params.prompt);
+		appendMusicField(form, 'lyrics', params.lyrics);
+		appendMusicField(form, 'vocalGender', params.vocalGender);
+		appendMusicField(form, 'generateStart', params.generateStart);
+		appendMusicField(form, 'generateEnd', params.generateEnd);
+		return this.api.post('v1/music/track', {body: form}).json<CreateMusicTaskResponse>();
+	}
+
+	/** Recognize lyrics (with timestamps) from audio (Mureka). Synchronous. */
+	async recognizeMusic(params: RecognizeMusicParams): Promise<RecognizeMusicResponse> {
+		const form = new FormData();
+		form.append('audio', params.audio, params.audioFilename ?? 'audio.mp3');
+		return this.api.post('v1/music/recognize', {body: form}).json<RecognizeMusicResponse>();
+	}
+
+	/** Analyze audio — description, tags, genres, instruments (Mureka). Synchronous. */
+	async describeMusic(params: DescribeMusicParams): Promise<DescribeMusicResponse> {
+		const form = new FormData();
+		form.append('audio', params.audio, params.audioFilename ?? 'audio.mp3');
+		return this.api.post('v1/music/describe', {body: form}).json<DescribeMusicResponse>();
+	}
+
+	/** Separate audio into stems (Mureka). Synchronous — returns download URLs. */
+	async stemMusic(params: StemMusicParams): Promise<StemMusicResponse> {
+		const form = new FormData();
+		form.append('audio', params.audio, params.audioFilename ?? 'audio.mp3');
+		appendMusicField(form, 'model', params.model);
+		return this.api.post('v1/music/stem', {body: form}).json<StemMusicResponse>();
 	}
 
 	// --- Files ---
