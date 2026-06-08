@@ -114,7 +114,7 @@ export interface CreateMusicTrackParams {
 	/** Required when generateType is 'Vocals'. */
 	lyrics?: string;
 	vocalGender?: 'male' | 'female';
-	/** Range constraint in milliseconds. */
+	/** Range constraint in seconds. */
 	generateStart?: number;
 	generateEnd?: number;
 }
