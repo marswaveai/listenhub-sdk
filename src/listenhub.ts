@@ -272,7 +272,11 @@ export class ListenHubClient {
 	): Promise<CreateMusicTaskResponse> {
 		const form = new FormData();
 		if (params.referenceAudio) {
-			form.append('referenceAudio', params.referenceAudio, params.referenceAudioFilename ?? 'reference.mp3');
+			form.append(
+				'referenceAudio',
+				params.referenceAudio,
+				params.referenceAudioFilename ?? 'reference.mp3',
+			);
 		}
 		appendMusicField(form, 'prompt', params.prompt);
 		appendMusicField(form, 'model', params.model);

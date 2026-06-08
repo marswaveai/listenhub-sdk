@@ -137,39 +137,43 @@ they return a `taskId`; poll `getMusicTask(taskId)` until status is `success`.
 Analysis endpoints (`recognize` / `describe` / `stem`) are synchronous.
 File inputs accept a `Blob` (browser `File`, or `new Blob([buffer])` in Node 18+).
 
-| Method                              | Kind  | Description                                              |
-| ----------------------------------- | ----- | ------------------------------------------------------- |
-| `createMusicGenerate(params)`       | async | Generate music from a text prompt / lyrics              |
-| `createMusicRemix(params)`          | async | Re-create a song from existing audio + new lyrics       |
-| `createMusicInstrumental(params)`   | async | Generate an instrumental (prompt or reference audio)    |
-| `createMusicSoundtrack(params)`     | async | Generate music from an image or a video                 |
-| `createMusicTrack(params)`          | async | Generate a single instrument/vocal track                |
-| `createMusicExtend(params)`         | async | Extend an existing song (legacy Suno)                   |
-| `createMusicCover(params)`          | async | _Deprecated_ — cover via legacy Suno provider           |
-| `recognizeMusic(params)`            | sync  | Transcribe lyrics with timestamps                       |
-| `describeMusic(params)`             | sync  | Analyze audio (description, tags, genres, instruments)  |
-| `stemMusic(params)`                 | sync  | Separate audio into stems (returns ZIP download URLs)   |
-| `getMusicTask(taskId)`              | —     | Get music task status and details                       |
-| `listMusicTasks(params?)`           | —     | List music tasks with optional filtering                |
+| Method                            | Kind  | Description                                            |
+| --------------------------------- | ----- | ------------------------------------------------------ |
+| `createMusicGenerate(params)`     | async | Generate music from a text prompt / lyrics             |
+| `createMusicRemix(params)`        | async | Re-create a song from existing audio + new lyrics      |
+| `createMusicInstrumental(params)` | async | Generate an instrumental (prompt or reference audio)   |
+| `createMusicSoundtrack(params)`   | async | Generate music from an image or a video                |
+| `createMusicTrack(params)`        | async | Generate a single instrument/vocal track               |
+| `createMusicExtend(params)`       | async | Extend an existing song (legacy Suno)                  |
+| `createMusicCover(params)`        | async | _Deprecated_ — cover via legacy Suno provider          |
+| `recognizeMusic(params)`          | sync  | Transcribe lyrics with timestamps                      |
+| `describeMusic(params)`           | sync  | Analyze audio (description, tags, genres, instruments) |
+| `stemMusic(params)`               | sync  | Separate audio into stems (returns ZIP download URLs)  |
+| `getMusicTask(taskId)`            | —     | Get music task status and details                      |
+| `listMusicTasks(params?)`         | —     | List music tasks with optional filtering               |
 
 ```ts
 // Generate, then poll
 const {taskId} = await client.createMusicGenerate({prompt: 'lo-fi chill beats', model: 'auto'});
 let task = await client.getMusicTask(taskId);
 while (task.status !== 'success' && task.status !== 'failed') {
-	await new Promise(r => setTimeout(r, 5000));
+	await new Promise((r) => setTimeout(r, 5000));
 	task = await client.getMusicTask(taskId);
 }
 
 // Remix from a local file (Node 18+)
 import {readFile} from 'node:fs/promises';
 const audio = new Blob([await readFile('./song.mp3')]);
-await client.createMusicRemix({audio, audioFilename: 'song.mp3', lyrics: '...', prompt: 'jazzy remix'});
+await client.createMusicRemix({
+	audio,
+	audioFilename: 'song.mp3',
+	lyrics: '...',
+	prompt: 'jazzy remix',
+});
 
 // Synchronous analysis
 const {result} = await client.describeMusic({audio, audioFilename: 'song.mp3'});
 ```
-
 
 ### Video Generation (SeeDance2.0 / HappyHorse)
 
