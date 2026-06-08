@@ -134,7 +134,7 @@ const client = new ListenHubClient({
 
 Powered by the Mureka provider (the default). Generation endpoints are asynchronous —
 they return a `taskId`; poll `getMusicTask(taskId)` until status is `success`.
-Analysis endpoints (`recognize` / `describe` / `stem`) and `cloneVocal` are synchronous.
+Analysis endpoints (`recognize` / `describe` / `stem`) are synchronous.
 File inputs accept a `Blob` (browser `File`, or `new Blob([buffer])` in Node 18+).
 
 | Method                              | Kind  | Description                                              |
@@ -144,13 +144,11 @@ File inputs accept a `Blob` (browser `File`, or `new Blob([buffer])` in Node 18+
 | `createMusicInstrumental(params)`   | async | Generate an instrumental (prompt or reference audio)    |
 | `createMusicSoundtrack(params)`     | async | Generate music from an image or a video                 |
 | `createMusicTrack(params)`          | async | Generate a single instrument/vocal track                |
-| `createMusicRegionEdit(params)`     | async | Rewrite a region of an existing song                    |
 | `createMusicExtend(params)`         | async | Extend an existing song (legacy Suno)                   |
 | `createMusicCover(params)`          | async | _Deprecated_ — cover via legacy Suno provider           |
 | `recognizeMusic(params)`            | sync  | Transcribe lyrics with timestamps                       |
 | `describeMusic(params)`             | sync  | Analyze audio (description, tags, genres, instruments)  |
 | `stemMusic(params)`                 | sync  | Separate audio into stems (returns ZIP download URLs)   |
-| `cloneVocal(params)`                | sync  | Clone a voice into a reusable Vocal ID                  |
 | `getMusicTask(taskId)`              | —     | Get music task status and details                       |
 | `listMusicTasks(params?)`           | —     | List music tasks with optional filtering                |
 

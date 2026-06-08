@@ -9,8 +9,7 @@ export type MusicTaskType =
 	| 'RECOGNIZE'
 	| 'DESCRIBE'
 	| 'STEM'
-	| 'TRACK'
-	| 'REGION_EDIT';
+	| 'TRACK';
 
 export type MusicTaskStatus = 'pending' | 'generating' | 'uploading' | 'success' | 'failed';
 
@@ -45,7 +44,7 @@ export interface CreateMusicGenerateParams {
 	style?: string;
 	title?: string;
 	instrumental?: boolean;
-	/** Reusable Vocal ID from `cloneVocal`. */
+	/** Reusable Vocal ID. */
 	vocalId?: string;
 }
 
@@ -120,19 +119,6 @@ export interface CreateMusicTrackParams {
 	generateEnd?: number;
 }
 
-/** Rewrite a region of an existing song. */
-export interface CreateMusicRegionEditParams {
-	/** Audio source — exactly one of audio / providerSongId. */
-	audio?: MusicFileInput;
-	audioFilename?: string;
-	providerSongId?: string;
-	lyrics: string;
-	/** Edit window start in ms (≥12000; needs ≥12s of audio before it). */
-	editStart: number;
-	/** Edit window end in ms (editEnd - editStart ≥ 3000). */
-	editEnd: number;
-}
-
 export interface RecognizeMusicParams {
 	audio: MusicFileInput;
 	audioFilename?: string;
@@ -147,11 +133,6 @@ export interface StemMusicParams {
 	audio: MusicFileInput;
 	audioFilename?: string;
 	model?: 'audio-separation-1' | 'audio-separation-2';
-}
-
-export interface CloneVocalParams {
-	audio: MusicFileInput;
-	audioFilename?: string;
 }
 
 export interface CreateMusicTaskResponse {
@@ -230,16 +211,6 @@ export interface StemMusicResponse {
 		midiZipUrl: string | null;
 		expiresAt: number;
 	};
-	createdAt: number;
-}
-
-/** Vocal-clone result — a reusable Vocal ID. */
-export interface CloneVocalResponse {
-	id: string;
-	vocalId: string;
-	filename: string;
-	bytes: number;
-	creditCost: number;
 	createdAt: number;
 }
 

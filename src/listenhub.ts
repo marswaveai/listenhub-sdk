@@ -33,15 +33,12 @@ import type {
 	CreateMusicInstrumentalParams,
 	CreateMusicSoundtrackParams,
 	CreateMusicTrackParams,
-	CreateMusicRegionEditParams,
 	RecognizeMusicParams,
 	RecognizeMusicResponse,
 	DescribeMusicParams,
 	DescribeMusicResponse,
 	StemMusicParams,
 	StemMusicResponse,
-	CloneVocalParams,
-	CloneVocalResponse,
 	CreateMusicTaskResponse,
 	MusicTaskDetail,
 	ListMusicTasksParams,
@@ -313,19 +310,6 @@ export class ListenHubClient {
 		return this.api.post('v1/music/track', {body: form}).json<CreateMusicTaskResponse>();
 	}
 
-	/** Rewrite a region of an existing song (Mureka). audio XOR providerSongId. Async. */
-	async createMusicRegionEdit(
-		params: CreateMusicRegionEditParams,
-	): Promise<CreateMusicTaskResponse> {
-		const form = new FormData();
-		if (params.audio) form.append('audio', params.audio, params.audioFilename ?? 'audio.mp3');
-		appendMusicField(form, 'providerSongId', params.providerSongId);
-		appendMusicField(form, 'lyrics', params.lyrics);
-		appendMusicField(form, 'editStart', params.editStart);
-		appendMusicField(form, 'editEnd', params.editEnd);
-		return this.api.post('v1/music/region-edit', {body: form}).json<CreateMusicTaskResponse>();
-	}
-
 	/** Recognize lyrics (with timestamps) from audio (Mureka). Synchronous. */
 	async recognizeMusic(params: RecognizeMusicParams): Promise<RecognizeMusicResponse> {
 		const form = new FormData();
@@ -346,13 +330,6 @@ export class ListenHubClient {
 		form.append('audio', params.audio, params.audioFilename ?? 'audio.mp3');
 		appendMusicField(form, 'model', params.model);
 		return this.api.post('v1/music/stem', {body: form}).json<StemMusicResponse>();
-	}
-
-	/** Clone a voice from an audio sample into a reusable Vocal ID (Mureka). Synchronous. */
-	async cloneVocal(params: CloneVocalParams): Promise<CloneVocalResponse> {
-		const form = new FormData();
-		form.append('audio', params.audio, params.audioFilename ?? 'audio.mp3');
-		return this.api.post('v1/music/vocal-clone', {body: form}).json<CloneVocalResponse>();
 	}
 
 	// --- Files ---
