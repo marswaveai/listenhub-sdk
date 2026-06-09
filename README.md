@@ -225,15 +225,16 @@ await client.createVideoGeneration({
 
 ### List by product
 
-| Method                         | Description              |
-| ------------------------------ | ------------------------ |
-| `listPodcasts(params?)`        | List podcast episodes    |
-| `listTTS(params?)`             | List TTS episodes        |
-| `listExplainerVideos(params?)` | List explainer videos    |
-| `listSlides(params?)`          | List slides              |
-| `listAIImages(params?)`        | List AI-generated items  |
-| `getCreation(episodeId)`       | Get full creation detail |
-| `deleteCreations({ids})`       | Batch delete creations   |
+| Method                         | Description                             |
+| ------------------------------ | --------------------------------------- |
+| `listPodcasts(params?)`        | List podcast episodes                   |
+| `listTTS(params?)`             | List TTS episodes                       |
+| `listExplainerVideos(params?)` | List explainer videos                   |
+| `listSlides(params?)`          | List slides                             |
+| `listAIImages(params?)`        | List AI-generated items                 |
+| `getCreation(episodeId)`       | Get full creation detail                |
+| `deleteCreations({ids})`       | Batch delete creations (incl. AI video) |
+| `deleteAIImages({ids})`        | Batch delete AI images                  |
 
 ### Users
 

@@ -68,3 +68,11 @@ export interface ListAIImagesResponse {
 		total: number;
 	};
 }
+
+/**
+ * Parameters for batch-deleting AI images (`DELETE /v1/images`).
+ * Up to 100 ids per call (the backend enforces `.min(1).max(100)`).
+ */
+export interface DeleteAIImagesParams {
+	ids: string[];
+}

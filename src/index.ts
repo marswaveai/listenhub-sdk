@@ -49,6 +49,7 @@ export type {
 	AIImageItem,
 	ListAIImagesParams,
 	ListAIImagesResponse,
+	DeleteAIImagesParams,
 	ImageModel,
 	ImagePromptLanguage,
 	AIImageAspectRatio,
