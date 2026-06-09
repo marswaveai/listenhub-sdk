@@ -25,6 +25,7 @@ import type {
 	AIImageItem,
 	ListAIImagesParams,
 	ListAIImagesResponse,
+	DeleteAIImagesParams,
 } from './types/images.js';
 import type {
 	CreateMusicGenerateParams,
@@ -175,6 +176,13 @@ export class ListenHubClient {
 		return this.api.get(`v5/episodes/${episodeId}/detail`).json<EpisodeDetail>();
 	}
 
+	/**
+	 * Batch-delete creations by id (`DELETE /v1/episodes`). Covers podcast / TTS /
+	 * storybook / slides / explainer episodes, and AI video: passing a video
+	 * episodeId also soft-deletes its video-generation task and refunds credits for
+	 * any in-progress task (for legacy videos without an episodeId, pass the task id).
+	 * Up to 100 ids per call.
+	 */
 	async deleteCreations(params: DeleteEpisodesParams): Promise<void> {
 		await this.api.delete('v1/episodes', {json: params});
 	}
@@ -221,6 +229,14 @@ export class ListenHubClient {
 
 	async createAIImage(params: CreateAIImageParams): Promise<CreateAIImageResponse> {
 		return this.api.post('v1/images', {json: params}).json<CreateAIImageResponse>();
+	}
+
+	/**
+	 * Batch-delete AI images by id (`DELETE /v1/images`). Soft-delete, owner-scoped;
+	 * unknown / already-deleted / non-owned ids are silently ignored. Up to 100 ids per call.
+	 */
+	async deleteAIImages(params: DeleteAIImagesParams): Promise<void> {
+		await this.api.delete('v1/images', {json: params});
 	}
 
 	// --- Music ---

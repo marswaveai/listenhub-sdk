@@ -17,6 +17,7 @@ SDK（`src/listenhub.ts`）当前删除能力：
 - **无视频删除**方法（仅 `createVideoGeneration` / `getVideoGenerationTask` / `listVideoGenerationTasks` / `estimate...`）。
 
 本次 SDK 侧仅两件事：
+
 1. **视频删除**：无需新方法——`deleteCreations` 承担。**仅在 api-server 收敛 PR 上线后**补**文档/类型注释**说明视频语义（在那之前不要把「已覆盖视频」写进公开文档，避免描述尚不存在的行为）。
 2. **图片批量删除**：新增 `deleteAIImages` 对接后端新接口 `DELETE /v1/images`（依赖 api-server 该接口先上线）。
 
