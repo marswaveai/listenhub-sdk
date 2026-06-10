@@ -303,6 +303,42 @@ describe('OpenAPIClient – method calls', () => {
 	});
 });
 
+describe('OpenAPIClient – getMusicTask validation & encoding', () => {
+	let client: OpenAPIClient;
+
+	beforeEach(() => {
+		client = new OpenAPIClient({
+			apiKey: 'lh_sk_test',
+			baseURL: 'https://api.test.com/openapi',
+		});
+	});
+
+	it('throws without hitting the network when taskId is empty', async () => {
+		await expect(client.getMusicTask('')).rejects.toThrow(/non-empty taskId/);
+		expect(mockFetch).not.toHaveBeenCalled();
+	});
+
+	it('GET v1/music/tasks/{id} and unwraps the envelope', async () => {
+		mockFetch.mockResolvedValueOnce(envelopeResponse({taskId: 'abc', status: 'succeeded'}));
+
+		const result = await client.getMusicTask('507f1f77bcf86cd799439011');
+
+		const req: Request = mockFetch.mock.calls[0][0];
+		expect(req.method).toBe('GET');
+		expect(req.url).toContain('/v1/music/tasks/507f1f77bcf86cd799439011');
+		expect(result).toEqual({taskId: 'abc', status: 'succeeded'});
+	});
+
+	it('encodeURIComponent-escapes the taskId in the path', async () => {
+		mockFetch.mockResolvedValueOnce(envelopeResponse({taskId: 'x'}));
+
+		await client.getMusicTask('foo bar/baz');
+
+		const req: Request = mockFetch.mock.calls[0][0];
+		expect(req.url).toContain('/v1/music/tasks/foo%20bar%2Fbaz');
+	});
+});
+
 describe('OpenAPIClient – envelope unwrap compatibility', () => {
 	let client: OpenAPIClient;
 

@@ -267,7 +267,8 @@ export class OpenAPIClient {
 	}
 
 	async getMusicTask(taskId: string): Promise<MusicTaskDetail> {
-		return this.api.get(`v1/music/tasks/${taskId}`).json<MusicTaskDetail>();
+		if (!taskId) throw new Error('getMusicTask requires a non-empty taskId');
+		return this.api.get(`v1/music/tasks/${encodeURIComponent(taskId)}`).json<MusicTaskDetail>();
 	}
 
 	async listMusicTasks(params: ListMusicTasksParams = {}): Promise<ListMusicTasksResponse> {
