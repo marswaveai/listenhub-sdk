@@ -48,6 +48,34 @@ for (const item of list.items) {
 	console.log(`  ${item.id} ${item.status} ${item.params.resolution}`);
 }
 
+// --- PixVerse: separate endpoint, capability-driven ---
+const pixEstimate = await client.estimatePixVerseVideoCredits({
+	capability: 'text_to_video',
+	quality: '720p',
+	duration: 5,
+});
+console.log(`\nPixVerse estimated credits: ${pixEstimate.credits}`);
+
+const pixTask = await client.createPixVerseVideoGeneration({
+	capability: 'text_to_video',
+	prompt: '一只猫在花园里奔跑',
+	quality: '720p',
+	aspectRatio: '16:9',
+	duration: 5,
+});
+console.log(`PixVerse task created: ${pixTask.taskId} (${pixTask.status})`);
+
+// Poll with the shared task-detail endpoint.
+let pixDetail = await client.getVideoGenerationTask(pixTask.taskId);
+while (pixDetail.status !== 'success' && pixDetail.status !== 'failed') {
+	await sleep(10_000);
+	pixDetail = await client.getVideoGenerationTask(pixTask.taskId);
+	console.log(`PixVerse status: ${pixDetail.status}`);
+}
+if (pixDetail.status === 'success') {
+	console.log(`PixVerse video URL: ${pixDetail.videoUrl}`);
+}
+
 function sleep(ms: number) {
 	return new Promise((r) => setTimeout(r, ms));
 }

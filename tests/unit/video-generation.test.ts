@@ -212,4 +212,67 @@ describe('Video Generation methods', () => {
 		expect((req.body as any).ratio).toBe('4:5');
 		expect(result).toEqual({tokens: 5000, credits: 15});
 	});
+
+	it('createPixVerseVideoGeneration sends POST /v1/video-generation/pixverse/generate', async () => {
+		mockJsonResponse({taskId: 'pv-1', episodeId: 'ep-1', status: 'generating'});
+		const result = await client.createPixVerseVideoGeneration({
+			capability: 'text_to_video',
+			prompt: '一只猫在花园里奔跑',
+			quality: '720p',
+			aspectRatio: '16:9',
+			duration: 5,
+		});
+		const req = await capturedRequest();
+		expect(req.url).toBe('https://api.test.com/api/v1/video-generation/pixverse/generate');
+		expect(req.method).toBe('POST');
+		expect((req.body as any).capability).toBe('text_to_video');
+		expect((req.body as any).prompt).toBe('一只猫在花园里奔跑');
+		expect((req.body as any).quality).toBe('720p');
+		expect((req.body as any).aspectRatio).toBe('16:9');
+		expect((req.body as any).duration).toBe(5);
+		expect(result).toEqual({taskId: 'pv-1', episodeId: 'ep-1', status: 'generating'});
+	});
+
+	it('createPixVerseVideoGeneration forwards nested pixverse agent options', async () => {
+		mockJsonResponse({taskId: 'pv-2', status: 'generating'});
+		const result = await client.createPixVerseVideoGeneration({
+			capability: 'agent',
+			model: 'v6',
+			language: 'zh',
+			prompt: '为这款产品制作一支广告',
+			images: [
+				{url: 'https://example.com/p1.jpg'},
+				{url: 'https://example.com/p2.jpg'},
+				{url: 'https://example.com/p3.jpg'},
+				{url: 'https://example.com/p4.jpg'},
+			],
+			quality: '1080p',
+			duration: 30,
+			pixverse: {agentType: 'promo_mix'},
+		});
+		const req = await capturedRequest();
+		expect(req.url).toBe('https://api.test.com/api/v1/video-generation/pixverse/generate');
+		expect((req.body as any).capability).toBe('agent');
+		expect((req.body as any).model).toBe('v6');
+		expect((req.body as any).language).toBe('zh');
+		expect((req.body as any).images).toHaveLength(4);
+		expect((req.body as any).pixverse.agentType).toBe('promo_mix');
+		expect(result).toEqual({taskId: 'pv-2', status: 'generating'});
+	});
+
+	it('estimatePixVerseVideoCredits sends POST /v1/video-generation/pixverse/estimate-credits', async () => {
+		mockJsonResponse({tokens: 2000, credits: 7});
+		const result = await client.estimatePixVerseVideoCredits({
+			capability: 'text_to_video',
+			quality: '720p',
+			duration: 5,
+		});
+		const req = await capturedRequest();
+		expect(req.url).toBe('https://api.test.com/api/v1/video-generation/pixverse/estimate-credits');
+		expect(req.method).toBe('POST');
+		expect((req.body as any).capability).toBe('text_to_video');
+		expect((req.body as any).quality).toBe('720p');
+		expect((req.body as any).duration).toBe(5);
+		expect(result).toEqual({tokens: 2000, credits: 7});
+	});
 });

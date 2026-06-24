@@ -46,6 +46,9 @@ import type {
 	OpenAPIListVideoGenerationTasksResponse,
 	OpenAPIEstimateVideoCreditsParams,
 	OpenAPIEstimateVideoCreditsResponse,
+	OpenAPICreatePixVerseVideoParams,
+	OpenAPICreatePixVerseVideoResponse,
+	OpenAPIEstimatePixVerseCreditsParams,
 	OpenAPICreateContentExtractParams,
 	OpenAPIContentExtractDetail,
 	OpenAPISubscriptionInfo,
@@ -229,6 +232,16 @@ export class OpenAPIClient {
 		params: OpenAPIEstimateVideoCreditsParams,
 	): Promise<OpenAPIEstimateVideoCreditsResponse> {
 		return this.api.post('v1/video-generation/estimate-credits', {json: params}).json();
+	}
+	async createPixVerseVideoGeneration(
+		params: OpenAPICreatePixVerseVideoParams,
+	): Promise<OpenAPICreatePixVerseVideoResponse> {
+		return this.api.post('v1/video-generation/pixverse/generate', {json: params}).json();
+	}
+	async estimatePixVerseVideoCredits(
+		params: OpenAPIEstimatePixVerseCreditsParams,
+	): Promise<OpenAPIEstimateVideoCreditsResponse> {
+		return this.api.post('v1/video-generation/pixverse/estimate-credits', {json: params}).json();
 	}
 
 	// --- Content Extract ---

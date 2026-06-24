@@ -66,6 +66,10 @@ import type {
 	ListVideoGenerationTasksResponse,
 	EstimateVideoGenerationCreditsParams,
 	EstimateVideoGenerationCreditsResponse,
+	CreatePixVerseVideoParams,
+	CreatePixVerseVideoResponse,
+	EstimatePixVerseVideoCreditsParams,
+	EstimatePixVerseVideoCreditsResponse,
 } from './types/video-generation.js';
 
 export class ListenHubClient {
@@ -406,5 +410,21 @@ export class ListenHubClient {
 		return this.api
 			.post('v1/video-generation/estimate-credits', {json: params})
 			.json<EstimateVideoGenerationCreditsResponse>();
+	}
+
+	async createPixVerseVideoGeneration(
+		params: CreatePixVerseVideoParams,
+	): Promise<CreatePixVerseVideoResponse> {
+		return this.api
+			.post('v1/video-generation/pixverse/generate', {json: params})
+			.json<CreatePixVerseVideoResponse>();
+	}
+
+	async estimatePixVerseVideoCredits(
+		params: EstimatePixVerseVideoCreditsParams,
+	): Promise<EstimatePixVerseVideoCreditsResponse> {
+		return this.api
+			.post('v1/video-generation/pixverse/estimate-credits', {json: params})
+			.json<EstimatePixVerseVideoCreditsResponse>();
 	}
 }
