@@ -175,7 +175,7 @@ await client.createMusicRemix({
 const {result} = await client.describeMusic({audio, audioFilename: 'song.mp3'});
 ```
 
-### Video Generation (SeeDance2.0 / HappyHorse)
+### Video Generation (SeeDance2.0 / HappyHorse / PixVerse)
 
 | Method                                   | Description                                         |
 | ---------------------------------------- | --------------------------------------------------- |
@@ -183,8 +183,10 @@ const {result} = await client.describeMusic({audio, audioFilename: 'song.mp3'});
 | `getVideoGenerationTask(taskId)`         | Get video generation task status and details        |
 | `listVideoGenerationTasks(params?)`      | List video generation tasks with optional filtering |
 | `estimateVideoGenerationCredits(params)` | Estimate credit cost before generating              |
+| `createPixVerseVideoGeneration(params)`  | Create a PixVerse video generation task             |
+| `estimatePixVerseVideoCredits(params)`   | Estimate PixVerse credit cost before generating     |
 
-Supported models: `doubao-seedance-2-pro`, `doubao-seedance-2-fast`, `happyhorse`
+Supported models: `doubao-seedance-2-pro`, `doubao-seedance-2-fast`, `happyhorse`; PixVerse: `pixverse`, `v6`, `v5`, `v4.5`
 
 **HappyHorse examples:**
 
@@ -220,6 +222,53 @@ await client.createVideoGeneration({
 	duration: 5,
 	inputVideoDuration: 10,
 	audioSetting: 'origin',
+});
+```
+
+**PixVerse examples:**
+
+PixVerse uses a separate endpoint (`createPixVerseVideoGeneration`) with a `capability`-driven
+request shape. Poll results with the shared `getVideoGenerationTask` / `listVideoGenerationTasks`.
+
+```ts
+// Estimate credits
+const {credits} = await client.estimatePixVerseVideoCredits({
+	capability: 'text_to_video',
+	quality: '720p',
+	duration: 5,
+});
+
+// Text-to-Video (defaults: model 'pixverse', language 'en', quality '720p', aspectRatio '16:9')
+await client.createPixVerseVideoGeneration({
+	capability: 'text_to_video',
+	prompt: '一只猫在花园里奔跑',
+	quality: '720p',
+	aspectRatio: '16:9',
+	duration: 5,
+});
+
+// Image-to-Video
+await client.createPixVerseVideoGeneration({
+	capability: 'image_to_video',
+	prompt: '让画面动起来',
+	images: [{url: 'https://example.com/cat.jpg'}],
+	quality: '1080p',
+	duration: 5,
+});
+
+// Marketing Agent (promo_mix needs >= 4 images; agent duration must be 20/30/60)
+await client.createPixVerseVideoGeneration({
+	capability: 'agent',
+	prompt: '为这款产品制作一支广告',
+	images: [
+		{url: 'https://example.com/p1.jpg'},
+		{url: 'https://example.com/p2.jpg'},
+		{url: 'https://example.com/p3.jpg'},
+		{url: 'https://example.com/p4.jpg'},
+	],
+	quality: '1080p',
+	duration: 30,
+	pixverse: {agentType: 'promo_mix'},
 });
 ```
 

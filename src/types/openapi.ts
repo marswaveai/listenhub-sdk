@@ -244,6 +244,91 @@ export interface OpenAPIEstimateVideoCreditsResponse {
 	credits: number;
 }
 
+// --- PixVerse Video Generation ---
+export type OpenAPIPixVerseModel = 'pixverse' | 'v6' | 'v5' | 'v4.5';
+export type OpenAPIPixVerseLanguage = 'zh' | 'en';
+export type OpenAPIPixVerseCapability =
+	| 'text_to_video'
+	| 'image_to_video'
+	| 'transition'
+	| 'multi_transition'
+	| 'fusion'
+	| 'restyle'
+	| 'mimic'
+	| 'lip_sync'
+	| 'agent';
+export type OpenAPIPixVerseQuality = '360p' | '540p' | '720p' | '1080p';
+export type OpenAPIPixVerseAspectRatio = '9:16' | '16:9' | '1:1' | '4:3' | '3:4';
+export type OpenAPIPixVerseAgentType = 'ad_master' | 'promo_mix';
+export interface OpenAPIPixVerseAsset {
+	url: string;
+	duration?: number;
+}
+export interface OpenAPIPixVerseOptions {
+	agentType?: OpenAPIPixVerseAgentType;
+	motionMode?: string;
+	cameraMovement?: string;
+	templateId?: string | number;
+	sourceVideoId?: string | number;
+	restyleId?: string | number;
+	multiTransition?: Array<{imageUrl: string; duration: number; prompt: string}>;
+	imageReferences?: Array<{type: 'subject' | 'background'; imageUrl: string; refName: string}>;
+	tts?: {speakerId: string; content: string};
+	soundEffectSwitch?: boolean;
+	soundEffectContent?: string;
+	lipSyncTtsSwitch?: boolean;
+	lipSyncTtsSpeakerId?: string;
+	lipSyncTtsContent?: string;
+	brandSticker?: {
+		imageUrl: string;
+		position:
+			| 'up'
+			| 'down'
+			| 'left'
+			| 'right'
+			| 'upper_left'
+			| 'lower_left'
+			| 'upper_right'
+			| 'lower_right';
+	};
+	introOutroClip?: {videoUrl: string; position: 'start' | 'end'};
+}
+export interface OpenAPICreatePixVerseVideoParams {
+	capability: OpenAPIPixVerseCapability;
+	model?: OpenAPIPixVerseModel;
+	language?: OpenAPIPixVerseLanguage;
+	prompt?: string;
+	duration?: number;
+	aspectRatio?: OpenAPIPixVerseAspectRatio;
+	quality?: OpenAPIPixVerseQuality;
+	sourceTaskId?: string;
+	images?: OpenAPIPixVerseAsset[];
+	videos?: OpenAPIPixVerseAsset[];
+	audios?: OpenAPIPixVerseAsset[];
+	pixverse?: OpenAPIPixVerseOptions;
+}
+export interface OpenAPICreatePixVerseVideoResponse {
+	taskId: string;
+	episodeId?: string;
+	status: 'generating';
+}
+export interface OpenAPIEstimatePixVerseCreditsParams {
+	capability: OpenAPIPixVerseCapability;
+	model?: OpenAPIPixVerseModel;
+	language?: OpenAPIPixVerseLanguage;
+	duration?: number;
+	quality?: OpenAPIPixVerseQuality;
+	pixverse?: {
+		agentType?: OpenAPIPixVerseAgentType;
+		soundEffectSwitch?: boolean;
+		lipSyncTtsSwitch?: boolean;
+		sourceDuration?: number;
+		inputAudioDuration?: number;
+		multiTransition?: Array<{duration: number}>;
+		tts?: {content: string};
+	};
+}
+
 // --- Content Extract ---
 export interface OpenAPICreateContentExtractParams {
 	source: {type: 'url'; uri: string};
