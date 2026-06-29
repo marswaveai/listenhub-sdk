@@ -71,6 +71,13 @@ import type {
 	EstimatePixVerseVideoCreditsParams,
 	EstimatePixVerseVideoCreditsResponse,
 } from './types/video-generation.js';
+import type {
+	CreateSeedAudioParams,
+	CreateSeedAudioResponse,
+	SeedAudioTaskDetail,
+	ListSeedAudioTasksParams,
+	ListSeedAudioTasksResponse,
+} from './types/seed-audio.js';
 
 export class ListenHubClient {
 	public readonly api: KyInstance;
@@ -426,5 +433,25 @@ export class ListenHubClient {
 		return this.api
 			.post('v1/video-generation/pixverse/estimate-credits', {json: params})
 			.json<EstimatePixVerseVideoCreditsResponse>();
+	}
+
+	// --- Seed Audio ---
+
+	async createSeedAudio(params: CreateSeedAudioParams): Promise<CreateSeedAudioResponse> {
+		return this.api.post('v1/seed-audio/generate', {json: params}).json<CreateSeedAudioResponse>();
+	}
+
+	async getSeedAudioTask(taskId: string): Promise<SeedAudioTaskDetail> {
+		return this.api.get(`v1/seed-audio/tasks/${taskId}`).json<SeedAudioTaskDetail>();
+	}
+
+	async listSeedAudioTasks(
+		params: ListSeedAudioTasksParams = {},
+	): Promise<ListSeedAudioTasksResponse> {
+		return this.api
+			.get('v1/seed-audio/tasks', {
+				searchParams: params as Record<string, string | number | boolean>,
+			})
+			.json<ListSeedAudioTasksResponse>();
 	}
 }

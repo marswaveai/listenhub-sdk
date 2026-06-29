@@ -44,6 +44,11 @@ import type {
 	OpenAPIVideoGenerationTaskDetail,
 	OpenAPIListVideoGenerationTasksParams,
 	OpenAPIListVideoGenerationTasksResponse,
+	OpenAPICreateSeedAudioParams,
+	OpenAPICreateSeedAudioResponse,
+	OpenAPISeedAudioTaskDetail,
+	OpenAPIListSeedAudioTasksParams,
+	OpenAPIListSeedAudioTasksResponse,
 	OpenAPIEstimateVideoCreditsParams,
 	OpenAPIEstimateVideoCreditsResponse,
 	OpenAPICreatePixVerseVideoParams,
@@ -242,6 +247,25 @@ export class OpenAPIClient {
 		params: OpenAPIEstimatePixVerseCreditsParams,
 	): Promise<OpenAPIEstimateVideoCreditsResponse> {
 		return this.api.post('v1/video-generation/pixverse/estimate-credits', {json: params}).json();
+	}
+
+	// --- Seed Audio ---
+	async createSeedAudio(
+		params: OpenAPICreateSeedAudioParams,
+	): Promise<OpenAPICreateSeedAudioResponse> {
+		return this.api.post('v1/seed-audio/generate', {json: params}).json();
+	}
+	async getSeedAudioTask(taskId: string): Promise<OpenAPISeedAudioTaskDetail> {
+		return this.api.get(`v1/seed-audio/tasks/${taskId}`).json();
+	}
+	async listSeedAudioTasks(
+		params?: OpenAPIListSeedAudioTasksParams,
+	): Promise<OpenAPIListSeedAudioTasksResponse> {
+		return this.api
+			.get('v1/seed-audio/tasks', {
+				searchParams: params as Record<string, string | number | boolean | undefined>,
+			})
+			.json();
 	}
 
 	// --- Content Extract ---

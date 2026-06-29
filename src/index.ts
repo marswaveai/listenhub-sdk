@@ -135,6 +135,21 @@ export type {
 	EstimatePixVerseVideoCreditsParams,
 	EstimatePixVerseVideoCreditsResponse,
 } from './types/video-generation.js';
+export type {
+	SeedAudioModel,
+	SeedAudioTaskStatus,
+	SeedAudioFormat,
+	SeedAudioVoice,
+	SeedAudioImageInput,
+	SeedAudioImageResponse,
+	SeedAudioConfig,
+	CreateSeedAudioParams,
+	CreateSeedAudioResponse,
+	SeedAudioTaskDetail,
+	SeedAudioTaskListItem,
+	ListSeedAudioTasksParams,
+	ListSeedAudioTasksResponse,
+} from './types/seed-audio.js';
 export {OpenAPIClient} from './openapi-client.js';
 export type {
 	OpenAPIClientOptions,
@@ -164,6 +179,12 @@ export type {
 	OpenAPIListVideoGenerationTasksResponse,
 	OpenAPIEstimateVideoCreditsParams,
 	OpenAPIEstimateVideoCreditsResponse,
+	OpenAPISeedAudioTaskStatus,
+	OpenAPICreateSeedAudioParams,
+	OpenAPICreateSeedAudioResponse,
+	OpenAPISeedAudioTaskDetail,
+	OpenAPIListSeedAudioTasksParams,
+	OpenAPIListSeedAudioTasksResponse,
 	OpenAPIPixVerseModel,
 	OpenAPIPixVerseLanguage,
 	OpenAPIPixVerseCapability,

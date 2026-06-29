@@ -85,6 +85,7 @@ const client = new ListenHubClient({
 | [`examples/create-ai-image.ts`](examples/create-ai-image.ts)               | AI image generation from a prompt        |
 | [`examples/music.ts`](examples/music.ts)                                   | Music generation and cover from audio    |
 | [`examples/video-generation.ts`](examples/video-generation.ts)             | Video generation with SeeDance2.0        |
+| [`examples/seed-audio.ts`](examples/seed-audio.ts)                         | Seed audio generation (seed-audio-1.0)   |
 
 ## Documentation
 
@@ -272,6 +273,46 @@ await client.createPixVerseVideoGeneration({
 });
 ```
 
+### Seed Audio (seed-audio-1.0)
+
+| Method                        | Description                                   |
+| ----------------------------- | --------------------------------------------- |
+| `createSeedAudio(params)`     | Create a seed-audio generation task           |
+| `getSeedAudioTask(taskId)`    | Get seed-audio task status and audio URL      |
+| `listSeedAudioTasks(params?)` | List seed-audio tasks with optional filtering |
+
+Constraints (enforced server-side): `text` <= 1400 chars; `voices` 1-3 items; `voices` and `image` are mutually exclusive; `durationHint` in `[1, 110]`. `audioUrl` is only present when `status === 'success'`.
+
+```ts
+// Single voice (id is a ListenHub speakerInnerId or a Doubao voice_type)
+const task = await client.createSeedAudio({
+	text: '欢迎收听 ListenHub。',
+	voices: [{type: 'speaker', id: 'zh_female_wanwanxiaohe_moon_bigtts'}],
+	audioConfig: {format: 'mp3'},
+	durationHint: 30,
+});
+
+// Multi-voice dialogue (each item should be a custom reference audio)
+await client.createSeedAudio({
+	text: '@音频1 你好。@音频2 你也好。',
+	voices: [
+		{type: 'reference', url: 'https://example.com/voice-a.mp3'},
+		{type: 'reference', url: 'https://example.com/voice-b.mp3'},
+	],
+});
+
+// Image-to-audio (mutually exclusive with voices)
+await client.createSeedAudio({
+	text: '为这张图配一段旁白。',
+	image: {url: 'https://example.com/scene.jpg'},
+});
+
+const detail = await client.getSeedAudioTask(task.taskId);
+if (detail.status === 'success') {
+	console.log(detail.audioUrl, detail.audioDuration);
+}
+```
+
 ### List by product
 
 | Method                         | Description                             |
@@ -365,6 +406,14 @@ The `OpenAPIClient` provides access to all OpenAPI endpoints using API Key authe
 | `getVideoGenerationTask(taskId)`    | Get task status and video URL          |
 | `listVideoGenerationTasks(params?)` | List tasks with optional filtering     |
 | `estimateVideoCredits(params)`      | Estimate credit cost before generating |
+
+### Seed Audio
+
+| Method                        | Description                         |
+| ----------------------------- | ----------------------------------- |
+| `createSeedAudio(params)`     | Create a seed-audio generation task |
+| `getSeedAudioTask(taskId)`    | Get task status and audio URL       |
+| `listSeedAudioTasks(params?)` | List tasks with optional filtering  |
 
 ### Content Extract
 

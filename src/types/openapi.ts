@@ -244,6 +244,75 @@ export interface OpenAPIEstimateVideoCreditsResponse {
 	credits: number;
 }
 
+// --- Seed Audio ---
+export type OpenAPISeedAudioTaskStatus =
+	| 'pending'
+	| 'generating'
+	| 'uploading'
+	| 'success'
+	| 'failed';
+export interface OpenAPICreateSeedAudioParams {
+	model?: 'seed-audio-1.0';
+	/** Required, trimmed, max 1400 chars. */
+	text: string;
+	/** 1-3 items; multi-voice (>1) requires reference voices; mutually exclusive with `image`. */
+	voices?: Array<{type: 'speaker'; id: string} | {type: 'reference'; url: string}>;
+	/** Exactly one of `url`/`data`; mutually exclusive with `voices`. */
+	image?: {url?: string; data?: string};
+	audioConfig?: {
+		speechRate?: number;
+		loudnessRate?: number;
+		pitchRate?: number;
+		format?: 'mp3' | 'wav' | 'pcm' | 'ogg_opus';
+	};
+	/** Range [1, 110]. */
+	durationHint?: number;
+	watermark?: boolean;
+}
+export interface OpenAPICreateSeedAudioResponse {
+	taskId: string;
+	status: OpenAPISeedAudioTaskStatus;
+}
+export interface OpenAPISeedAudioTaskDetail {
+	id: string;
+	status: OpenAPISeedAudioTaskStatus;
+	model: string;
+	params: {
+		text: string;
+		voices?: Array<{type: 'speaker'; id: string} | {type: 'reference'; url: string}>;
+		/** Sanitized: never contains base64 `data`. */
+		image?: {url?: string; hasData?: boolean; thumbnailUrl?: string};
+		audioConfig?: {
+			speechRate?: number;
+			loudnessRate?: number;
+			pitchRate?: number;
+			format?: 'mp3' | 'wav' | 'pcm' | 'ogg_opus';
+		};
+		durationHint?: number;
+		watermark?: boolean;
+	};
+	/** Only exposed when `status === 'success'`. */
+	audioUrl?: string;
+	audioDuration?: number;
+	creditCharged: number;
+	creditRefunded: number;
+	errorMessage?: string;
+	createdAt: number;
+	updatedAt: number;
+}
+export interface OpenAPIListSeedAudioTasksParams {
+	page?: number;
+	pageSize?: number;
+	status?: OpenAPISeedAudioTaskStatus;
+	keyword?: string;
+}
+export interface OpenAPIListSeedAudioTasksResponse {
+	items: OpenAPISeedAudioTaskDetail[];
+	page: number;
+	pageSize: number;
+	total: number;
+}
+
 // --- PixVerse Video Generation ---
 export type OpenAPIPixVerseModel = 'pixverse' | 'v6' | 'v5' | 'v4.5';
 export type OpenAPIPixVerseLanguage = 'zh' | 'en';
