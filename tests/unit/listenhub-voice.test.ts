@@ -30,18 +30,18 @@ function mockJsonResponse(data: unknown) {
 	});
 }
 
-describe('Seed Audio methods', () => {
+describe('ListenHub Voice methods', () => {
 	const client = new ListenHubClient({baseURL: 'https://api.test.com/api'});
 
-	it('createSeedAudio sends POST /v1/seed-audio/generate with params', async () => {
+	it('createListenHubVoice sends POST /v1/listenhub-voice/generate with params', async () => {
 		mockJsonResponse({taskId: 'sa-1', status: 'pending'});
-		const result = await client.createSeedAudio({
+		const result = await client.createListenHubVoice({
 			text: '欢迎收听 ListenHub。',
 			voices: [{type: 'speaker', id: 'zh_female_wanwanxiaohe_moon_bigtts'}],
 			audioConfig: {format: 'mp3'},
 		});
 		const req = await capturedRequest();
-		expect(req.url).toBe('https://api.test.com/api/v1/seed-audio/generate');
+		expect(req.url).toBe('https://api.test.com/api/v1/listenhub-voice/generate');
 		expect(req.method).toBe('POST');
 		expect((req.body as any).text).toBe('欢迎收听 ListenHub。');
 		expect((req.body as any).voices).toHaveLength(1);
@@ -53,26 +53,26 @@ describe('Seed Audio methods', () => {
 		expect(result).toEqual({taskId: 'sa-1', status: 'pending'});
 	});
 
-	it('createSeedAudio image variant sends image and no voices', async () => {
+	it('createListenHubVoice image variant sends image and no voices', async () => {
 		mockJsonResponse({taskId: 'sa-2', status: 'pending'});
-		const result = await client.createSeedAudio({
+		const result = await client.createListenHubVoice({
 			text: '为这张图配一段旁白。',
 			image: {url: 'https://example.com/scene.jpg'},
 		});
 		const req = await capturedRequest();
-		expect(req.url).toBe('https://api.test.com/api/v1/seed-audio/generate');
+		expect(req.url).toBe('https://api.test.com/api/v1/listenhub-voice/generate');
 		expect(req.method).toBe('POST');
 		expect((req.body as any).image.url).toBe('https://example.com/scene.jpg');
 		expect((req.body as any).voices).toBeUndefined();
 		expect(result).toEqual({taskId: 'sa-2', status: 'pending'});
 	});
 
-	it('getSeedAudioTask sends GET /v1/seed-audio/tasks/:taskId', async () => {
+	it('getListenHubVoiceTask sends GET /v1/listenhub-voice/tasks/:taskId', async () => {
 		mockFetch.mockResolvedValueOnce(
 			jsonResponse({
 				id: 'sa-1',
 				status: 'success',
-				model: 'seed-audio-1.0',
+				model: 'listenhub-voice-1.0',
 				params: {
 					text: '欢迎收听 ListenHub。',
 					image: {
@@ -88,10 +88,10 @@ describe('Seed Audio methods', () => {
 				updatedAt: 1700000060000,
 			}),
 		);
-		const result = await client.getSeedAudioTask('sa-1');
+		const result = await client.getListenHubVoiceTask('sa-1');
 		const req = mockFetch.mock.calls[0][0] as Request;
 		expect(req.method).toBe('GET');
-		expect(req.url).toBe('https://api.test.com/api/v1/seed-audio/tasks/sa-1');
+		expect(req.url).toBe('https://api.test.com/api/v1/listenhub-voice/tasks/sa-1');
 		expect(result.id).toBe('sa-1');
 		expect(result.status).toBe('success');
 		expect(result.audioUrl).toBe('https://cdn.example.com/audio.mp3');
@@ -100,14 +100,14 @@ describe('Seed Audio methods', () => {
 		expect(result.params.image?.thumbnailUrl).toBe('https://cdn.example.com/thumb.webp');
 	});
 
-	it('listSeedAudioTasks sends GET /v1/seed-audio/tasks with query params', async () => {
+	it('listListenHubVoiceTasks sends GET /v1/listenhub-voice/tasks with query params', async () => {
 		mockFetch.mockResolvedValueOnce(
 			jsonResponse({
 				items: [
 					{
 						id: 'sa-1',
 						status: 'success',
-						model: 'seed-audio-1.0',
+						model: 'listenhub-voice-1.0',
 						params: {text: '欢迎收听 ListenHub。'},
 						audioUrl: 'https://cdn.example.com/audio.mp3',
 						audioDuration: 12,
@@ -122,7 +122,7 @@ describe('Seed Audio methods', () => {
 				total: 1,
 			}),
 		);
-		const result = await client.listSeedAudioTasks({
+		const result = await client.listListenHubVoiceTasks({
 			page: 1,
 			pageSize: 10,
 			status: 'success',
@@ -130,7 +130,7 @@ describe('Seed Audio methods', () => {
 		});
 		const req = mockFetch.mock.calls[0][0] as Request;
 		expect(req.method).toBe('GET');
-		expect(req.url).toContain('v1/seed-audio/tasks');
+		expect(req.url).toContain('v1/listenhub-voice/tasks');
 		expect(req.url).toContain('page=1');
 		expect(req.url).toContain('pageSize=10');
 		expect(req.url).toContain('status=success');

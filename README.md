@@ -74,18 +74,18 @@ const client = new ListenHubClient({
 
 ### OAuth (ListenHubClient)
 
-| File                                                                       | Description                              |
-| -------------------------------------------------------------------------- | ---------------------------------------- |
-| [`examples/oauth-login.ts`](examples/oauth-login.ts)                       | Browser-based OAuth login flow           |
-| [`examples/basic.ts`](examples/basic.ts)                                   | Checkin, API key, error handling         |
-| [`examples/create-podcast.ts`](examples/create-podcast.ts)                 | Create a duo podcast and poll for result |
-| [`examples/create-tts.ts`](examples/create-tts.ts)                         | Text-to-speech from plain text           |
-| [`examples/create-explainer-video.ts`](examples/create-explainer-video.ts) | Explainer video from a URL               |
-| [`examples/create-slides.ts`](examples/create-slides.ts)                   | Slide deck presentation                  |
-| [`examples/create-ai-image.ts`](examples/create-ai-image.ts)               | AI image generation from a prompt        |
-| [`examples/music.ts`](examples/music.ts)                                   | Music generation and cover from audio    |
-| [`examples/video-generation.ts`](examples/video-generation.ts)             | Video generation with SeeDance2.0        |
-| [`examples/seed-audio.ts`](examples/seed-audio.ts)                         | Seed audio generation (seed-audio-1.0)   |
+| File                                                                       | Description                                      |
+| -------------------------------------------------------------------------- | ------------------------------------------------ |
+| [`examples/oauth-login.ts`](examples/oauth-login.ts)                       | Browser-based OAuth login flow                   |
+| [`examples/basic.ts`](examples/basic.ts)                                   | Checkin, API key, error handling                 |
+| [`examples/create-podcast.ts`](examples/create-podcast.ts)                 | Create a duo podcast and poll for result         |
+| [`examples/create-tts.ts`](examples/create-tts.ts)                         | Text-to-speech from plain text                   |
+| [`examples/create-explainer-video.ts`](examples/create-explainer-video.ts) | Explainer video from a URL                       |
+| [`examples/create-slides.ts`](examples/create-slides.ts)                   | Slide deck presentation                          |
+| [`examples/create-ai-image.ts`](examples/create-ai-image.ts)               | AI image generation from a prompt                |
+| [`examples/music.ts`](examples/music.ts)                                   | Music generation and cover from audio            |
+| [`examples/video-generation.ts`](examples/video-generation.ts)             | Video generation with SeeDance2.0                |
+| [`examples/listenhub-voice.ts`](examples/listenhub-voice.ts)               | ListenHub Voice generation (listenhub-voice-1.0) |
 
 ## Documentation
 
@@ -273,19 +273,19 @@ await client.createPixVerseVideoGeneration({
 });
 ```
 
-### Seed Audio (seed-audio-1.0)
+### ListenHub Voice (listenhub-voice-1.0)
 
-| Method                        | Description                                   |
-| ----------------------------- | --------------------------------------------- |
-| `createSeedAudio(params)`     | Create a seed-audio generation task           |
-| `getSeedAudioTask(taskId)`    | Get seed-audio task status and audio URL      |
-| `listSeedAudioTasks(params?)` | List seed-audio tasks with optional filtering |
+| Method                             | Description                                        |
+| ---------------------------------- | -------------------------------------------------- |
+| `createListenHubVoice(params)`     | Create a ListenHub Voice generation task           |
+| `getListenHubVoiceTask(taskId)`    | Get ListenHub Voice task status and audio URL      |
+| `listListenHubVoiceTasks(params?)` | List ListenHub Voice tasks with optional filtering |
 
 Constraints (enforced server-side): `text` <= 1400 chars; `voices` 1-3 items; `voices` and `image` are mutually exclusive; `durationHint` in `[1, 110]`. `audioUrl` is only present when `status === 'success'`.
 
 ```ts
-// Single voice (id is a ListenHub speakerInnerId or a Doubao voice_type)
-const task = await client.createSeedAudio({
+// Single voice (id is a ListenHub speakerInnerId or an official platform voice_type)
+const task = await client.createListenHubVoice({
 	text: '欢迎收听 ListenHub。',
 	voices: [{type: 'speaker', id: 'zh_female_wanwanxiaohe_moon_bigtts'}],
 	audioConfig: {format: 'mp3'},
@@ -293,7 +293,7 @@ const task = await client.createSeedAudio({
 });
 
 // Multi-voice dialogue (each item should be a custom reference audio)
-await client.createSeedAudio({
+await client.createListenHubVoice({
 	text: '@音频1 你好。@音频2 你也好。',
 	voices: [
 		{type: 'reference', url: 'https://example.com/voice-a.mp3'},
@@ -302,12 +302,12 @@ await client.createSeedAudio({
 });
 
 // Image-to-audio (mutually exclusive with voices)
-await client.createSeedAudio({
+await client.createListenHubVoice({
 	text: '为这张图配一段旁白。',
 	image: {url: 'https://example.com/scene.jpg'},
 });
 
-const detail = await client.getSeedAudioTask(task.taskId);
+const detail = await client.getListenHubVoiceTask(task.taskId);
 if (detail.status === 'success') {
 	console.log(detail.audioUrl, detail.audioDuration);
 }
@@ -407,13 +407,13 @@ The `OpenAPIClient` provides access to all OpenAPI endpoints using API Key authe
 | `listVideoGenerationTasks(params?)` | List tasks with optional filtering     |
 | `estimateVideoCredits(params)`      | Estimate credit cost before generating |
 
-### Seed Audio
+### ListenHub Voice
 
-| Method                        | Description                         |
-| ----------------------------- | ----------------------------------- |
-| `createSeedAudio(params)`     | Create a seed-audio generation task |
-| `getSeedAudioTask(taskId)`    | Get task status and audio URL       |
-| `listSeedAudioTasks(params?)` | List tasks with optional filtering  |
+| Method                             | Description                              |
+| ---------------------------------- | ---------------------------------------- |
+| `createListenHubVoice(params)`     | Create a ListenHub Voice generation task |
+| `getListenHubVoiceTask(taskId)`    | Get task status and audio URL            |
+| `listListenHubVoiceTasks(params?)` | List tasks with optional filtering       |
 
 ### Content Extract
 

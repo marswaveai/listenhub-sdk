@@ -244,15 +244,15 @@ export interface OpenAPIEstimateVideoCreditsResponse {
 	credits: number;
 }
 
-// --- Seed Audio ---
-export type OpenAPISeedAudioTaskStatus =
+// --- ListenHub Voice ---
+export type OpenAPIListenHubVoiceTaskStatus =
 	| 'pending'
 	| 'generating'
 	| 'uploading'
 	| 'success'
 	| 'failed';
-export interface OpenAPICreateSeedAudioParams {
-	model?: 'seed-audio-1.0';
+export interface OpenAPICreateListenHubVoiceParams {
+	model?: 'listenhub-voice-1.0';
 	/** Required, trimmed, max 1400 chars. */
 	text: string;
 	/** 1-3 items; multi-voice (>1) requires reference voices; mutually exclusive with `image`. */
@@ -269,13 +269,13 @@ export interface OpenAPICreateSeedAudioParams {
 	durationHint?: number;
 	watermark?: boolean;
 }
-export interface OpenAPICreateSeedAudioResponse {
+export interface OpenAPICreateListenHubVoiceResponse {
 	taskId: string;
-	status: OpenAPISeedAudioTaskStatus;
+	status: OpenAPIListenHubVoiceTaskStatus;
 }
-export interface OpenAPISeedAudioTaskDetail {
+export interface OpenAPIListenHubVoiceTaskDetail {
 	id: string;
-	status: OpenAPISeedAudioTaskStatus;
+	status: OpenAPIListenHubVoiceTaskStatus;
 	model: string;
 	params: {
 		text: string;
@@ -300,14 +300,14 @@ export interface OpenAPISeedAudioTaskDetail {
 	createdAt: number;
 	updatedAt: number;
 }
-export interface OpenAPIListSeedAudioTasksParams {
+export interface OpenAPIListListenHubVoiceTasksParams {
 	page?: number;
 	pageSize?: number;
-	status?: OpenAPISeedAudioTaskStatus;
+	status?: OpenAPIListenHubVoiceTaskStatus;
 	keyword?: string;
 }
-export interface OpenAPIListSeedAudioTasksResponse {
-	items: OpenAPISeedAudioTaskDetail[];
+export interface OpenAPIListListenHubVoiceTasksResponse {
+	items: OpenAPIListenHubVoiceTaskDetail[];
 	page: number;
 	pageSize: number;
 	total: number;

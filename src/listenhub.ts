@@ -72,12 +72,12 @@ import type {
 	EstimatePixVerseVideoCreditsResponse,
 } from './types/video-generation.js';
 import type {
-	CreateSeedAudioParams,
-	CreateSeedAudioResponse,
-	SeedAudioTaskDetail,
-	ListSeedAudioTasksParams,
-	ListSeedAudioTasksResponse,
-} from './types/seed-audio.js';
+	CreateListenHubVoiceParams,
+	CreateListenHubVoiceResponse,
+	ListenHubVoiceTaskDetail,
+	ListListenHubVoiceTasksParams,
+	ListListenHubVoiceTasksResponse,
+} from './types/listenhub-voice.js';
 
 export class ListenHubClient {
 	public readonly api: KyInstance;
@@ -435,23 +435,27 @@ export class ListenHubClient {
 			.json<EstimatePixVerseVideoCreditsResponse>();
 	}
 
-	// --- Seed Audio ---
+	// --- ListenHub Voice ---
 
-	async createSeedAudio(params: CreateSeedAudioParams): Promise<CreateSeedAudioResponse> {
-		return this.api.post('v1/seed-audio/generate', {json: params}).json<CreateSeedAudioResponse>();
-	}
-
-	async getSeedAudioTask(taskId: string): Promise<SeedAudioTaskDetail> {
-		return this.api.get(`v1/seed-audio/tasks/${taskId}`).json<SeedAudioTaskDetail>();
-	}
-
-	async listSeedAudioTasks(
-		params: ListSeedAudioTasksParams = {},
-	): Promise<ListSeedAudioTasksResponse> {
+	async createListenHubVoice(
+		params: CreateListenHubVoiceParams,
+	): Promise<CreateListenHubVoiceResponse> {
 		return this.api
-			.get('v1/seed-audio/tasks', {
+			.post('v1/listenhub-voice/generate', {json: params})
+			.json<CreateListenHubVoiceResponse>();
+	}
+
+	async getListenHubVoiceTask(taskId: string): Promise<ListenHubVoiceTaskDetail> {
+		return this.api.get(`v1/listenhub-voice/tasks/${taskId}`).json<ListenHubVoiceTaskDetail>();
+	}
+
+	async listListenHubVoiceTasks(
+		params: ListListenHubVoiceTasksParams = {},
+	): Promise<ListListenHubVoiceTasksResponse> {
+		return this.api
+			.get('v1/listenhub-voice/tasks', {
 				searchParams: params as Record<string, string | number | boolean>,
 			})
-			.json<ListSeedAudioTasksResponse>();
+			.json<ListListenHubVoiceTasksResponse>();
 	}
 }

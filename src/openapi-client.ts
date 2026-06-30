@@ -44,11 +44,11 @@ import type {
 	OpenAPIVideoGenerationTaskDetail,
 	OpenAPIListVideoGenerationTasksParams,
 	OpenAPIListVideoGenerationTasksResponse,
-	OpenAPICreateSeedAudioParams,
-	OpenAPICreateSeedAudioResponse,
-	OpenAPISeedAudioTaskDetail,
-	OpenAPIListSeedAudioTasksParams,
-	OpenAPIListSeedAudioTasksResponse,
+	OpenAPICreateListenHubVoiceParams,
+	OpenAPICreateListenHubVoiceResponse,
+	OpenAPIListenHubVoiceTaskDetail,
+	OpenAPIListListenHubVoiceTasksParams,
+	OpenAPIListListenHubVoiceTasksResponse,
 	OpenAPIEstimateVideoCreditsParams,
 	OpenAPIEstimateVideoCreditsResponse,
 	OpenAPICreatePixVerseVideoParams,
@@ -249,20 +249,20 @@ export class OpenAPIClient {
 		return this.api.post('v1/video-generation/pixverse/estimate-credits', {json: params}).json();
 	}
 
-	// --- Seed Audio ---
-	async createSeedAudio(
-		params: OpenAPICreateSeedAudioParams,
-	): Promise<OpenAPICreateSeedAudioResponse> {
-		return this.api.post('v1/seed-audio/generate', {json: params}).json();
+	// --- ListenHub Voice ---
+	async createListenHubVoice(
+		params: OpenAPICreateListenHubVoiceParams,
+	): Promise<OpenAPICreateListenHubVoiceResponse> {
+		return this.api.post('v1/listenhub-voice/generate', {json: params}).json();
 	}
-	async getSeedAudioTask(taskId: string): Promise<OpenAPISeedAudioTaskDetail> {
-		return this.api.get(`v1/seed-audio/tasks/${taskId}`).json();
+	async getListenHubVoiceTask(taskId: string): Promise<OpenAPIListenHubVoiceTaskDetail> {
+		return this.api.get(`v1/listenhub-voice/tasks/${taskId}`).json();
 	}
-	async listSeedAudioTasks(
-		params?: OpenAPIListSeedAudioTasksParams,
-	): Promise<OpenAPIListSeedAudioTasksResponse> {
+	async listListenHubVoiceTasks(
+		params?: OpenAPIListListenHubVoiceTasksParams,
+	): Promise<OpenAPIListListenHubVoiceTasksResponse> {
 		return this.api
-			.get('v1/seed-audio/tasks', {
+			.get('v1/listenhub-voice/tasks', {
 				searchParams: params as Record<string, string | number | boolean | undefined>,
 			})
 			.json();
