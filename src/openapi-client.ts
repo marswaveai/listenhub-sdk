@@ -44,6 +44,11 @@ import type {
 	OpenAPIVideoGenerationTaskDetail,
 	OpenAPIListVideoGenerationTasksParams,
 	OpenAPIListVideoGenerationTasksResponse,
+	OpenAPICreateListenHubVoiceParams,
+	OpenAPICreateListenHubVoiceResponse,
+	OpenAPIListenHubVoiceTaskDetail,
+	OpenAPIListListenHubVoiceTasksParams,
+	OpenAPIListListenHubVoiceTasksResponse,
 	OpenAPIEstimateVideoCreditsParams,
 	OpenAPIEstimateVideoCreditsResponse,
 	OpenAPICreatePixVerseVideoParams,
@@ -242,6 +247,25 @@ export class OpenAPIClient {
 		params: OpenAPIEstimatePixVerseCreditsParams,
 	): Promise<OpenAPIEstimateVideoCreditsResponse> {
 		return this.api.post('v1/video-generation/pixverse/estimate-credits', {json: params}).json();
+	}
+
+	// --- ListenHub Voice ---
+	async createListenHubVoice(
+		params: OpenAPICreateListenHubVoiceParams,
+	): Promise<OpenAPICreateListenHubVoiceResponse> {
+		return this.api.post('v1/listenhub-voice/generate', {json: params}).json();
+	}
+	async getListenHubVoiceTask(taskId: string): Promise<OpenAPIListenHubVoiceTaskDetail> {
+		return this.api.get(`v1/listenhub-voice/tasks/${taskId}`).json();
+	}
+	async listListenHubVoiceTasks(
+		params?: OpenAPIListListenHubVoiceTasksParams,
+	): Promise<OpenAPIListListenHubVoiceTasksResponse> {
+		return this.api
+			.get('v1/listenhub-voice/tasks', {
+				searchParams: params as Record<string, string | number | boolean | undefined>,
+			})
+			.json();
 	}
 
 	// --- Content Extract ---

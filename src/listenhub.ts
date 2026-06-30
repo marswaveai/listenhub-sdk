@@ -71,6 +71,13 @@ import type {
 	EstimatePixVerseVideoCreditsParams,
 	EstimatePixVerseVideoCreditsResponse,
 } from './types/video-generation.js';
+import type {
+	CreateListenHubVoiceParams,
+	CreateListenHubVoiceResponse,
+	ListenHubVoiceTaskDetail,
+	ListListenHubVoiceTasksParams,
+	ListListenHubVoiceTasksResponse,
+} from './types/listenhub-voice.js';
 
 export class ListenHubClient {
 	public readonly api: KyInstance;
@@ -426,5 +433,29 @@ export class ListenHubClient {
 		return this.api
 			.post('v1/video-generation/pixverse/estimate-credits', {json: params})
 			.json<EstimatePixVerseVideoCreditsResponse>();
+	}
+
+	// --- ListenHub Voice ---
+
+	async createListenHubVoice(
+		params: CreateListenHubVoiceParams,
+	): Promise<CreateListenHubVoiceResponse> {
+		return this.api
+			.post('v1/listenhub-voice/generate', {json: params})
+			.json<CreateListenHubVoiceResponse>();
+	}
+
+	async getListenHubVoiceTask(taskId: string): Promise<ListenHubVoiceTaskDetail> {
+		return this.api.get(`v1/listenhub-voice/tasks/${taskId}`).json<ListenHubVoiceTaskDetail>();
+	}
+
+	async listListenHubVoiceTasks(
+		params: ListListenHubVoiceTasksParams = {},
+	): Promise<ListListenHubVoiceTasksResponse> {
+		return this.api
+			.get('v1/listenhub-voice/tasks', {
+				searchParams: params as Record<string, string | number | boolean>,
+			})
+			.json<ListListenHubVoiceTasksResponse>();
 	}
 }

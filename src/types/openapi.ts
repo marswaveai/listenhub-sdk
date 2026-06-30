@@ -244,6 +244,75 @@ export interface OpenAPIEstimateVideoCreditsResponse {
 	credits: number;
 }
 
+// --- ListenHub Voice ---
+export type OpenAPIListenHubVoiceTaskStatus =
+	| 'pending'
+	| 'generating'
+	| 'uploading'
+	| 'success'
+	| 'failed';
+export interface OpenAPICreateListenHubVoiceParams {
+	model?: 'listenhub-voice-1.0';
+	/** Required, trimmed, max 1400 chars. */
+	text: string;
+	/** 1-3 items; multi-voice (>1) requires reference voices; mutually exclusive with `image`. */
+	voices?: Array<{type: 'speaker'; id: string} | {type: 'reference'; url: string}>;
+	/** Exactly one of `url`/`data`; mutually exclusive with `voices`. */
+	image?: {url?: string; data?: string};
+	audioConfig?: {
+		speechRate?: number;
+		loudnessRate?: number;
+		pitchRate?: number;
+		format?: 'mp3' | 'wav' | 'pcm' | 'ogg_opus';
+	};
+	/** Range [1, 110]. */
+	durationHint?: number;
+	watermark?: boolean;
+}
+export interface OpenAPICreateListenHubVoiceResponse {
+	taskId: string;
+	status: OpenAPIListenHubVoiceTaskStatus;
+}
+export interface OpenAPIListenHubVoiceTaskDetail {
+	id: string;
+	status: OpenAPIListenHubVoiceTaskStatus;
+	model: string;
+	params: {
+		text: string;
+		voices?: Array<{type: 'speaker'; id: string} | {type: 'reference'; url: string}>;
+		/** Sanitized: never contains base64 `data`. */
+		image?: {url?: string; hasData?: boolean; thumbnailUrl?: string};
+		audioConfig?: {
+			speechRate?: number;
+			loudnessRate?: number;
+			pitchRate?: number;
+			format?: 'mp3' | 'wav' | 'pcm' | 'ogg_opus';
+		};
+		durationHint?: number;
+		watermark?: boolean;
+	};
+	/** Only exposed when `status === 'success'`. */
+	audioUrl?: string;
+	audioDuration?: number;
+	creditCharged: number;
+	creditRefunded: number;
+	errorMessage?: string;
+	createdAt: number;
+	updatedAt: number;
+}
+export interface OpenAPIListListenHubVoiceTasksParams {
+	page?: number;
+	pageSize?: number;
+	status?: OpenAPIListenHubVoiceTaskStatus;
+	keyword?: string;
+}
+export interface OpenAPIListListenHubVoiceTasksResponse {
+	items: OpenAPIListenHubVoiceTaskDetail[];
+	page: number;
+	pageSize: number;
+	total: number;
+}
+
 // --- PixVerse Video Generation ---
 export type OpenAPIPixVerseModel = 'pixverse' | 'v6' | 'v5' | 'v4.5';
 export type OpenAPIPixVerseLanguage = 'zh' | 'en';

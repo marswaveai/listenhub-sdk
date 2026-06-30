@@ -135,6 +135,21 @@ export type {
 	EstimatePixVerseVideoCreditsParams,
 	EstimatePixVerseVideoCreditsResponse,
 } from './types/video-generation.js';
+export type {
+	ListenHubVoiceModel,
+	ListenHubVoiceTaskStatus,
+	ListenHubVoiceFormat,
+	ListenHubVoiceVoice,
+	ListenHubVoiceImageInput,
+	ListenHubVoiceImageResponse,
+	ListenHubVoiceConfig,
+	CreateListenHubVoiceParams,
+	CreateListenHubVoiceResponse,
+	ListenHubVoiceTaskDetail,
+	ListenHubVoiceTaskListItem,
+	ListListenHubVoiceTasksParams,
+	ListListenHubVoiceTasksResponse,
+} from './types/listenhub-voice.js';
 export {OpenAPIClient} from './openapi-client.js';
 export type {
 	OpenAPIClientOptions,
@@ -164,6 +179,12 @@ export type {
 	OpenAPIListVideoGenerationTasksResponse,
 	OpenAPIEstimateVideoCreditsParams,
 	OpenAPIEstimateVideoCreditsResponse,
+	OpenAPIListenHubVoiceTaskStatus,
+	OpenAPICreateListenHubVoiceParams,
+	OpenAPICreateListenHubVoiceResponse,
+	OpenAPIListenHubVoiceTaskDetail,
+	OpenAPIListListenHubVoiceTasksParams,
+	OpenAPIListListenHubVoiceTasksResponse,
 	OpenAPIPixVerseModel,
 	OpenAPIPixVerseLanguage,
 	OpenAPIPixVerseCapability,
