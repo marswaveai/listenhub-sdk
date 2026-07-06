@@ -1,7 +1,7 @@
 export interface CreateFileUploadParams {
 	fileKey: string;
 	contentType: string;
-	category: string;
+	category?: string;
 }
 
 export interface CreateFileUploadResponse {
@@ -11,4 +11,13 @@ export interface CreateFileUploadResponse {
 
 export interface GetFileDownloadUrlResponse {
 	downloadUrl: string;
+}
+
+export type UploadFileData = Blob | ArrayBuffer | ArrayBufferView;
+
+export interface UploadFileParams {
+	file: UploadFileData;
+	fileName?: string;
+	contentType?: string;
+	category?: string;
 }

@@ -1,7 +1,18 @@
-import ky from 'ky';
+import ky, {type KyInstance} from 'ky';
 import {ListenHubError} from './errors.js';
 import {parseErrorResponse} from './client.js';
 import {appendMusicField} from './music-form.js';
+import {
+	createFileUpload as createFileUploadRequest,
+	getUploadFileSize,
+	uploadFile as uploadFileRequest,
+} from './file-upload.js';
+import {getImageDimensions} from './media-metadata.js';
+import type {
+	CreateFileUploadParams,
+	CreateFileUploadResponse,
+	UploadFileParams,
+} from './types/files.js';
 import type {
 	CreateMusicGenerateParams,
 	CreateMusicCoverParams,
@@ -60,11 +71,15 @@ import type {
 	OpenAPIListSpeakersParams,
 	OpenAPIListSpeakersResponse,
 } from './types/openapi.js';
+import type {
+	UploadedVideoReferenceImage,
+	UploadVideoReferenceImageParams,
+} from './types/video-generation.js';
 
 const DEFAULT_OPENAPI_BASE_URL = 'https://api.marswave.ai/openapi';
 
 export class OpenAPIClient {
-	private api: typeof ky;
+	private api: KyInstance;
 
 	constructor(opts: OpenAPIClientOptions = {}) {
 		const effectiveApiKey = opts.apiKey || process.env['LISTENHUB_API_KEY'];
@@ -215,12 +230,40 @@ export class OpenAPIClient {
 		return this.api.post('v1/images/generation', {json: params}).json();
 	}
 
+	// --- Files ---
+	async createFileUpload(params: CreateFileUploadParams): Promise<CreateFileUploadResponse> {
+		return createFileUploadRequest(this.api, params);
+	}
+
+	async uploadFile(params: UploadFileParams): Promise<CreateFileUploadResponse> {
+		return uploadFileRequest(this.api, params);
+	}
+
 	// --- Video Generation ---
 	async createVideoGeneration(
 		params: OpenAPICreateVideoGenerationParams,
 	): Promise<OpenAPICreateVideoGenerationResponse> {
 		return this.api.post('v1/video-generation/generate', {json: params}).json();
 	}
+
+	async uploadVideoReferenceImage(
+		params: UploadVideoReferenceImageParams,
+	): Promise<UploadedVideoReferenceImage> {
+		const {width, height} = await getImageDimensions(params.file);
+		const upload = await this.uploadFile(params);
+		const size = getUploadFileSize(params.file);
+		return {
+			fileUrl: upload.fileUrl,
+			content: {type: 'image_url', image_url: {url: upload.fileUrl}, role: params.role},
+			referenceImage: {
+				role: params.role,
+				width,
+				height,
+				...(typeof size === 'number' && {size}),
+			},
+		};
+	}
+
 	async getVideoGenerationTask(taskId: string): Promise<OpenAPIVideoGenerationTaskDetail> {
 		return this.api.get(`v1/video-generation/tasks/${taskId}`).json();
 	}

@@ -83,6 +83,19 @@ export interface VideoReferenceVideoMeta {
 	size?: number;
 }
 
+export interface UploadVideoReferenceImageParams {
+	file: import('./files.js').UploadFileData;
+	fileName?: string;
+	contentType?: string;
+	role: 'first_frame' | 'last_frame' | 'reference_image';
+}
+
+export interface UploadedVideoReferenceImage {
+	fileUrl: string;
+	content: VideoContentImageUrl;
+	referenceImage: VideoReferenceImageMeta;
+}
+
 /**
  * Parameters for creating a video generation task.
  *

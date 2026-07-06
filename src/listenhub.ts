@@ -1,5 +1,11 @@
 import {createHttpClient, type KyInstance} from './client.js';
 import {appendMusicField} from './music-form.js';
+import {
+	createFileUpload as createFileUploadRequest,
+	getUploadFileSize,
+	uploadFile as uploadFileRequest,
+} from './file-upload.js';
+import {getImageDimensions} from './media-metadata.js';
 import type {ClientOptions} from './types/client.js';
 import type {ConnectInitResponse, TokenResponse} from './types/auth.js';
 import type {CheckinResponse, CheckinStatusResponse} from './types/checkin.js';
@@ -50,6 +56,7 @@ import type {
 	CreateFileUploadParams,
 	CreateFileUploadResponse,
 	GetFileDownloadUrlResponse,
+	UploadFileParams,
 } from './types/files.js';
 import type {
 	CreateLyricsParams,
@@ -70,6 +77,8 @@ import type {
 	CreatePixVerseVideoResponse,
 	EstimatePixVerseVideoCreditsParams,
 	EstimatePixVerseVideoCreditsResponse,
+	UploadedVideoReferenceImage,
+	UploadVideoReferenceImageParams,
 } from './types/video-generation.js';
 import type {
 	CreateListenHubVoiceParams,
@@ -362,7 +371,11 @@ export class ListenHubClient {
 	// --- Files ---
 
 	async createFileUpload(params: CreateFileUploadParams): Promise<CreateFileUploadResponse> {
-		return this.api.post('v1/files', {json: params}).json<CreateFileUploadResponse>();
+		return createFileUploadRequest(this.api, params);
+	}
+
+	async uploadFile(params: UploadFileParams): Promise<CreateFileUploadResponse> {
+		return uploadFileRequest(this.api, params);
 	}
 
 	async getFileDownloadUrl(fileUrl: string): Promise<GetFileDownloadUrlResponse> {
@@ -395,6 +408,24 @@ export class ListenHubClient {
 		return this.api
 			.post('v1/video-generation/generate', {json: params})
 			.json<CreateVideoGenerationResponse>();
+	}
+
+	async uploadVideoReferenceImage(
+		params: UploadVideoReferenceImageParams,
+	): Promise<UploadedVideoReferenceImage> {
+		const {width, height} = await getImageDimensions(params.file);
+		const upload = await this.uploadFile(params);
+		const size = getUploadFileSize(params.file);
+		return {
+			fileUrl: upload.fileUrl,
+			content: {type: 'image_url', image_url: {url: upload.fileUrl}, role: params.role},
+			referenceImage: {
+				role: params.role,
+				width,
+				height,
+				...(typeof size === 'number' && {size}),
+			},
+		};
 	}
 
 	async getVideoGenerationTask(taskId: string): Promise<VideoGenerationTaskDetail> {

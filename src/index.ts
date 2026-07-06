@@ -93,6 +93,8 @@ export type {
 	CreateFileUploadParams,
 	CreateFileUploadResponse,
 	GetFileDownloadUrlResponse,
+	UploadFileData,
+	UploadFileParams,
 } from './types/files.js';
 export type {
 	VideoGenerationModel,
@@ -108,6 +110,8 @@ export type {
 	VideoContentItem,
 	VideoReferenceImageMeta,
 	VideoReferenceVideoMeta,
+	UploadedVideoReferenceImage,
+	UploadVideoReferenceImageParams,
 	CreateVideoGenerationParams,
 	ListVideoGenerationTasksParams,
 	EstimateVideoGenerationCreditsParams,
