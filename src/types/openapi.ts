@@ -163,16 +163,41 @@ export type OpenAPIVideoGenerationTaskStatus =
 	| 'uploading'
 	| 'success'
 	| 'failed';
+export interface OpenAPIVideoReferenceImageMeta {
+	role: 'first_frame' | 'last_frame' | 'reference_image';
+	width: number;
+	height: number;
+	size?: number;
+}
+export interface OpenAPIVideoReferenceVideoMeta {
+	role: 'reference_video';
+	width: number;
+	height: number;
+	duration?: number;
+	fps?: number;
+	size?: number;
+}
 export interface OpenAPICreateVideoGenerationParams {
 	model?: 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast' | 'happyhorse';
 	content: Array<
 		| {type: 'text'; text: string}
 		| {
 				type: 'image_url';
-				image_url: {url: string};
+				image_url: {url: string; width?: number; height?: number; size?: number};
 				role: 'first_frame' | 'last_frame' | 'reference_image';
 		  }
-		| {type: 'video_url'; video_url: {url: string}; role: 'reference_video'}
+		| {
+				type: 'video_url';
+				video_url: {
+					url: string;
+					width?: number;
+					height?: number;
+					duration?: number;
+					fps?: number;
+					size?: number;
+				};
+				role: 'reference_video';
+		  }
 		| {type: 'audio_url'; audio_url: {url: string}; role: 'reference_audio'}
 	>;
 	resolution?: '480p' | '720p' | '1080p';
@@ -181,6 +206,8 @@ export interface OpenAPICreateVideoGenerationParams {
 	generateAudio?: boolean;
 	seed?: number;
 	inputVideoDuration?: number;
+	referenceImages?: OpenAPIVideoReferenceImageMeta[];
+	referenceVideos?: OpenAPIVideoReferenceVideoMeta[];
 	/** Audio handling for happyhorse video-edit mode. Only effective when model is 'happyhorse' and content includes a video_url. */
 	audioSetting?: 'auto' | 'origin';
 }
@@ -199,6 +226,8 @@ export interface OpenAPIVideoGenerationTaskDetail {
 		duration: number;
 		generateAudio: boolean;
 		seed: number;
+		referenceImages?: OpenAPIVideoReferenceImageMeta[];
+		referenceVideos?: OpenAPIVideoReferenceVideoMeta[];
 	};
 	videoUrl?: string;
 	providerVideoUrl?: string;
@@ -237,6 +266,8 @@ export interface OpenAPIEstimateVideoCreditsParams {
 	duration: number;
 	hasVideoInput?: boolean;
 	inputVideoDuration?: number;
+	referenceImages?: OpenAPIVideoReferenceImageMeta[];
+	referenceVideos?: OpenAPIVideoReferenceVideoMeta[];
 	ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4';
 }
 export interface OpenAPIEstimateVideoCreditsResponse {

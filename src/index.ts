@@ -93,6 +93,8 @@ export type {
 	CreateFileUploadParams,
 	CreateFileUploadResponse,
 	GetFileDownloadUrlResponse,
+	UploadFileData,
+	UploadFileParams,
 } from './types/files.js';
 export type {
 	VideoGenerationModel,
@@ -106,6 +108,10 @@ export type {
 	VideoContentVideoUrl,
 	VideoContentAudioUrl,
 	VideoContentItem,
+	VideoReferenceImageMeta,
+	VideoReferenceVideoMeta,
+	UploadedVideoReferenceImage,
+	UploadVideoReferenceImageParams,
 	CreateVideoGenerationParams,
 	ListVideoGenerationTasksParams,
 	EstimateVideoGenerationCreditsParams,
@@ -179,6 +185,8 @@ export type {
 	OpenAPIListVideoGenerationTasksResponse,
 	OpenAPIEstimateVideoCreditsParams,
 	OpenAPIEstimateVideoCreditsResponse,
+	OpenAPIVideoReferenceImageMeta,
+	OpenAPIVideoReferenceVideoMeta,
 	OpenAPIListenHubVoiceTaskStatus,
 	OpenAPICreateListenHubVoiceParams,
 	OpenAPICreateListenHubVoiceResponse,

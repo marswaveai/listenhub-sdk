@@ -181,6 +181,7 @@ const {result} = await client.describeMusic({audio, audioFilename: 'song.mp3'});
 | Method                                   | Description                                         |
 | ---------------------------------------- | --------------------------------------------------- |
 | `createVideoGeneration(params)`          | Create a video generation task                      |
+| `uploadVideoReferenceImage(params)`      | Upload a local image and return Seedance metadata   |
 | `getVideoGenerationTask(taskId)`         | Get video generation task status and details        |
 | `listVideoGenerationTasks(params?)`      | List video generation tasks with optional filtering |
 | `estimateVideoGenerationCredits(params)` | Estimate credit cost before generating              |
@@ -188,6 +189,40 @@ const {result} = await client.describeMusic({audio, audioFilename: 'song.mp3'});
 | `estimatePixVerseVideoCredits(params)`   | Estimate PixVerse credit cost before generating     |
 
 Supported models: `doubao-seedance-2-pro`, `doubao-seedance-2-fast`, `happyhorse`; PixVerse: `pixverse`, `v6`, `v5`, `v4.5`
+
+Seedance reference images/videos need dimensions for server-side validation. Put media URLs in
+`content`, and put dimensions in top-level `referenceImages` / `referenceVideos`.
+
+```ts
+// Local image helper: uploads the image and reads width/height for Seedance validation.
+import {readFile} from 'node:fs/promises';
+
+const firstFrame = await client.uploadVideoReferenceImage({
+	file: new Blob([await readFile('./cat.png')], {type: 'image/png'}),
+	fileName: 'cat.png',
+	role: 'first_frame',
+});
+
+await client.createVideoGeneration({
+	model: 'doubao-seedance-2-fast',
+	content: [{type: 'text', text: 'A cat running through a garden'}, firstFrame.content],
+	referenceImages: [firstFrame.referenceImage],
+	resolution: '720p',
+	duration: 5,
+});
+
+// URL input: provide metadata explicitly.
+await client.createVideoGeneration({
+	model: 'doubao-seedance-2-fast',
+	content: [
+		{type: 'text', text: 'A cat running through a garden'},
+		{type: 'image_url', image_url: {url: 'https://example.com/cat.jpg'}, role: 'first_frame'},
+	],
+	referenceImages: [{role: 'first_frame', width: 1080, height: 1920, size: 3_600_000}],
+	resolution: '720p',
+	duration: 5,
+});
+```
 
 **HappyHorse examples:**
 
@@ -398,14 +433,22 @@ The `OpenAPIClient` provides access to all OpenAPI endpoints using API Key authe
 | --------------------- | ------------------------------------ |
 | `createImage(params)` | Generate an image (google or openai) |
 
+### Files
+
+| Method               | Description                                 |
+| -------------------- | ------------------------------------------- |
+| `createFileUpload()` | Create a presigned upload URL               |
+| `uploadFile()`       | Create a presigned URL and upload file data |
+
 ### Video Generation
 
-| Method                              | Description                            |
-| ----------------------------------- | -------------------------------------- |
-| `createVideoGeneration(params)`     | Create a video generation task         |
-| `getVideoGenerationTask(taskId)`    | Get task status and video URL          |
-| `listVideoGenerationTasks(params?)` | List tasks with optional filtering     |
-| `estimateVideoCredits(params)`      | Estimate credit cost before generating |
+| Method                              | Description                                       |
+| ----------------------------------- | ------------------------------------------------- |
+| `createVideoGeneration(params)`     | Create a video generation task                    |
+| `uploadVideoReferenceImage(params)` | Upload a local image and return Seedance metadata |
+| `getVideoGenerationTask(taskId)`    | Get task status and video URL                     |
+| `listVideoGenerationTasks(params?)` | List tasks with optional filtering                |
+| `estimateVideoCredits(params)`      | Estimate credit cost before generating            |
 
 ### ListenHub Voice
 

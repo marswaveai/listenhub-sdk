@@ -57,6 +57,10 @@ function retryExhaustedResponse() {
 	});
 }
 
+function rawRequest(input: unknown, init?: RequestInit): Request {
+	return input instanceof Request ? input : new Request(input as string, init);
+}
+
 // --- Tests ---
 
 describe('OpenAPIClient – constructor validation', () => {
@@ -145,6 +149,35 @@ describe('OpenAPIClient – method calls', () => {
 			baseURL: 'https://api.test.com/openapi',
 		});
 	});
+
+	function pngBytes(width: number, height: number) {
+		return new Uint8Array([
+			0x89,
+			0x50,
+			0x4e,
+			0x47,
+			0x0d,
+			0x0a,
+			0x1a,
+			0x0a,
+			0x00,
+			0x00,
+			0x00,
+			0x0d,
+			0x49,
+			0x48,
+			0x44,
+			0x52,
+			(width >>> 24) & 0xff,
+			(width >>> 16) & 0xff,
+			(width >>> 8) & 0xff,
+			width & 0xff,
+			(height >>> 24) & 0xff,
+			(height >>> 16) & 0xff,
+			(height >>> 8) & 0xff,
+			height & 0xff,
+		]);
+	}
 
 	it('listSpeakers() → GET v1/speakers/list', async () => {
 		mockFetch.mockResolvedValueOnce(envelopeResponse({items: []}));
@@ -279,17 +312,92 @@ describe('OpenAPIClient – method calls', () => {
 		expect(req.url).toContain('/v1/images/generation');
 	});
 
+	it('uploadFile(params) → POST openapi v1/files then PUT presigned URL', async () => {
+		mockFetch
+			.mockImplementationOnce(async (req: Request) => {
+				const body = await req.clone().json();
+				expect(req.method).toBe('POST');
+				expect(req.url).toBe('https://api.test.com/openapi/v1/files');
+				expect(req.headers.get('authorization')).toBe('Bearer lh_sk_test');
+				expect(body).toEqual({
+					fileKey: 'frame.png',
+					contentType: 'image/png',
+					category: 'episode',
+				});
+				return envelopeResponse({
+					presignedUrl: 'https://upload.example.com/frame.png',
+					fileUrl: 'https://storage.googleapis.com/private-bucket/uploads/frame.png',
+				});
+			})
+			.mockImplementationOnce(async (input: unknown, init?: RequestInit) => {
+				const req = rawRequest(input, init);
+				expect(req.method).toBe('PUT');
+				expect(req.url).toBe('https://upload.example.com/frame.png');
+				expect(req.headers.get('authorization')).toBeNull();
+				return new Response(null, {status: 200, statusText: 'OK'});
+			});
+
+		const result = await client.uploadFile({
+			file: new Blob([new Uint8Array([1, 2, 3])], {type: 'image/png'}),
+			fileName: 'frame.png',
+		});
+
+		expect(result.fileUrl).toBe('https://storage.googleapis.com/private-bucket/uploads/frame.png');
+	});
+
+	it('uploadVideoReferenceImage(params) returns uploaded OpenAPI video image metadata', async () => {
+		mockFetch
+			.mockImplementationOnce(async () =>
+				envelopeResponse({
+					presignedUrl: 'https://upload.example.com/frame.png',
+					fileUrl: 'https://storage.googleapis.com/private-bucket/uploads/frame.png',
+				}),
+			)
+			.mockImplementationOnce(async () => new Response(null, {status: 200, statusText: 'OK'}));
+
+		const result = await client.uploadVideoReferenceImage({
+			file: new Blob([pngBytes(720, 1280)], {type: 'image/png'}),
+			fileName: 'frame.png',
+			role: 'reference_image',
+		});
+
+		expect(result.content).toEqual({
+			type: 'image_url',
+			image_url: {url: 'https://storage.googleapis.com/private-bucket/uploads/frame.png'},
+			role: 'reference_image',
+		});
+		expect(result.referenceImage).toEqual({
+			role: 'reference_image',
+			width: 720,
+			height: 1280,
+			size: 24,
+		});
+	});
+
 	it('createVideoGeneration(params) → POST v1/video-generation/generate', async () => {
 		const params = {
-			content: [{type: 'text' as const, text: 'A cat running'}],
+			content: [
+				{type: 'text' as const, text: 'A cat running'},
+				{
+					type: 'image_url' as const,
+					image_url: {url: 'https://example.com/cat.jpg'},
+					role: 'first_frame' as const,
+				},
+			],
+			referenceImages: [{role: 'first_frame' as const, width: 1080, height: 1920, size: 3_600_000}],
 		};
-		mockFetch.mockResolvedValueOnce(envelopeResponse({taskId: 'task_123', status: 'pending'}));
+		let capturedBody: unknown;
+		mockFetch.mockImplementationOnce(async (req: Request) => {
+			capturedBody = await req.clone().json();
+			return envelopeResponse({taskId: 'task_123', status: 'pending'});
+		});
 
 		await client.createVideoGeneration(params);
 
 		const req: Request = mockFetch.mock.calls[0][0];
 		expect(req.method).toBe('POST');
 		expect(req.url).toContain('/v1/video-generation/generate');
+		expect(capturedBody).toEqual(params);
 	});
 
 	it('getSubscription() → GET v1/user/subscription', async () => {

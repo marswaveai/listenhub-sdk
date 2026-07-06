@@ -30,8 +30,41 @@ function mockJsonResponse(data: unknown) {
 	});
 }
 
+function rawRequest(input: unknown, init?: RequestInit): Request {
+	return input instanceof Request ? input : new Request(input as string, init);
+}
+
 describe('Video Generation methods', () => {
 	const client = new ListenHubClient({baseURL: 'https://api.test.com/api'});
+
+	function pngBytes(width: number, height: number) {
+		return new Uint8Array([
+			0x89,
+			0x50,
+			0x4e,
+			0x47,
+			0x0d,
+			0x0a,
+			0x1a,
+			0x0a,
+			0x00,
+			0x00,
+			0x00,
+			0x0d,
+			0x49,
+			0x48,
+			0x44,
+			0x52,
+			(width >>> 24) & 0xff,
+			(width >>> 16) & 0xff,
+			(width >>> 8) & 0xff,
+			width & 0xff,
+			(height >>> 24) & 0xff,
+			(height >>> 16) & 0xff,
+			(height >>> 8) & 0xff,
+			height & 0xff,
+		]);
+	}
 
 	it('createVideoGeneration sends POST /v1/video-generation/generate with params', async () => {
 		mockJsonResponse({taskId: 'vt-1', status: 'generating'});
@@ -43,6 +76,7 @@ describe('Video Generation methods', () => {
 			],
 			resolution: '720p',
 			duration: 5,
+			referenceImages: [{role: 'first_frame', width: 1080, height: 1920, size: 3_600_000}],
 		});
 		const req = await capturedRequest();
 		expect(req.url).toBe('https://api.test.com/api/v1/video-generation/generate');
@@ -53,6 +87,9 @@ describe('Video Generation methods', () => {
 		expect((req.body as any).content[1].role).toBe('first_frame');
 		expect((req.body as any).resolution).toBe('720p');
 		expect((req.body as any).duration).toBe(5);
+		expect((req.body as any).referenceImages).toEqual([
+			{role: 'first_frame', width: 1080, height: 1920, size: 3_600_000},
+		]);
 		expect(result).toEqual({taskId: 'vt-1', status: 'generating'});
 	});
 
@@ -147,13 +184,82 @@ describe('Video Generation methods', () => {
 			duration: 5,
 			hasVideoInput: true,
 			inputVideoDuration: 5,
+			referenceVideos: [
+				{role: 'reference_video', width: 1280, height: 720, duration: 5, fps: 30, size: 8_000_000},
+			],
 			ratio: '16:9',
 		});
 		const req = await capturedRequest();
 		expect((req.body as any).hasVideoInput).toBe(true);
 		expect((req.body as any).inputVideoDuration).toBe(5);
+		expect((req.body as any).referenceVideos).toEqual([
+			{role: 'reference_video', width: 1280, height: 720, duration: 5, fps: 30, size: 8_000_000},
+		]);
 		expect((req.body as any).ratio).toBe('16:9');
 		expect(result).toEqual({tokens: 3320, credits: 10});
+	});
+
+	it('uploadFile creates a presigned URL and uploads the file body', async () => {
+		mockFetch
+			.mockImplementationOnce(async (req: Request) => {
+				const body = await req.clone().json();
+				expect(req.method).toBe('POST');
+				expect(req.url).toBe('https://api.test.com/api/v1/files');
+				expect(body).toEqual({
+					fileKey: 'frame.png',
+					contentType: 'image/png',
+					category: 'episode',
+				});
+				return jsonResponse({
+					presignedUrl: 'https://upload.example.com/frame.png',
+					fileUrl: 'https://storage.googleapis.com/private-bucket/uploads/frame.png',
+				});
+			})
+			.mockImplementationOnce(async (input: unknown, init?: RequestInit) => {
+				const req = rawRequest(input, init);
+				expect(req.method).toBe('PUT');
+				expect(req.url).toBe('https://upload.example.com/frame.png');
+				expect(req.headers.get('content-type')).toBe('image/png');
+				expect((await req.arrayBuffer()).byteLength).toBe(3);
+				return new Response(null, {status: 200, statusText: 'OK'});
+			});
+
+		const result = await client.uploadFile({
+			file: new Blob([new Uint8Array([1, 2, 3])], {type: 'image/png'}),
+			fileName: 'frame.png',
+		});
+
+		expect(result.fileUrl).toBe('https://storage.googleapis.com/private-bucket/uploads/frame.png');
+		expect(mockFetch).toHaveBeenCalledTimes(2);
+	});
+
+	it('uploadVideoReferenceImage uploads a local image and returns Seedance metadata', async () => {
+		mockFetch
+			.mockImplementationOnce(async () =>
+				jsonResponse({
+					presignedUrl: 'https://upload.example.com/frame.png',
+					fileUrl: 'https://storage.googleapis.com/private-bucket/uploads/frame.png',
+				}),
+			)
+			.mockImplementationOnce(async () => new Response(null, {status: 200, statusText: 'OK'}));
+
+		const result = await client.uploadVideoReferenceImage({
+			file: new Blob([pngBytes(1080, 1920)], {type: 'image/png'}),
+			fileName: 'frame.png',
+			role: 'first_frame',
+		});
+
+		expect(result.content).toEqual({
+			type: 'image_url',
+			image_url: {url: 'https://storage.googleapis.com/private-bucket/uploads/frame.png'},
+			role: 'first_frame',
+		});
+		expect(result.referenceImage).toEqual({
+			role: 'first_frame',
+			width: 1080,
+			height: 1920,
+			size: 24,
+		});
 	});
 
 	it('createVideoGeneration with happyhorse model sends correct params', async () => {
