@@ -43,6 +43,7 @@ describe('Video Generation methods', () => {
 			],
 			resolution: '720p',
 			duration: 5,
+			referenceImages: [{role: 'first_frame', width: 1080, height: 1920, size: 3_600_000}],
 		});
 		const req = await capturedRequest();
 		expect(req.url).toBe('https://api.test.com/api/v1/video-generation/generate');
@@ -53,6 +54,9 @@ describe('Video Generation methods', () => {
 		expect((req.body as any).content[1].role).toBe('first_frame');
 		expect((req.body as any).resolution).toBe('720p');
 		expect((req.body as any).duration).toBe(5);
+		expect((req.body as any).referenceImages).toEqual([
+			{role: 'first_frame', width: 1080, height: 1920, size: 3_600_000},
+		]);
 		expect(result).toEqual({taskId: 'vt-1', status: 'generating'});
 	});
 
@@ -147,11 +151,17 @@ describe('Video Generation methods', () => {
 			duration: 5,
 			hasVideoInput: true,
 			inputVideoDuration: 5,
+			referenceVideos: [
+				{role: 'reference_video', width: 1280, height: 720, duration: 5, fps: 30, size: 8_000_000},
+			],
 			ratio: '16:9',
 		});
 		const req = await capturedRequest();
 		expect((req.body as any).hasVideoInput).toBe(true);
 		expect((req.body as any).inputVideoDuration).toBe(5);
+		expect((req.body as any).referenceVideos).toEqual([
+			{role: 'reference_video', width: 1280, height: 720, duration: 5, fps: 30, size: 8_000_000},
+		]);
 		expect((req.body as any).ratio).toBe('16:9');
 		expect(result).toEqual({tokens: 3320, credits: 10});
 	});

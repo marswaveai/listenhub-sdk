@@ -281,15 +281,28 @@ describe('OpenAPIClient – method calls', () => {
 
 	it('createVideoGeneration(params) → POST v1/video-generation/generate', async () => {
 		const params = {
-			content: [{type: 'text' as const, text: 'A cat running'}],
+			content: [
+				{type: 'text' as const, text: 'A cat running'},
+				{
+					type: 'image_url' as const,
+					image_url: {url: 'https://example.com/cat.jpg'},
+					role: 'first_frame' as const,
+				},
+			],
+			referenceImages: [{role: 'first_frame' as const, width: 1080, height: 1920, size: 3_600_000}],
 		};
-		mockFetch.mockResolvedValueOnce(envelopeResponse({taskId: 'task_123', status: 'pending'}));
+		let capturedBody: unknown;
+		mockFetch.mockImplementationOnce(async (req: Request) => {
+			capturedBody = await req.clone().json();
+			return envelopeResponse({taskId: 'task_123', status: 'pending'});
+		});
 
 		await client.createVideoGeneration(params);
 
 		const req: Request = mockFetch.mock.calls[0][0];
 		expect(req.method).toBe('POST');
 		expect(req.url).toContain('/v1/video-generation/generate');
+		expect(capturedBody).toEqual(params);
 	});
 
 	it('getSubscription() → GET v1/user/subscription', async () => {

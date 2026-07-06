@@ -21,6 +21,7 @@ const task = await client.createVideoGeneration({
 		{type: 'text', text: '一只猫在花园里奔跑'},
 		{type: 'image_url', image_url: {url: 'https://example.com/cat.jpg'}, role: 'first_frame'},
 	],
+	referenceImages: [{role: 'first_frame', width: 1080, height: 1920, size: 3_600_000}],
 	resolution: '720p',
 	duration: 5,
 });

@@ -189,6 +189,22 @@ const {result} = await client.describeMusic({audio, audioFilename: 'song.mp3'});
 
 Supported models: `doubao-seedance-2-pro`, `doubao-seedance-2-fast`, `happyhorse`; PixVerse: `pixverse`, `v6`, `v5`, `v4.5`
 
+Seedance reference images/videos need dimensions for server-side validation. Put media URLs in
+`content`, and put dimensions in top-level `referenceImages` / `referenceVideos`.
+
+```ts
+await client.createVideoGeneration({
+	model: 'doubao-seedance-2-fast',
+	content: [
+		{type: 'text', text: 'A cat running through a garden'},
+		{type: 'image_url', image_url: {url: 'https://example.com/cat.jpg'}, role: 'first_frame'},
+	],
+	referenceImages: [{role: 'first_frame', width: 1080, height: 1920, size: 3_600_000}],
+	resolution: '720p',
+	duration: 5,
+});
+```
+
 **HappyHorse examples:**
 
 ```ts

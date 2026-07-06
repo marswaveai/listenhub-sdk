@@ -38,13 +38,20 @@ export interface VideoContentText {
 
 export interface VideoContentImageUrl {
 	type: 'image_url';
-	image_url: {url: string};
+	image_url: {url: string; width?: number; height?: number; size?: number};
 	role: 'first_frame' | 'last_frame' | 'reference_image';
 }
 
 export interface VideoContentVideoUrl {
 	type: 'video_url';
-	video_url: {url: string};
+	video_url: {
+		url: string;
+		width?: number;
+		height?: number;
+		duration?: number;
+		fps?: number;
+		size?: number;
+	};
 	role: 'reference_video';
 }
 
@@ -59,6 +66,22 @@ export type VideoContentItem =
 	| VideoContentImageUrl
 	| VideoContentVideoUrl
 	| VideoContentAudioUrl;
+
+export interface VideoReferenceImageMeta {
+	role: 'first_frame' | 'last_frame' | 'reference_image';
+	width: number;
+	height: number;
+	size?: number;
+}
+
+export interface VideoReferenceVideoMeta {
+	role: 'reference_video';
+	width: number;
+	height: number;
+	duration?: number;
+	fps?: number;
+	size?: number;
+}
 
 /**
  * Parameters for creating a video generation task.
@@ -78,6 +101,10 @@ export interface CreateVideoGenerationParams {
 	generateAudio?: boolean;
 	seed?: number;
 	inputVideoDuration?: number;
+	/** Reference image dimensions used by Seedance validation. Prefer this over embedding metadata in content. */
+	referenceImages?: VideoReferenceImageMeta[];
+	/** Reference video dimensions/duration used by Seedance validation. Prefer this over embedding metadata in content. */
+	referenceVideos?: VideoReferenceVideoMeta[];
 	/** Audio handling for happyhorse video-edit mode. Only effective when model is 'happyhorse' and content includes a video_url. */
 	audioSetting?: 'auto' | 'origin';
 }
@@ -94,6 +121,8 @@ export interface EstimateVideoGenerationCreditsParams {
 	duration: number;
 	hasVideoInput?: boolean;
 	inputVideoDuration?: number;
+	referenceImages?: VideoReferenceImageMeta[];
+	referenceVideos?: VideoReferenceVideoMeta[];
 	ratio?: VideoGenerationRatio;
 }
 
@@ -113,6 +142,8 @@ export interface VideoGenerationTaskDetail {
 		duration: number;
 		generateAudio: boolean;
 		seed: number;
+		referenceImages?: VideoReferenceImageMeta[];
+		referenceVideos?: VideoReferenceVideoMeta[];
 	};
 	videoUrl?: string;
 	providerVideoUrl?: string;
@@ -133,6 +164,8 @@ export interface VideoGenerationTaskListItem {
 		resolution: string;
 		ratio: string;
 		duration: number;
+		referenceImages?: VideoReferenceImageMeta[];
+		referenceVideos?: VideoReferenceVideoMeta[];
 	};
 	videoUrl?: string;
 	providerVideoUrl?: string;
