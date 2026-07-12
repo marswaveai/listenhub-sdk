@@ -8,6 +8,7 @@ JavaScript SDK for ListenHub API. Flat architecture: all endpoint methods live d
 - Keep it simple: choose the smallest working change; avoid speculative abstractions, configurability, or broad rewrites.
 - Make surgical edits: touch only the files and lines required, follow local style, and leave unrelated cleanup alone.
 - Verify against the goal: define the relevant checks up front, run the focused validation, and keep iterating until the stated goal is satisfied.
+- Comment discipline: comment only what the code cannot say — invariants, trade-offs, external constraints, hard-won gotchas. Delete comments that restate the code or argue the change is correct. Mark deliberate simplifications with a `ponytail:` comment noting the ceiling and upgrade path.
 
 ## Architecture
 
