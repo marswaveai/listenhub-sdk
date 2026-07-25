@@ -6,6 +6,8 @@
 
 JavaScript SDK for the [ListenHub](https://listenhub.ai) API.
 
+[中文文档](README.zh-CN.md)
+
 ## Install
 
 ```sh
@@ -58,11 +60,75 @@ const openapi = new OpenAPIClient({
 // OAuth access token — client-side, user login required
 const client = new ListenHubClient({
 	accessToken: 'token', // static string or () => string | undefined
-	baseURL: 'https://api.listenhub.ai/api',
+	baseURL: 'https://api.listenhub.ai/api', // or LISTENHUB_API_URL env var
 	timeout: 30_000,
 	maxRetries: 2,
 });
 ```
+
+## Base URL configuration
+
+Each client has its own default Base URL and its own override variable:
+
+| Client            | Default Base URL                  | Override variable       |
+| ----------------- | --------------------------------- | ----------------------- |
+| `OpenAPIClient`   | `https://api.marswave.ai/openapi` | `LISTENHUB_OPENAPI_URL` |
+| `ListenHubClient` | `https://api.listenhub.ai/api`    | `LISTENHUB_API_URL`     |
+
+Resolution order for each client is `baseURL` option → environment variable → the built-in default. An explicit `baseURL` always wins. The value covers the **entire Base URL, including the path prefix** — the `OpenAPIClient` URL ends in `/openapi`, the `ListenHubClient` URL ends in `/api`. Paths you pass to `client.api` are relative to it (`v1/...`, no leading slash), so the prefix must stay in the Base URL.
+
+### Restricted-network override
+
+If the `listenhub.ai` / `marswave.ai` defaults are unreachable on your network (for example, the whole `listenhub.ai` domain is currently blocked from mainland China), set the Base URL to a reachable host. As of 2026-07-24 the `listenhub.app` host is a verified working override:
+
+```ts
+// OpenAPI client
+const openapi = new OpenAPIClient({
+	apiKey: 'lh_sk_...',
+	baseURL: 'https://api.listenhub.app/openapi',
+});
+
+// OAuth client
+const client = new ListenHubClient({
+	accessToken: 'token',
+	baseURL: 'https://api.listenhub.app/api',
+});
+```
+
+Or via environment variables, without touching code:
+
+```sh
+export LISTENHUB_OPENAPI_URL="https://api.listenhub.app/openapi"  # OpenAPIClient
+export LISTENHUB_API_URL="https://api.listenhub.app/api"          # ListenHubClient
+```
+
+This is an **override for restricted networks, not a new default** — the SDK still ships the `.ai` / `marswave.ai` defaults, and callers with normal connectivity should not set these. `listenhub.app` is only the currently-verified example; if it too becomes unreachable, point the Base URL at any other host that serves the same API, keeping the `/openapi` or `/api` suffix intact.
+
+### Automatic domain selection
+
+If you set neither `baseURL` nor the environment variable, the SDK picks the domain for you when the default one cannot be reached at the connection layer:
+
+- The **first** request that fails to connect triggers a switch to a known alternate host (`api.listenhub.app` for both clients). The choice is written to `~/.config/listenhub/domain.json` (honouring `XDG_CONFIG_HOME`).
+- Every later request — including `POST` — goes **straight to the selected host, once**. Nothing is sent to the dead domain again, and nothing is sent twice.
+- If the selected host later stops connecting, the entry is dropped and the default domain is re-checked.
+
+Two rules are worth knowing before you rely on it:
+
+- **Non-idempotent requests are never resent to another domain.** A failed `POST` (create, generate, upload) is _not_ retried elsewhere — a connection failure does not prove the server never received it, and resending could bill you twice or produce duplicate output. The SDK records the reachable domain and throws a `DomainSwitchedError` telling you to retry; your retry then goes to the new domain. `GET` requests, being idempotent, do recover transparently.
+- **An explicit `baseURL` or environment variable disables this entirely.** If you pin a Base URL, the SDK sends exactly there and never switches.
+
+To pin a domain without spelling out a full URL, set `LISTENHUB_DOMAIN=app` (or `default` to force the built-in). This also skips the failed first request, which is useful if you already know the default domain is blocked. Where no filesystem is available (browsers, read-only containers) the selection is kept in memory for the life of the process instead — a failed write never breaks a request.
+
+## Troubleshooting: `fetch failed`
+
+`TypeError: fetch failed` means the request **never received an HTTP response** — the connection failed at the DNS / TLS / proxy / Base URL layer, so there is no status code and the SDK cannot wrap it into a `ListenHubError`. Check, in order:
+
+1. **DNS / TLS / proxy** — can the host resolve and connect at all from this environment?
+2. **Base URL** — is the client pointed at a reachable host? On a restricted network, use the override above (`https://api.listenhub.app/openapi` or `https://api.listenhub.app/api`).
+
+Once the server is reachable, connection-layer errors give way to structured ones: an HTTP `401`, or a `ListenHubError` carrying `status` and a business `code` (e.g. `21007`). Those are **auth / request problems on a reachable service**, not connectivity problems — a different class of failure from `fetch failed`.
+
+`listenhub.app` is the currently-verified reachable host; if it changes, swap in whatever host is reachable and keeps the `/openapi` or `/api` suffix.
 
 ## Examples
 

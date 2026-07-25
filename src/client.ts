@@ -1,10 +1,12 @@
 import ky, {type KyInstance} from 'ky';
 import type {ClientOptions} from './types/client.js';
 import {ListenHubError} from './errors.js';
+import {createDomainSelectingFetch, DomainSwitchedError} from './domain-selection.js';
 
 export type {KyInstance};
 
-const DEFAULT_BASE_URL = process.env['LISTENHUB_API_URL'] || 'https://api.listenhub.ai/api';
+const FACTORY_BASE_URL = 'https://api.listenhub.ai/api';
+const PROBE_PATH = '/api/v1/users/me';
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_MAX_RETRIES = 2;
 
@@ -51,18 +53,29 @@ export async function parseErrorResponse(response: Response): Promise<ListenHubE
 }
 
 export function createHttpClient(opts: ClientOptions = {}): KyInstance {
-	const baseURL = opts.baseURL ?? DEFAULT_BASE_URL;
+	// 显式指定 Base URL（选项或环境变量）优先级最高，完全接管，不参与域选择。
+	const explicitBaseURL = opts.baseURL ?? globalThis.process?.env?.['LISTENHUB_API_URL'];
+	const baseURL = explicitBaseURL ?? FACTORY_BASE_URL;
 	const timeout = opts.timeout ?? DEFAULT_TIMEOUT;
 	const maxRetries = opts.maxRetries ?? DEFAULT_MAX_RETRIES;
+	const domainFetch = explicitBaseURL
+		? undefined
+		: createDomainSelectingFetch({
+				defaultHost: new URL(FACTORY_BASE_URL).host,
+				probePath: PROBE_PATH,
+			});
 
 	return ky.create({
 		prefixUrl: baseURL,
 		timeout,
+		...(domainFetch ? {fetch: domainFetch} : {}),
 		retry: {
 			limit: maxRetries,
 			methods: ['get', 'post', 'put', 'patch', 'delete'],
 			statusCodes: [429],
 			shouldRetry({error}) {
+				// 域已切换的非幂等请求绝不重发，否则 ky 会把它发去新域
+				if (error instanceof DomainSwitchedError) return false;
 				// Allow ky to retry 429 (converted to ListenHubError by beforeError)
 				if (error instanceof ListenHubError && error.status === 429) return true;
 				// Never retry other ListenHubError thrown from afterResponse hooks

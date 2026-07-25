@@ -1,6 +1,7 @@
 import ky, {type KyInstance} from 'ky';
 import {ListenHubError} from './errors.js';
 import {parseErrorResponse} from './client.js';
+import {createDomainSelectingFetch, DomainSwitchedError} from './domain-selection.js';
 import {appendMusicField} from './music-form.js';
 import {
 	createFileUpload as createFileUploadRequest,
@@ -89,17 +90,27 @@ export class OpenAPIClient {
 			);
 		}
 
-		const baseURL =
-			opts.baseURL || process.env['LISTENHUB_OPENAPI_URL'] || DEFAULT_OPENAPI_BASE_URL;
+		// 显式指定 Base URL（选项或环境变量）优先级最高，完全接管，不参与域选择。
+		const explicitBaseURL = opts.baseURL || process.env['LISTENHUB_OPENAPI_URL'];
+		const baseURL = explicitBaseURL || DEFAULT_OPENAPI_BASE_URL;
+		const domainFetch = explicitBaseURL
+			? undefined
+			: createDomainSelectingFetch({
+					defaultHost: new URL(DEFAULT_OPENAPI_BASE_URL).host,
+					probePath: '/openapi/v1/speakers/list',
+				});
 
 		this.api = ky.create({
 			prefixUrl: baseURL,
 			timeout: opts.timeout ?? 60_000,
+			...(domainFetch ? {fetch: domainFetch} : {}),
 			retry: {
 				limit: opts.maxRetries ?? 2,
 				methods: ['get', 'post', 'put', 'patch', 'delete'],
 				statusCodes: [429],
 				shouldRetry({error}) {
+					// 域已切换的非幂等请求绝不重发，否则 ky 会把它发去新域
+					if (error instanceof DomainSwitchedError) return false;
 					if (error instanceof ListenHubError && error.status === 429) return true;
 					if (error instanceof ListenHubError) return false;
 					return undefined as unknown as boolean;
