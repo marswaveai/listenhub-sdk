@@ -104,6 +104,21 @@ export LISTENHUB_API_URL="https://api.listenhub.app/api"          # ListenHubCli
 
 This is an **override for restricted networks, not a new default** — the SDK still ships the `.ai` / `marswave.ai` defaults, and callers with normal connectivity should not set these. `listenhub.app` is only the currently-verified example; if it too becomes unreachable, point the Base URL at any other host that serves the same API, keeping the `/openapi` or `/api` suffix intact.
 
+### Automatic domain selection
+
+If you set neither `baseURL` nor the environment variable, the SDK picks the domain for you when the default one cannot be reached at the connection layer:
+
+- The **first** request that fails to connect triggers a switch to a known alternate host (`api.listenhub.app` for both clients). The choice is written to `~/.config/listenhub/domain.json` (honouring `XDG_CONFIG_HOME`).
+- Every later request — including `POST` — goes **straight to the selected host, once**. Nothing is sent to the dead domain again, and nothing is sent twice.
+- If the selected host later stops connecting, the entry is dropped and the default domain is re-checked.
+
+Two rules are worth knowing before you rely on it:
+
+- **Non-idempotent requests are never resent to another domain.** A failed `POST` (create, generate, upload) is _not_ retried elsewhere — a connection failure does not prove the server never received it, and resending could bill you twice or produce duplicate output. The SDK records the reachable domain and throws a `DomainSwitchedError` telling you to retry; your retry then goes to the new domain. `GET` requests, being idempotent, do recover transparently.
+- **An explicit `baseURL` or environment variable disables this entirely.** If you pin a Base URL, the SDK sends exactly there and never switches.
+
+To pin a domain without spelling out a full URL, set `LISTENHUB_DOMAIN=app` (or `default` to force the built-in). This also skips the failed first request, which is useful if you already know the default domain is blocked. Where no filesystem is available (browsers, read-only containers) the selection is kept in memory for the life of the process instead — a failed write never breaks a request.
+
 ## Troubleshooting: `fetch failed`
 
 `TypeError: fetch failed` means the request **never received an HTTP response** — the connection failed at the DNS / TLS / proxy / Base URL layer, so there is no status code and the SDK cannot wrap it into a `ListenHubError`. Check, in order:

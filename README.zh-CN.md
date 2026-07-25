@@ -104,6 +104,21 @@ export LISTENHUB_API_URL="https://api.listenhub.app/api"          # ListenHubCli
 
 这是**网络受限环境的覆盖方式，不是新默认值**——SDK 出厂仍是 `.ai` / `marswave.ai` 默认地址，网络正常的调用方不需要设置它们。`listenhub.app` 只是当前已验证的示例；若它也变得不可达，把 Base URL 指向任何一个提供同样 API 的可达主机即可，保持 `/openapi` 或 `/api` 后缀不变。
 
+### 自动域选择
+
+`baseURL` 和环境变量都没设时，默认域在连接层不可达，SDK 会自己选域：
+
+- **第一个**连不上的请求触发切换，切到内置备选域（两个 client 都是 `api.listenhub.app`），并把结果写进 `~/.config/listenhub/domain.json`（遵循 `XDG_CONFIG_HOME`）。
+- 之后所有请求——**包括 POST**——直接发往选定域，**只发一次**。不会再打不通的域，也不会重复发送。
+- 选定域之后又连不上，这条记录会被清掉，下次重新探默认域。
+
+依赖它之前要知道两条规则：
+
+- **非幂等请求绝不会被换域重发。** 创建、生成、上传这类 `POST` 失败后*不会*被发去另一个域——连接失败并不能证明服务端没收到，重发可能导致双份扣费或重复产出。SDK 只记录下可达的域，并抛出 `DomainSwitchedError` 提示你重试；你重试的那一次就走新域了。`GET` 是幂等的，会透明恢复。
+- **显式 `baseURL` 或环境变量会完全关掉这套机制。** 一旦你钉死了 Base URL，SDK 就只往那里发，永不切换。
+
+不想写完整 URL 的话，设 `LISTENHUB_DOMAIN=app` 即可钉住备选域（`default` 则强制用出厂默认）。这样连第一次失败的请求都省了，已经确知默认域被墙时很有用。没有文件系统的环境（浏览器、只读容器）会退化成进程内存级缓存——写不进磁盘绝不会让请求失败。
+
 ## 排查 `fetch failed`
 
 `TypeError: fetch failed` 表示请求**根本没有收到 HTTP 响应**——连接在 DNS / TLS / 代理 / Base URL 层就失败了，因此没有状态码，SDK 也无法把它包装成 `ListenHubError`。按顺序检查：
