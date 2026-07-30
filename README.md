@@ -134,9 +134,10 @@ Once the server is reachable, connection-layer errors give way to structured one
 
 ### OpenAPI Key
 
-| File                                                     | Description                                 |
-| -------------------------------------------------------- | ------------------------------------------- |
-| [`examples/openapi-basic.ts`](examples/openapi-basic.ts) | Create flow speech, poll, and check credits |
+| File                                                     | Description                                                        |
+| -------------------------------------------------------- | ------------------------------------------------------------------ |
+| [`examples/openapi-basic.ts`](examples/openapi-basic.ts) | Create flow speech, poll, and check credits                        |
+| [`examples/voice-clone.ts`](examples/voice-clone.ts)     | Clone a voice from reference audio, confirm it, then speak with it |
 
 ### OAuth (ListenHubClient)
 
@@ -440,6 +441,22 @@ if (detail.status === 'success') {
 | ----------------------- | ----------------------------------- |
 | `listSpeakers(params?)` | List available speakers by language |
 
+### Voice Clone
+
+Upload reference audio, poll until cloning completes, then confirm it into a reusable
+private speaker. Confirming is free within the tier quota; beyond it the server charges
+300 credits, and only when `useCredits` is set. `zh` and `en` only on this surface.
+
+| Method                                       | Description                                          |
+| -------------------------------------------- | ---------------------------------------------------- |
+| `createVoiceClone(params)`                   | Create a clone task from 1-6 reference audio files   |
+| `getVoiceCloneTask(taskId)`                  | Poll a clone task; throws once cloning failed        |
+| `confirmVoiceClone(params)`                  | Confirm a completed task into a private speaker      |
+| `listVoiceCloneSpeakers()`                   | List private speakers with quota and remaining slots |
+| `getVoiceCloneSpeaker(speakerId)`            | Get one private speaker                              |
+| `updateVoiceCloneSpeaker(speakerId, params)` | Rename a speaker or change its gender                |
+| `deleteVoiceCloneSpeaker(speakerId)`         | Delete a speaker and free one slot                   |
+
 ### Custom requests
 
 `client.api` exposes the underlying [ky](https://github.com/sindresorhus/ky) instance for endpoints not yet covered by the SDK:
@@ -523,6 +540,25 @@ The `OpenAPIClient` provides access to all OpenAPI endpoints using API Key authe
 | `createListenHubVoice(params)`     | Create a ListenHub Voice generation task |
 | `getListenHubVoiceTask(taskId)`    | Get task status and audio URL            |
 | `listListenHubVoiceTasks(params?)` | List tasks with optional filtering       |
+
+### Voice Clone
+
+Same flow as the OAuth surface, plus: `ja` is supported, every create must declare
+`consentConfirmed: true` (you assert you hold the cloned person's consent), and
+`autoConfirm` lets the poll that finds the task completed confirm it in the same call.
+`getVoiceCloneTask` has three terminal shapes — failed (`errorCode`/`errorMessage`),
+cloned but unconfirmed (`demoAudioUrl`, plus `confirmError` when auto-confirm failed),
+and confirmed (`speakerId`, usable on `/v1/speech`, `/v1/tts` and `/v1/audio/speech`).
+
+| Method                                       | Description                                            |
+| -------------------------------------------- | ------------------------------------------------------ |
+| `createVoiceClone(params)`                   | Create a clone task; requires `consentConfirmed: true` |
+| `getVoiceCloneTask(taskId)`                  | Poll a clone task; auto-confirms when asked to         |
+| `confirmVoiceClone(params)`                  | Confirm a completed task, returns `speakerId`          |
+| `listVoiceCloneSpeakers()`                   | List private speakers with quota and remaining slots   |
+| `getVoiceCloneSpeaker(speakerId)`            | Get one private speaker                                |
+| `updateVoiceCloneSpeaker(speakerId, params)` | Rename a speaker or change its gender                  |
+| `deleteVoiceCloneSpeaker(speakerId)`         | Delete a speaker and free one slot                     |
 
 ### Content Extract
 
