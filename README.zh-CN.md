@@ -134,9 +134,10 @@ export LISTENHUB_API_URL="https://api.listenhub.app/api"          # ListenHubCli
 
 ### OpenAPI Key
 
-| 文件                                                     | 说明                             |
-| -------------------------------------------------------- | -------------------------------- |
-| [`examples/openapi-basic.ts`](examples/openapi-basic.ts) | 创建 flow speech、轮询并查看积分 |
+| 文件                                                     | 说明                                     |
+| -------------------------------------------------------- | ---------------------------------------- |
+| [`examples/openapi-basic.ts`](examples/openapi-basic.ts) | 创建 flow speech、轮询并查看积分         |
+| [`examples/voice-clone.ts`](examples/voice-clone.ts)     | 上传参考音频克隆音色、确认后直接合成语音 |
 
 ### OAuth（ListenHubClient）
 
@@ -439,6 +440,21 @@ if (detail.status === 'success') {
 | ----------------------- | ------------------ |
 | `listSpeakers(params?)` | 按语言列出可用声音 |
 
+### 语音克隆
+
+上传参考音频建任务，轮询到克隆完成后确认成音色，之后可反复使用。等级配额内确认不扣积分，
+超出配额后每次扣 300 积分，且必须显式传 `useCredits` 授权。本客户端只支持 `zh` / `en`。
+
+| 方法                                         | 说明                               |
+| -------------------------------------------- | ---------------------------------- |
+| `createVoiceClone(params)`                   | 用 1-6 个参考音频文件创建克隆任务  |
+| `getVoiceCloneTask(taskId)`                  | 轮询任务；克隆失败时抛错           |
+| `confirmVoiceClone(params)`                  | 把已完成的任务确认成私有音色       |
+| `listVoiceCloneSpeakers()`                   | 列出私有音色，含配额与剩余确认次数 |
+| `getVoiceCloneSpeaker(speakerId)`            | 获取单个私有音色                   |
+| `updateVoiceCloneSpeaker(speakerId, params)` | 改音色名称或性别                   |
+| `deleteVoiceCloneSpeaker(speakerId)`         | 删除音色并释放一个名额             |
+
 ### 自定义请求
 
 `client.api` 暴露底层的 [ky](https://github.com/sindresorhus/ky) 实例，用于 SDK 尚未覆盖的端点：
@@ -522,6 +538,24 @@ const user = await client.api.get('v1/users/me').json();
 | `createListenHubVoice(params)`     | 创建 ListenHub Voice 生成任务 |
 | `getListenHubVoiceTask(taskId)`    | 获取任务状态与音频 URL        |
 | `listListenHubVoiceTasks(params?)` | 列出任务，支持可选过滤        |
+
+### 语音克隆
+
+流程与 OAuth 客户端相同，差别是：支持 `ja`；每次创建都必须声明 `consentConfirmed: true`
+（即调用方声明已获得被克隆者授权）；可用 `autoConfirm` 让「发现任务完成的那次轮询」直接确认。
+`getVoiceCloneTask` 有三种终态——克隆失败（`errorCode` / `errorMessage`）、克隆完成但未确认
+（`demoAudioUrl`，自动确认失败时另带 `confirmError`）、确认成功（`speakerId`，可直接用于
+`/v1/speech`、`/v1/tts`、`/v1/audio/speech`）。
+
+| 方法                                         | 说明                                    |
+| -------------------------------------------- | --------------------------------------- |
+| `createVoiceClone(params)`                   | 创建克隆任务，必须带 `consentConfirmed` |
+| `getVoiceCloneTask(taskId)`                  | 轮询任务；开启 autoConfirm 时同时确认   |
+| `confirmVoiceClone(params)`                  | 确认已完成的任务，返回 `speakerId`      |
+| `listVoiceCloneSpeakers()`                   | 列出私有音色，含配额与剩余确认次数      |
+| `getVoiceCloneSpeaker(speakerId)`            | 获取单个私有音色                        |
+| `updateVoiceCloneSpeaker(speakerId, params)` | 改音色名称或性别                        |
+| `deleteVoiceCloneSpeaker(speakerId)`         | 删除音色并释放一个名额                  |
 
 ### 内容提取
 

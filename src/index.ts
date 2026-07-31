@@ -157,6 +157,21 @@ export type {
 	ListListenHubVoiceTasksParams,
 	ListListenHubVoiceTasksResponse,
 } from './types/listenhub-voice.js';
+export type {
+	VoiceCloneAudioInput,
+	VoiceCloneLanguage,
+	VoiceCloneGender,
+	VoiceCloneTaskStatus,
+	CreateVoiceCloneParams,
+	CreateVoiceCloneResponse,
+	VoiceCloneTaskDetail,
+	ConfirmVoiceCloneParams,
+	VoiceCloneSpeaker,
+	VoiceCloneSpeakerListItem,
+	ListVoiceCloneSpeakersResponse,
+	UpdateVoiceCloneSpeakerParams,
+	DeleteVoiceCloneSpeakerResponse,
+} from './types/voice-clone.js';
 export {OpenAPIClient} from './openapi-client.js';
 export type {
 	OpenAPIClientOptions,
@@ -211,4 +226,17 @@ export type {
 	OpenAPISpeaker,
 	OpenAPIListSpeakersParams,
 	OpenAPIListSpeakersResponse,
+	OpenAPIVoiceCloneLanguage,
+	OpenAPIVoiceCloneGender,
+	OpenAPIVoiceCloneTaskStatus,
+	OpenAPICreateVoiceCloneParams,
+	OpenAPICreateVoiceCloneResponse,
+	OpenAPIVoiceCloneTaskDetail,
+	OpenAPIConfirmVoiceCloneParams,
+	OpenAPIConfirmVoiceCloneResponse,
+	OpenAPIVoiceCloneSpeaker,
+	OpenAPIVoiceCloneSpeakerListItem,
+	OpenAPIListVoiceCloneSpeakersResponse,
+	OpenAPIUpdateVoiceCloneSpeakerParams,
+	OpenAPIDeleteVoiceCloneSpeakerResponse,
 } from './types/openapi.js';

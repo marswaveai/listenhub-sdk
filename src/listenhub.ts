@@ -1,5 +1,6 @@
 import {createHttpClient, type KyInstance} from './client.js';
 import {appendMusicField} from './music-form.js';
+import {buildVoiceCloneForm} from './voice-clone-form.js';
 import {
 	createFileUpload as createFileUploadRequest,
 	getUploadFileSize,
@@ -87,6 +88,16 @@ import type {
 	ListListenHubVoiceTasksParams,
 	ListListenHubVoiceTasksResponse,
 } from './types/listenhub-voice.js';
+import type {
+	CreateVoiceCloneParams,
+	CreateVoiceCloneResponse,
+	VoiceCloneTaskDetail,
+	ConfirmVoiceCloneParams,
+	VoiceCloneSpeaker,
+	ListVoiceCloneSpeakersResponse,
+	UpdateVoiceCloneSpeakerParams,
+	DeleteVoiceCloneSpeakerResponse,
+} from './types/voice-clone.js';
 
 export class ListenHubClient {
 	public readonly api: KyInstance;
@@ -231,6 +242,56 @@ export class ListenHubClient {
 				searchParams: params as Record<string, string | number | boolean | undefined>,
 			})
 			.json<ListSpeakersResponse>();
+	}
+
+	// --- Voice Clone ---
+	// Upload mode only. The chat-mode recording flow (`/v1/voice-clone/chat`,
+	// `/v1/voice-clone/examples`) stays out of the SDK surface.
+
+	/** Create a clone task from reference audio. Async — poll via {@link getVoiceCloneTask}. */
+	async createVoiceClone(params: CreateVoiceCloneParams): Promise<CreateVoiceCloneResponse> {
+		const form = buildVoiceCloneForm(params.audioFiles, params.audioFilenames, {
+			language: params.language,
+			mode: 'upload',
+		});
+		return this.api.post('v1/voice-clone/clone', {body: form}).json<CreateVoiceCloneResponse>();
+	}
+
+	/** Poll a clone task. Throws `ListenHubError` when cloning failed. */
+	async getVoiceCloneTask(taskId: string): Promise<VoiceCloneTaskDetail> {
+		return this.api.get(`v1/voice-clone/clone/${taskId}`).json<VoiceCloneTaskDetail>();
+	}
+
+	/**
+	 * Turn a completed task into a reusable private speaker. Free within the tier
+	 * quota; beyond it the server charges 300 credits and only when `useCredits` is set.
+	 */
+	async confirmVoiceClone(params: ConfirmVoiceCloneParams): Promise<void> {
+		await this.api.post('v1/voice-clone/confirm', {json: params});
+	}
+
+	async listVoiceCloneSpeakers(): Promise<ListVoiceCloneSpeakersResponse> {
+		return this.api.get('v1/voice-clone/speakers').json<ListVoiceCloneSpeakersResponse>();
+	}
+
+	async getVoiceCloneSpeaker(speakerId: string): Promise<VoiceCloneSpeaker> {
+		return this.api.get(`v1/voice-clone/speakers/${speakerId}`).json<VoiceCloneSpeaker>();
+	}
+
+	async updateVoiceCloneSpeaker(
+		speakerId: string,
+		params: UpdateVoiceCloneSpeakerParams,
+	): Promise<VoiceCloneSpeaker> {
+		return this.api
+			.put(`v1/voice-clone/speakers/${speakerId}`, {json: params})
+			.json<VoiceCloneSpeaker>();
+	}
+
+	/** Deleting frees one slot against the tier's `maxSpeakers`. */
+	async deleteVoiceCloneSpeaker(speakerId: string): Promise<DeleteVoiceCloneSpeakerResponse> {
+		return this.api
+			.delete(`v1/voice-clone/speakers/${speakerId}`)
+			.json<DeleteVoiceCloneSpeakerResponse>();
 	}
 
 	// --- Images ---

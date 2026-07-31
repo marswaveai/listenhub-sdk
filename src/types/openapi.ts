@@ -486,3 +486,93 @@ export interface OpenAPIListSpeakersParams {
 export interface OpenAPIListSpeakersResponse {
 	items: OpenAPISpeaker[];
 }
+
+// --- Voice Clone ---
+/** The API-key surface accepts Japanese; the JWT surface (`types/voice-clone.ts`) does not. */
+export type OpenAPIVoiceCloneLanguage = 'zh' | 'en' | 'ja';
+export type OpenAPIVoiceCloneGender = 'male' | 'female' | 'other';
+export type OpenAPIVoiceCloneTaskStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export interface OpenAPICreateVoiceCloneParams {
+	/** 1-6 reference audio files (single file max 5MB, total max 20MB). */
+	audioFiles: Blob[];
+	/** Filenames sent with each file, positionally matched to `audioFiles`. */
+	audioFilenames?: string[];
+	language: OpenAPIVoiceCloneLanguage;
+	/** Declares the caller holds the cloned person's consent. Rejected unless `true`; stored as evidence. */
+	consentConfirmed: true;
+	/** Confirm the voice inside the poll that finds the task completed, instead of a second call. */
+	autoConfirm?: boolean;
+	/** Required when `autoConfirm` is true. Max 50 chars. */
+	name?: string;
+	/** Required when `autoConfirm` is true. */
+	gender?: OpenAPIVoiceCloneGender;
+	/** Authorizes the 300-credit charge once the tier quota is used up. */
+	useCredits?: boolean;
+}
+export interface OpenAPICreateVoiceCloneResponse {
+	taskId: string;
+	status: OpenAPIVoiceCloneTaskStatus;
+}
+/**
+ * Poll result. Three terminal shapes the caller must tell apart:
+ * - cloning failed → `status: 'failed'` with `errorCode` / `errorMessage`
+ * - cloned, not confirmed → `demoAudioUrl` (plus `confirmError` when auto-confirm failed)
+ * - confirmed → `speakerId`, usable on `/v1/speech`, `/v1/tts` and `/v1/audio/speech`
+ */
+export interface OpenAPIVoiceCloneTaskDetail {
+	status: OpenAPIVoiceCloneTaskStatus;
+	errorCode?: number;
+	errorMessage?: string;
+	demoAudioUrl?: string;
+	speakerId?: string;
+	confirmError?: string;
+}
+export interface OpenAPIConfirmVoiceCloneParams {
+	taskId: string;
+	/** Max 50 chars. */
+	name: string;
+	gender: OpenAPIVoiceCloneGender;
+	/** Authorizes the 300-credit charge once the tier quota is used up. */
+	useCredits?: boolean;
+}
+export interface OpenAPIConfirmVoiceCloneResponse {
+	speakerId: string;
+}
+export interface OpenAPIVoiceCloneSpeaker {
+	id: string;
+	/** The id accepted by the TTS endpoints. */
+	speakerInnerId: string;
+	name: string;
+	language: string;
+	gender: string;
+	demoAudioUrl?: string;
+	createdAt: string;
+	updatedAt: string;
+}
+/** List rows carry `speakerInnerId` but no `updatedAt`. */
+export interface OpenAPIVoiceCloneSpeakerListItem {
+	id: string;
+	name: string;
+	speakerInnerId: string;
+	language: string;
+	gender: string;
+	demoAudioUrl?: string;
+	createdAt: string;
+}
+export interface OpenAPIListVoiceCloneSpeakersResponse {
+	speakers: OpenAPIVoiceCloneSpeakerListItem[];
+	/** Confirmations allowed per subscription period. */
+	quota: number;
+	isLimitReached: boolean;
+	/** Maximum private speakers the tier may keep at once. */
+	maxSpeakers: number;
+	remainingConfirmations: number;
+}
+export interface OpenAPIUpdateVoiceCloneSpeakerParams {
+	/** Max 50 chars. */
+	name?: string;
+	gender?: OpenAPIVoiceCloneGender;
+}
+export interface OpenAPIDeleteVoiceCloneSpeakerResponse {
+	speakerId: string;
+}

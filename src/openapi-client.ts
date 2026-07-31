@@ -3,6 +3,7 @@ import {ListenHubError} from './errors.js';
 import {parseErrorResponse} from './client.js';
 import {createDomainSelectingFetch, DomainSwitchedError} from './domain-selection.js';
 import {appendMusicField} from './music-form.js';
+import {buildVoiceCloneForm} from './voice-clone-form.js';
 import {
 	createFileUpload as createFileUploadRequest,
 	getUploadFileSize,
@@ -71,6 +72,15 @@ import type {
 	OpenAPISubscriptionInfo,
 	OpenAPIListSpeakersParams,
 	OpenAPIListSpeakersResponse,
+	OpenAPICreateVoiceCloneParams,
+	OpenAPICreateVoiceCloneResponse,
+	OpenAPIVoiceCloneTaskDetail,
+	OpenAPIConfirmVoiceCloneParams,
+	OpenAPIConfirmVoiceCloneResponse,
+	OpenAPIVoiceCloneSpeaker,
+	OpenAPIListVoiceCloneSpeakersResponse,
+	OpenAPIUpdateVoiceCloneSpeakerParams,
+	OpenAPIDeleteVoiceCloneSpeakerResponse,
 } from './types/openapi.js';
 import type {
 	UploadedVideoReferenceImage,
@@ -320,6 +330,76 @@ export class OpenAPIClient {
 				searchParams: params as Record<string, string | number | boolean | undefined>,
 			})
 			.json();
+	}
+
+	// --- Voice Clone ---
+	// Upload mode only, and every create must carry an explicit consent declaration.
+
+	/** Create a clone task from reference audio. Async — poll via {@link getVoiceCloneTask}. */
+	async createVoiceClone(
+		params: OpenAPICreateVoiceCloneParams,
+	): Promise<OpenAPICreateVoiceCloneResponse> {
+		const form = buildVoiceCloneForm(params.audioFiles, params.audioFilenames, {
+			language: params.language,
+			mode: 'upload',
+			consentConfirmed: params.consentConfirmed,
+			autoConfirm: params.autoConfirm,
+			name: params.name,
+			gender: params.gender,
+			useCredits: params.useCredits,
+		});
+		return this.api
+			.post('v1/voice-clone/clone', {body: form})
+			.json<OpenAPICreateVoiceCloneResponse>();
+	}
+
+	/**
+	 * Poll a clone task. With `autoConfirm`, the poll that first sees the task
+	 * completed also confirms it — and charges — so read the three terminal shapes
+	 * of {@link OpenAPIVoiceCloneTaskDetail} rather than assuming success.
+	 * A concurrent confirmation for the same user answers 429, an unavailable
+	 * dependency 503; both are retryable and honor `Retry-After`.
+	 */
+	async getVoiceCloneTask(taskId: string): Promise<OpenAPIVoiceCloneTaskDetail> {
+		return this.api.get(`v1/voice-clone/clone/${taskId}`).json<OpenAPIVoiceCloneTaskDetail>();
+	}
+
+	/**
+	 * Turn a completed task into a reusable private speaker. Free within the tier
+	 * quota; beyond it the server charges 300 credits and only when `useCredits` is set.
+	 */
+	async confirmVoiceClone(
+		params: OpenAPIConfirmVoiceCloneParams,
+	): Promise<OpenAPIConfirmVoiceCloneResponse> {
+		return this.api
+			.post('v1/voice-clone/confirm', {json: params})
+			.json<OpenAPIConfirmVoiceCloneResponse>();
+	}
+
+	async listVoiceCloneSpeakers(): Promise<OpenAPIListVoiceCloneSpeakersResponse> {
+		return this.api.get('v1/voice-clone/speakers').json<OpenAPIListVoiceCloneSpeakersResponse>();
+	}
+
+	async getVoiceCloneSpeaker(speakerId: string): Promise<OpenAPIVoiceCloneSpeaker> {
+		return this.api.get(`v1/voice-clone/speakers/${speakerId}`).json<OpenAPIVoiceCloneSpeaker>();
+	}
+
+	async updateVoiceCloneSpeaker(
+		speakerId: string,
+		params: OpenAPIUpdateVoiceCloneSpeakerParams,
+	): Promise<OpenAPIVoiceCloneSpeaker> {
+		return this.api
+			.put(`v1/voice-clone/speakers/${speakerId}`, {json: params})
+			.json<OpenAPIVoiceCloneSpeaker>();
+	}
+
+	/** Deleting frees one slot against the tier's `maxSpeakers`. */
+	async deleteVoiceCloneSpeaker(
+		speakerId: string,
+	): Promise<OpenAPIDeleteVoiceCloneSpeakerResponse> {
+		return this.api
+			.delete(`v1/voice-clone/speakers/${speakerId}`)
+			.json<OpenAPIDeleteVoiceCloneSpeakerResponse>();
 	}
 
 	// --- Content Extract ---
