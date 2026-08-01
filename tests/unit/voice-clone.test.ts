@@ -1,6 +1,27 @@
-import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
+import {describe, it, expect, expectTypeOf, vi, beforeEach, afterEach} from 'vitest';
 import {ListenHubClient} from '../../src/listenhub';
 import {OpenAPIClient} from '../../src/openapi-client';
+import type {VoiceCloneLanguage} from '../../src/types/voice-clone';
+import type {OpenAPIVoiceCloneLanguage} from '../../src/types/openapi';
+
+type SiteVoiceCloneLanguage =
+	| 'en'
+	| 'zh'
+	| 'ja'
+	| 'es'
+	| 'pt'
+	| 'fr'
+	| 'de'
+	| 'tr'
+	| 'ko'
+	| 'it'
+	| 'th'
+	| 'vi';
+
+expectTypeOf<VoiceCloneLanguage>().toEqualTypeOf<SiteVoiceCloneLanguage>();
+expectTypeOf<OpenAPIVoiceCloneLanguage>().toEqualTypeOf<SiteVoiceCloneLanguage>();
+expectTypeOf<'fr'>().toMatchTypeOf<VoiceCloneLanguage>();
+expectTypeOf<'ru'>().not.toMatchTypeOf<VoiceCloneLanguage>();
 
 const mockFetch = vi.fn();
 

@@ -2,10 +2,8 @@
  * Voice cloning types for {@link ListenHubClient} (App/JWT surface).
  *
  * Source of truth: listenhub-api-server `src/controller/voice-clone.ts`.
- * The JWT surface and the API-key surface are different contracts — the
- * `OpenAPIVoiceClone*` types in `types/openapi.ts` add `ja`, the consent
- * declaration and auto-confirm, and return different payloads. Do not share
- * these types between the two clients.
+ * The JWT surface and the API-key surface have different request and response
+ * contracts. Do not share their endpoint types between the two clients.
  *
  * `/v1/voice-clone/chat` and `/v1/voice-clone/examples` back the interactive
  * web recording flow and are intentionally not part of the SDK surface.
@@ -14,8 +12,20 @@
 /** One reference audio file. */
 export type VoiceCloneAudioInput = Blob;
 
-/** The JWT surface accepts Chinese and English only; the API-key surface also accepts `ja`. */
-export type VoiceCloneLanguage = 'zh' | 'en';
+/** Languages accepted by the voice-clone create endpoint. */
+export type VoiceCloneLanguage =
+	| 'en'
+	| 'zh'
+	| 'ja'
+	| 'es'
+	| 'pt'
+	| 'fr'
+	| 'de'
+	| 'tr'
+	| 'ko'
+	| 'it'
+	| 'th'
+	| 'vi';
 
 export type VoiceCloneGender = 'male' | 'female' | 'other';
 
