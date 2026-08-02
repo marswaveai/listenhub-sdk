@@ -488,8 +488,20 @@ export interface OpenAPIListSpeakersResponse {
 }
 
 // --- Voice Clone ---
-/** The API-key surface accepts Japanese; the JWT surface (`types/voice-clone.ts`) does not. */
-export type OpenAPIVoiceCloneLanguage = 'zh' | 'en' | 'ja';
+/** Languages accepted by the voice-clone create endpoint. */
+export type OpenAPIVoiceCloneLanguage =
+	| 'en'
+	| 'zh'
+	| 'ja'
+	| 'es'
+	| 'pt'
+	| 'fr'
+	| 'de'
+	| 'tr'
+	| 'ko'
+	| 'it'
+	| 'th'
+	| 'vi';
 export type OpenAPIVoiceCloneGender = 'male' | 'female' | 'other';
 export type OpenAPIVoiceCloneTaskStatus = 'pending' | 'processing' | 'completed' | 'failed';
 export interface OpenAPICreateVoiceCloneParams {
