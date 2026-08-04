@@ -25,6 +25,8 @@ const {episodeId} = await client.createTTS({
 		speakers: [speaker.speakerInnerId],
 		language: 'zh',
 	},
+	// 0.5–2.0, at most two decimals. Omit it (or send 1) for the original speed.
+	speed: 1.25,
 });
 console.log(`Created TTS: ${episodeId}`);
 
