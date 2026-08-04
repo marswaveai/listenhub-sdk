@@ -23,10 +23,14 @@ export interface OpenAPICreateFlowSpeechParams {
 	speakers: Array<{speakerId: string}>;
 	language?: string;
 	mode?: 'smart' | 'direct';
+	/** Generation speed multiplier 0.5–2.0 (at most two decimals). Defaults to 1 (original speed); this is the speaking rate of the generated audio, not a player playback rate. */
+	speed?: number;
 }
 export interface OpenAPICreateFlowSpeechTTSParams {
 	scripts: Array<{content: string; speakerId: string}>;
 	title?: string;
+	/** Generation speed multiplier 0.5–2.0 (at most two decimals). Defaults to 1 (original speed); this is the speaking rate of the generated audio, not a player playback rate. */
+	speed?: number;
 }
 export interface OpenAPIFlowSpeechDetail {
 	episodeId: string;
@@ -55,6 +59,8 @@ export interface OpenAPICreatePodcastParams {
 	speakers: Array<{speakerId: string}>;
 	language?: string;
 	mode?: string;
+	/** Generation speed multiplier 0.5–2.0 (at most two decimals). Defaults to 1 (original speed); this is the speaking rate of the generated audio, not a player playback rate. */
+	speed?: number;
 }
 export interface OpenAPIPodcastDetail {
 	episodeId: string;
@@ -79,6 +85,8 @@ export interface OpenAPIPodcastDetail {
 }
 export interface OpenAPIGenerateAudioParams {
 	scripts?: Array<{content: string; speakerId: string}>;
+	/** Generation speed multiplier 0.5–2.0 (at most two decimals). Defaults to 1 (original speed); this is the speaking rate of the generated audio, not a player playback rate. */
+	speed?: number;
 }
 export interface OpenAPIGenerateAudioResponse {
 	success: boolean;
@@ -90,6 +98,8 @@ export interface OpenAPIGenerateAudioResponse {
 // --- TTS ---
 export interface OpenAPISpeechParams {
 	scripts: Array<{content: string; speakerId: string}>;
+	/** Generation speed multiplier 0.5–2.0 (at most two decimals). Defaults to 1 (original speed); this is the speaking rate of the generated audio, not a player playback rate. */
+	speed?: number;
 }
 export interface OpenAPISpeechResponse {
 	audioUrl: string;
@@ -102,6 +112,8 @@ export interface OpenAPITTSParams {
 	input: string;
 	voice: string;
 	response_format?: 'mp3' | 'opus' | 'aac' | 'flac' | 'wav' | 'pcm';
+	/** Generation speed multiplier 0.5–2.0 (at most two decimals). Defaults to 1 (original speed); this is the speaking rate of the generated audio, not a player playback rate. */
+	speed?: number;
 }
 
 // --- Storybook ---

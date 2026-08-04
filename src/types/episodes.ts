@@ -48,6 +48,8 @@ export interface CreatePodcastParams {
 		speakers: string[];
 		language: Language;
 	};
+	/** Generation speed multiplier 0.5–2.0 (at most two decimals). Defaults to 1 (original speed); this is the speaking rate of the generated audio, not a player playback rate. */
+	speed?: number;
 }
 
 export interface CreateTTSParams {
@@ -58,6 +60,8 @@ export interface CreateTTSParams {
 		speakers: string[];
 		language: Language;
 	};
+	/** Generation speed multiplier 0.5–2.0 (at most two decimals). Defaults to 1 (original speed); this is the speaking rate of the generated audio, not a player playback rate. */
+	speed?: number;
 }
 
 export type ImageSize = '2K' | '4K';
