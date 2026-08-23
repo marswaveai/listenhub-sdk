@@ -2,10 +2,11 @@ import ky, {type KyInstance} from 'ky';
 import type {ClientOptions} from './types/client.js';
 import {ListenHubError} from './errors.js';
 import {createDomainSelectingFetch, DomainSwitchedError} from './domain-selection.js';
+import {DOMAIN_BASE_URLS} from './domains.js';
 
 export type {KyInstance};
 
-const FACTORY_BASE_URL = 'https://api.listenhub.ai/api';
+const FACTORY_BASE_URL = DOMAIN_BASE_URLS.default.api;
 const PROBE_PATH = '/api/v1/users/me';
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_MAX_RETRIES = 2;

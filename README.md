@@ -119,6 +119,14 @@ Two rules are worth knowing before you rely on it:
 
 To pin a domain without spelling out a full URL, set `LISTENHUB_DOMAIN=app` (or `default` to force the built-in). This also skips the failed first request, which is useful if you already know the default domain is blocked. Where no filesystem is available (browsers, read-only containers) the selection is kept in memory for the life of the process instead — a failed write never breaks a request.
 
+The domain table itself is public API: `DOMAIN_BASE_URLS` maps each alias (`default`, `app`) to that alias's full `api` and `openapi` Base URLs, and every default inside the SDK is derived from it. Downstream tools that let users pin a domain should read it instead of keeping their own copy.
+
+```ts
+import {DOMAIN_BASE_URLS, type DomainAlias} from '@marswave/listenhub-sdk';
+
+DOMAIN_BASE_URLS.app.api; // 'https://api.listenhub.app/api'
+```
+
 ## Troubleshooting: `fetch failed`
 
 `TypeError: fetch failed` means the request **never received an HTTP response** — the connection failed at the DNS / TLS / proxy / Base URL layer, so there is no status code and the SDK cannot wrap it into a `ListenHubError`. Check, in order:
@@ -424,9 +432,27 @@ if (detail.status === 'success') {
 | `listExplainerVideos(params?)` | List explainer videos                   |
 | `listSlides(params?)`          | List slides                             |
 | `listAIImages(params?)`        | List AI-generated items                 |
+| `getAIImage(imageId)`          | Get an AI image                         |
 | `getCreation(episodeId)`       | Get full creation detail                |
 | `deleteCreations({ids})`       | Batch delete creations (incl. AI video) |
 | `deleteAIImages({ids})`        | Batch delete AI images                  |
+
+### Banana (Labnana)
+
+`/v1/banana/*` and `/v1/images` are two different routes on the same backend: the banana
+routes accept up to 14 reference images (vs 5) and add `batchId` / `isPublic` / `quality`.
+The backend has no "count" input — to generate n images at once, send n parallel
+`createBananaImage` calls sharing one `batchId`, which is what Featured/Trending groups on.
+
+| Method                                      | Description                                   |
+| ------------------------------------------- | --------------------------------------------- |
+| `createBananaImage(params)`                 | Generate a Labnana image                      |
+| `getBananaImage(imageId)`                   | Get a Labnana image                           |
+| `listBananaImages(params?)`                 | List Labnana images (`scope: 'me'\|'public'`) |
+| `createBananaVideoGeneration(params)`       | Generate a Labnana video                      |
+| `getBananaVideoGenerationTask(taskId)`      | Get a Labnana video task                      |
+| `listBananaVideoGenerationTasks(params?)`   | List Labnana video tasks                      |
+| `estimateBananaVideoGenerationCredits(...)` | Estimate Labnana video credits                |
 
 ### Users
 

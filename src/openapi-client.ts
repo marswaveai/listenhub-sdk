@@ -86,8 +86,9 @@ import type {
 	UploadedVideoReferenceImage,
 	UploadVideoReferenceImageParams,
 } from './types/video-generation.js';
+import {DOMAIN_BASE_URLS} from './domains.js';
 
-const DEFAULT_OPENAPI_BASE_URL = 'https://api.marswave.ai/openapi';
+const DEFAULT_OPENAPI_BASE_URL: string = DOMAIN_BASE_URLS.default.openapi;
 
 export class OpenAPIClient {
 	private api: KyInstance;

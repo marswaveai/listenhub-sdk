@@ -1,6 +1,8 @@
 export {ListenHubClient} from './listenhub.js';
 export {ListenHubError} from './errors.js';
 export {DomainSwitchedError} from './domain-selection.js';
+export {DOMAIN_BASE_URLS} from './domains.js';
+export type {DomainAlias} from './domains.js';
 export type {ClientOptions} from './types/client.js';
 export type {ConnectInitResponse, TokenResponse, StoredCredentials} from './types/auth.js';
 export type {ApiKeyResponse} from './types/settings.js';
@@ -56,6 +58,19 @@ export type {
 	AIImageAspectRatio,
 	AIImageSize,
 } from './types/images.js';
+export {ACCEPTED_IMAGE_MODELS, IMAGE_MODELS, LEGACY_IMAGE_MODEL_ALIASES} from './types/images.js';
+export type {
+	CreateBananaImageParams,
+	CreateBananaImageResponse,
+	BananaImageItem,
+	BananaImageCreator,
+	BananaImageQuality,
+	BananaImageScope,
+	BananaReferenceImageBase64,
+	BananaReferenceImageDimension,
+	ListBananaImagesParams,
+	ListBananaImagesResponse,
+} from './types/banana.js';
 export type {
 	MusicTaskType,
 	MusicTaskStatus,
