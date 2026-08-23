@@ -119,6 +119,14 @@ export LISTENHUB_API_URL="https://api.listenhub.app/api"          # ListenHubCli
 
 不想写完整 URL 的话，设 `LISTENHUB_DOMAIN=app` 即可钉住备选域（`default` 则强制用出厂默认）。这样连第一次失败的请求都省了，已经确知默认域被墙时很有用。没有文件系统的环境（浏览器、只读容器）会退化成进程内存级缓存——写不进磁盘绝不会让请求失败。
 
+这张域名表本身是公开 API：`DOMAIN_BASE_URLS` 把每个别名（`default`、`app`）映射到该别名下完整的 `api` 与 `openapi` Base URL，SDK 内部所有默认值都从它派生。下游工具要让用户钉死域名时，直接读它，不要再各自维护一份。
+
+```ts
+import {DOMAIN_BASE_URLS, type DomainAlias} from '@marswave/listenhub-sdk';
+
+DOMAIN_BASE_URLS.app.api; // 'https://api.listenhub.app/api'
+```
+
 ## 排查 `fetch failed`
 
 `TypeError: fetch failed` 表示请求**根本没有收到 HTTP 响应**——连接在 DNS / TLS / 代理 / Base URL 层就失败了，因此没有状态码，SDK 也无法把它包装成 `ListenHubError`。按顺序检查：
@@ -423,9 +431,26 @@ if (detail.status === 'success') {
 | `listExplainerVideos(params?)` | 列出讲解视频               |
 | `listSlides(params?)`          | 列出幻灯片                 |
 | `listAIImages(params?)`        | 列出 AI 生成的图片         |
+| `getAIImage(imageId)`          | 获取 AI 图片详情           |
 | `getCreation(episodeId)`       | 获取完整作品详情           |
 | `deleteCreations({ids})`       | 批量删除作品（含 AI 视频） |
 | `deleteAIImages({ids})`        | 批量删除 AI 图片           |
+
+### Banana（Labnana）
+
+`/v1/banana/*` 与 `/v1/images` 是同一个后端的两条不同路由：banana 侧参考图上限 14（vs 5），
+并多出 `batchId` / `isPublic` / `quality`。后端没有「张数」入参——一次要出 n 张，就发 n 个
+并行 `createBananaImage`、带同一个 `batchId`，Featured/Trending 据此折叠成一组。
+
+| 方法                                        | 说明                                         |
+| ------------------------------------------- | -------------------------------------------- |
+| `createBananaImage(params)`                 | 生成 Labnana 图片                            |
+| `getBananaImage(imageId)`                   | 获取 Labnana 图片详情                        |
+| `listBananaImages(params?)`                 | 列出 Labnana 图片（`scope: 'me'\|'public'`） |
+| `createBananaVideoGeneration(params)`       | 生成 Labnana 视频                            |
+| `getBananaVideoGenerationTask(taskId)`      | 获取 Labnana 视频任务                        |
+| `listBananaVideoGenerationTasks(params?)`   | 列出 Labnana 视频任务                        |
+| `estimateBananaVideoGenerationCredits(...)` | 预估 Labnana 视频积分                        |
 
 ### 用户
 

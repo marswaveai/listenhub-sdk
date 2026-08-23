@@ -82,6 +82,13 @@ import type {
 	UploadVideoReferenceImageParams,
 } from './types/video-generation.js';
 import type {
+	CreateBananaImageParams,
+	CreateBananaImageResponse,
+	BananaImageItem,
+	ListBananaImagesParams,
+	ListBananaImagesResponse,
+} from './types/banana.js';
+import type {
 	CreateListenHubVoiceParams,
 	CreateListenHubVoiceResponse,
 	ListenHubVoiceTaskDetail,
@@ -318,6 +325,65 @@ export class ListenHubClient {
 	 */
 	async deleteAIImages(params: DeleteAIImagesParams): Promise<void> {
 		await this.api.delete('v1/images', {json: params});
+	}
+
+	// --- Banana (Labnana) ---
+
+	/**
+	 * `POST /v1/banana/images`。与 `createAIImage` 打的是同一个后端的两条不同路由：
+	 * banana 侧参考图上限 14（vs 5），并多出 `batchId` / `isPublic`。
+	 * 一次要出 n 张就发 n 个并行请求、带同一个 `batchId` —— 后端没有张数入参。
+	 */
+	async createBananaImage(params: CreateBananaImageParams): Promise<CreateBananaImageResponse> {
+		return this.api.post('v1/banana/images', {json: params}).json<CreateBananaImageResponse>();
+	}
+
+	async getBananaImage(imageId: string): Promise<BananaImageItem> {
+		return this.api.get(`v1/banana/images/${imageId}`).json<BananaImageItem>();
+	}
+
+	async listBananaImages(params: ListBananaImagesParams = {}): Promise<ListBananaImagesResponse> {
+		return this.api
+			.get('v1/banana/images', {
+				searchParams: params as Record<string, string | number | boolean>,
+			})
+			.json<ListBananaImagesResponse>();
+	}
+
+	/**
+	 * Labnana 视频生成。入参与 `createVideoGeneration` 同一份 schema，差别只在路径：
+	 * 后端按 `/banana` 前缀把 application 判成 labnana，读侧据此只返回本产品线的任务。
+	 */
+	async createBananaVideoGeneration(
+		params: CreateVideoGenerationParams,
+	): Promise<CreateVideoGenerationResponse> {
+		return this.api
+			.post('v1/banana/video-generation/generate', {json: params})
+			.json<CreateVideoGenerationResponse>();
+	}
+
+	async getBananaVideoGenerationTask(taskId: string): Promise<VideoGenerationTaskDetail> {
+		return this.api
+			.get(`v1/banana/video-generation/tasks/${taskId}`)
+			.json<VideoGenerationTaskDetail>();
+	}
+
+	async listBananaVideoGenerationTasks(
+		params: ListVideoGenerationTasksParams = {},
+	): Promise<ListVideoGenerationTasksResponse> {
+		return this.api
+			.get('v1/banana/video-generation/tasks', {
+				searchParams: params as Record<string, string | number | boolean>,
+			})
+			.json<ListVideoGenerationTasksResponse>();
+	}
+
+	async estimateBananaVideoGenerationCredits(
+		params: EstimateVideoGenerationCreditsParams,
+	): Promise<EstimateVideoGenerationCreditsResponse> {
+		return this.api
+			.post('v1/banana/video-generation/estimate-credits', {json: params})
+			.json<EstimateVideoGenerationCreditsResponse>();
 	}
 
 	// --- Music ---

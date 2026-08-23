@@ -5,16 +5,22 @@
  * 因此没有「默认域超时但服务端已收到」导致双份生成/双扣的风险。
  */
 
+import {DOMAIN_BASE_URLS, domainHost} from './domains.js';
+
 interface DomainCandidate {
 	/** `LISTENHUB_DOMAIN` 可以填的短名。 */
 	alias: string;
 	host: string;
 }
 
-/** 默认域 → 备选域。换域只改这张表，不动下面的逻辑。 */
+/** 默认域 → 备选域。域名本身来自 `domains.ts`，这里只表达「谁回退到谁」。 */
 const DOMAIN_FALLBACKS: Record<string, readonly DomainCandidate[]> = {
-	'api.listenhub.ai': [{alias: 'app', host: 'api.listenhub.app'}],
-	'api.marswave.ai': [{alias: 'app', host: 'api.listenhub.app'}],
+	[domainHost(DOMAIN_BASE_URLS.default.api)]: [
+		{alias: 'app', host: domainHost(DOMAIN_BASE_URLS.app.api)},
+	],
+	[domainHost(DOMAIN_BASE_URLS.default.openapi)]: [
+		{alias: 'app', host: domainHost(DOMAIN_BASE_URLS.app.openapi)},
+	],
 };
 
 /** 备选域探活的超时。探活只在真实请求已经失败后发生，不影响正常路径。 */
