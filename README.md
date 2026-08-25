@@ -263,7 +263,11 @@ const {result} = await client.describeMusic({audio, audioFilename: 'song.mp3'});
 | `createPixVerseVideoGeneration(params)`  | Create a PixVerse video generation task             |
 | `estimatePixVerseVideoCredits(params)`   | Estimate PixVerse credit cost before generating     |
 
-Supported models: `doubao-seedance-2-pro`, `doubao-seedance-2-fast`, `happyhorse`; PixVerse: `pixverse`, `v6`, `v5`, `v4.5`
+Supported models: `doubao-seedance-2-pro`, `doubao-seedance-2-fast`, `happyhorse`, `wan3.0-video`, `wan3.0-video-prime`, `MiniMax-H3`; PixVerse: `pixverse`, `v6`, `v5`, `v4.5`
+
+`MiniMax-H3` takes `768p` / `2k` resolutions (no `480p` / `720p` / `1080p`) and 4-15s durations; every
+other model rejects `768p` and `2k`. It ignores `seed` and `generateAudio` — its output always carries
+an audio track and is not reproducible. See the per-model constraints on `CreateVideoGenerationParams`.
 
 Seedance reference images/videos need dimensions for server-side validation. Put media URLs in
 `content`, and put dimensions in top-level `referenceImages` / `referenceVideos`.

@@ -319,6 +319,83 @@ describe('Video Generation methods', () => {
 		expect(result).toEqual({tokens: 5000, credits: 15});
 	});
 
+	it.each(['wan3.0-video', 'wan3.0-video-prime'] as const)(
+		'createVideoGeneration accepts %s',
+		async (model) => {
+			mockJsonResponse({taskId: 'vt-wan3-1', status: 'generating'});
+			const result = await client.createVideoGeneration({
+				model,
+				content: [{type: 'text', text: 'a cat dancing on the moon'}],
+				resolution: '1080p',
+				ratio: '16:9',
+				duration: 30,
+			});
+			const req = await capturedRequest();
+			expect((req.body as any).model).toBe(model);
+			expect((req.body as any).duration).toBe(30);
+			expect(result).toEqual({taskId: 'vt-wan3-1', status: 'generating'});
+		},
+	);
+
+	it.each(['768p', '2k'] as const)(
+		'createVideoGeneration sends MiniMax-H3 at %s',
+		async (resolution) => {
+			mockJsonResponse({taskId: 'vt-h3-1', status: 'generating'});
+			const result = await client.createVideoGeneration({
+				model: 'MiniMax-H3',
+				content: [{type: 'text', text: 'a golden retriever on a sunny beach'}],
+				resolution,
+				ratio: '16:9',
+				duration: 4,
+			});
+			const req = await capturedRequest();
+			expect(req.url).toBe('https://api.test.com/api/v1/video-generation/generate');
+			expect((req.body as any).model).toBe('MiniMax-H3');
+			expect((req.body as any).resolution).toBe(resolution);
+			expect(result).toEqual({taskId: 'vt-h3-1', status: 'generating'});
+		},
+	);
+
+	it('createVideoGeneration sends MiniMax-H3 reference media', async () => {
+		mockJsonResponse({taskId: 'vt-h3-2', status: 'generating'});
+		await client.createVideoGeneration({
+			model: 'MiniMax-H3',
+			content: [
+				{type: 'text', text: 'match the reference style'},
+				{
+					type: 'image_url',
+					image_url: {url: 'https://example.com/ref.png'},
+					role: 'reference_image',
+				},
+				{
+					type: 'audio_url',
+					audio_url: {url: 'https://example.com/ref.mp3'},
+					role: 'reference_audio',
+				},
+			],
+			resolution: '2k',
+			ratio: '9:16',
+			duration: 6,
+		});
+		const req = await capturedRequest();
+		expect((req.body as any).content[1].role).toBe('reference_image');
+		expect((req.body as any).content[2].role).toBe('reference_audio');
+	});
+
+	it('estimateVideoGenerationCredits with MiniMax-H3', async () => {
+		mockJsonResponse({tokens: 4000, credits: 38});
+		const result = await client.estimateVideoGenerationCredits({
+			model: 'MiniMax-H3',
+			resolution: '768p',
+			duration: 4,
+			ratio: '16:9',
+		});
+		const req = await capturedRequest();
+		expect((req.body as any).model).toBe('MiniMax-H3');
+		expect((req.body as any).resolution).toBe('768p');
+		expect(result).toEqual({tokens: 4000, credits: 38});
+	});
+
 	it('createPixVerseVideoGeneration sends POST /v1/video-generation/pixverse/generate', async () => {
 		mockJsonResponse({taskId: 'pv-1', episodeId: 'ep-1', status: 'generating'});
 		const result = await client.createPixVerseVideoGeneration({

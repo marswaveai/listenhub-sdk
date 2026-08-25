@@ -190,7 +190,13 @@ export interface OpenAPIVideoReferenceVideoMeta {
 	size?: number;
 }
 export interface OpenAPICreateVideoGenerationParams {
-	model?: 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast' | 'happyhorse';
+	model?:
+		| 'doubao-seedance-2-pro'
+		| 'doubao-seedance-2-fast'
+		| 'happyhorse'
+		| 'wan3.0-video'
+		| 'wan3.0-video-prime'
+		| 'MiniMax-H3';
 	content: Array<
 		| {type: 'text'; text: string}
 		| {
@@ -212,10 +218,13 @@ export interface OpenAPICreateVideoGenerationParams {
 		  }
 		| {type: 'audio_url'; audio_url: {url: string}; role: 'reference_audio'}
 	>;
-	resolution?: '480p' | '720p' | '1080p';
+	/** `768p` and `2k` are MiniMax-H3 only; every other model rejects them. */
+	resolution?: '480p' | '720p' | '1080p' | '768p' | '2k';
 	ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4';
 	duration?: number;
+	/** Ignored by `MiniMax-H3` — its output always carries an audio track. */
 	generateAudio?: boolean;
+	/** Ignored by `MiniMax-H3` — it has no seed and its output is not reproducible. */
 	seed?: number;
 	inputVideoDuration?: number;
 	referenceImages?: OpenAPIVideoReferenceImageMeta[];
@@ -273,8 +282,15 @@ export interface OpenAPIListVideoGenerationTasksResponse {
 	total: number;
 }
 export interface OpenAPIEstimateVideoCreditsParams {
-	model: 'doubao-seedance-2-pro' | 'doubao-seedance-2-fast' | 'happyhorse';
-	resolution: '480p' | '720p' | '1080p';
+	model:
+		| 'doubao-seedance-2-pro'
+		| 'doubao-seedance-2-fast'
+		| 'happyhorse'
+		| 'wan3.0-video'
+		| 'wan3.0-video-prime'
+		| 'MiniMax-H3';
+	/** `768p` and `2k` are MiniMax-H3 only; every other model rejects them. */
+	resolution: '480p' | '720p' | '1080p' | '768p' | '2k';
 	duration: number;
 	hasVideoInput?: boolean;
 	inputVideoDuration?: number;

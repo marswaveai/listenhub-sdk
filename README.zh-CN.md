@@ -262,7 +262,11 @@ const {result} = await client.describeMusic({audio, audioFilename: 'song.mp3'});
 | `createPixVerseVideoGeneration(params)`  | 创建 PixVerse 视频生成任务         |
 | `estimatePixVerseVideoCredits(params)`   | 生成前预估 PixVerse 积分消耗       |
 
-支持的模型：`doubao-seedance-2-pro`、`doubao-seedance-2-fast`、`happyhorse`；PixVerse：`pixverse`、`v6`、`v5`、`v4.5`
+支持的模型：`doubao-seedance-2-pro`、`doubao-seedance-2-fast`、`happyhorse`、`wan3.0-video`、`wan3.0-video-prime`、`MiniMax-H3`；PixVerse：`pixverse`、`v6`、`v5`、`v4.5`
+
+`MiniMax-H3` 的分辨率只有 `768p` / `2k`（没有 `480p` / `720p` / `1080p`），时长 4–15 秒；其余模型不接受
+`768p` 和 `2k`。它会忽略 `seed` 与 `generateAudio`——出片恒带音轨，且无法通过 seed 复现。逐模型约束见
+`CreateVideoGenerationParams` 的注释。
 
 Seedance 的参考图片/视频需要尺寸做服务端校验。把媒体 URL 放进 `content`，把尺寸放进顶级的
 `referenceImages` / `referenceVideos`。
