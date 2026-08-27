@@ -1,9 +1,13 @@
 export type VideoGenerationModel =
 	| 'doubao-seedance-2-pro'
 	| 'doubao-seedance-2-fast'
-	| 'happyhorse';
+	| 'happyhorse'
+	| 'wan3.0-video'
+	| 'wan3.0-video-prime'
+	| 'MiniMax-H3';
 
-export type VideoGenerationResolution = '480p' | '720p' | '1080p';
+/** `768p` and `2k` are MiniMax-H3 only; every other model rejects them. */
+export type VideoGenerationResolution = '480p' | '720p' | '1080p' | '768p' | '2k';
 
 export type VideoGenerationRatio = '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4';
 
@@ -104,6 +108,15 @@ export interface UploadedVideoReferenceImage {
  *   min duration 3s; max prompt length 2500 chars; inputVideoDuration range [3,60]
  * - `doubao-seedance-*`: min duration 4s; max prompt length 500 chars; inputVideoDuration range [2,15];
  *   1080p only available on `doubao-seedance-2-pro`
+ * - `wan3.0-video` / `wan3.0-video-prime`: duration 2-30s; ratio limited to 16:9/4:3/1:1/3:4/9:16;
+ *   max prompt length 2500 chars; up to 10 reference images, 5 reference videos, 5 reference audio files;
+ *   inputVideoDuration range [1,15] and inputVideoDuration + duration must not exceed 30s;
+ *   billed on input + output seconds
+ * - `MiniMax-H3`: resolution 768p/2k only; duration 4-15s; ratio limited to
+ *   16:9/4:3/1:1/3:4/9:16/21:9 and ignored for image-to-video (the output follows the input image);
+ *   up to 5 reference images, 3 reference videos, 3 reference audio files; `last_frame` may be sent
+ *   without `first_frame`; `seed` and `generateAudio` are ignored (no upstream equivalent — output
+ *   always carries an audio track and is not reproducible)
  */
 export interface CreateVideoGenerationParams {
 	model?: VideoGenerationModel;
