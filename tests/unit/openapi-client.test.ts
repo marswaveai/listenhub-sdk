@@ -400,6 +400,32 @@ describe('OpenAPIClient – method calls', () => {
 		expect(capturedBody).toEqual(params);
 	});
 
+	it('Seedance 2.5 final request keeps the public Draft contract without inherited overrides', async () => {
+		const params = {
+			model: 'doubao-seedance-2-5' as const,
+			draftTaskId: 'draft-25',
+			requestId: 'final-request',
+		};
+		let capturedBody: unknown;
+		mockFetch.mockImplementationOnce(async (req: Request) => {
+			capturedBody = await req.clone().json();
+			return envelopeResponse({taskId: 'final-25', status: 'pending'});
+		});
+		await client.createVideoGeneration(params);
+		expect(capturedBody).toEqual(params);
+		mockFetch.mockResolvedValueOnce(
+			envelopeResponse({
+				id: 'draft-25',
+				status: 'success',
+				draft: true,
+				finalTaskIds: ['final-25'],
+			}),
+		);
+		const draft = await client.getVideoGenerationTask('draft-25');
+		expect(draft.draft).toBe(true);
+		expect(draft.finalTaskIds).toEqual(['final-25']);
+	});
+
 	it('getSubscription() → GET v1/user/subscription', async () => {
 		mockFetch.mockResolvedValueOnce(envelopeResponse({totalAvailableCredits: 1000}));
 
