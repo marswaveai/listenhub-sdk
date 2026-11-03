@@ -93,6 +93,49 @@ describe('Video Generation methods', () => {
 		expect(result).toEqual({taskId: 'vt-1', status: 'generating'});
 	});
 
+	it('forwards Seedance 2.5 audio-only draft and minimal final requests without adding inherited fields', async () => {
+		mockJsonResponse({taskId: 'draft-25', status: 'generating'});
+		await client.createVideoGeneration({
+			model: 'doubao-seedance-2-5',
+			content: [
+				{type: 'text', text: 'Follow the music'},
+				{
+					type: 'audio_url',
+					audio_url: {url: 'https://example.com/music.wav', duration: 5, size: 800000},
+					role: 'reference_audio',
+				},
+			],
+			draft: true,
+			resolution: '480p',
+			ratio: '16:9',
+			duration: 5,
+			requestId: 'draft-request',
+			omniReferenceTaskType: 'reference',
+		});
+		expect((await capturedRequest()).body).toMatchObject({
+			model: 'doubao-seedance-2-5',
+			draft: true,
+			requestId: 'draft-request',
+		});
+		mockJsonResponse({taskId: 'final-25', status: 'generating'});
+		const finalRequest = {
+			model: 'doubao-seedance-2-5' as const,
+			draftTaskId: 'draft-25',
+			requestId: 'final-request',
+		};
+		await client.createVideoGeneration(finalRequest);
+		expect((await capturedRequest(1)).body).toEqual(finalRequest);
+		mockJsonResponse({tokens: 108000, credits: 143});
+		await client.estimateVideoGenerationCredits({
+			model: 'doubao-seedance-2-5',
+			draftTaskId: 'draft-25',
+		});
+		expect((await capturedRequest(2)).body).toEqual({
+			model: 'doubao-seedance-2-5',
+			draftTaskId: 'draft-25',
+		});
+	});
+
 	it('getVideoGenerationTask sends GET /v1/video-generation/tasks/:taskId', async () => {
 		mockFetch.mockResolvedValueOnce(
 			jsonResponse({

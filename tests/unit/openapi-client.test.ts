@@ -1,6 +1,7 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {OpenAPIClient} from '../../src/openapi-client';
 import {ListenHubError} from '../../src/errors';
+import type {OpenAPIEstimateVideoCreditsResponse} from '../../src/types/openapi';
 
 const mockFetch = vi.fn();
 
@@ -399,6 +400,66 @@ describe('OpenAPIClient – method calls', () => {
 		expect(req.url).toContain('/v1/video-generation/generate');
 		expect(capturedBody).toEqual(params);
 	});
+
+	it('Seedance 2.5 final request keeps the public Draft contract without inherited overrides', async () => {
+		const params = {
+			model: 'doubao-seedance-2-5' as const,
+			draftTaskId: 'draft-25',
+			requestId: 'final-request',
+		};
+		let capturedBody: unknown;
+		mockFetch.mockImplementationOnce(async (req: Request) => {
+			capturedBody = await req.clone().json();
+			return envelopeResponse({taskId: 'final-25', status: 'pending'});
+		});
+		await client.createVideoGeneration(params);
+		expect(capturedBody).toEqual(params);
+		mockFetch.mockResolvedValueOnce(
+			envelopeResponse({
+				id: 'draft-25',
+				status: 'success',
+				draft: true,
+				finalTaskIds: ['final-25'],
+			}),
+		);
+		const draft = await client.getVideoGenerationTask('draft-25');
+		expect(draft.draft).toBe(true);
+		expect(draft.finalTaskIds).toEqual(['final-25']);
+	});
+
+	it.each([
+		['estimateVideoCredits', 'v1/video-generation/estimate-credits'],
+		['estimatePixVerseVideoCredits', 'v1/video-generation/pixverse/estimate-credits'],
+	] as const)(
+		'%s returns the public USD estimate without internal credits',
+		async (method, path) => {
+			const estimate = {
+				tokens: 172800,
+				estimatedCostUsd: 1.369863,
+			} satisfies OpenAPIEstimateVideoCreditsResponse;
+			let capturedBody: unknown;
+			mockFetch.mockImplementationOnce(async (req: Request) => {
+				capturedBody = await req.clone().json();
+				return envelopeResponse(estimate);
+			});
+
+			const result =
+				method === 'estimateVideoCredits'
+					? await client.estimateVideoCredits({model: 'doubao-seedance-2-5', duration: 5})
+					: await client.estimatePixVerseVideoCredits({capability: 'text_to_video', duration: 5});
+
+			const req: Request = mockFetch.mock.calls[0][0];
+			expect(req.method).toBe('POST');
+			expect(req.url).toBe(`https://api.test.com/openapi/${path}`);
+			expect(capturedBody).toEqual(
+				method === 'estimateVideoCredits'
+					? {model: 'doubao-seedance-2-5', duration: 5}
+					: {capability: 'text_to_video', duration: 5},
+			);
+			expect(result).toEqual(estimate);
+			expect(result).not.toHaveProperty('credits');
+		},
+	);
 
 	it('getSubscription() → GET v1/user/subscription', async () => {
 		mockFetch.mockResolvedValueOnce(envelopeResponse({totalAvailableCredits: 1000}));

@@ -1,6 +1,7 @@
 export type VideoGenerationModel =
 	| 'doubao-seedance-2-pro'
 	| 'doubao-seedance-2-fast'
+	| 'doubao-seedance-2-5'
 	| 'happyhorse'
 	| 'wan3.0-video'
 	| 'wan3.0-video-prime'
@@ -9,7 +10,16 @@ export type VideoGenerationModel =
 /** `768p` and `2k` are MiniMax-H3 only; every other model rejects them. */
 export type VideoGenerationResolution = '480p' | '720p' | '1080p' | '768p' | '2k';
 
-export type VideoGenerationRatio = '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4';
+export type VideoGenerationRatio =
+	| '16:9'
+	| '4:3'
+	| '1:1'
+	| '3:4'
+	| '9:16'
+	| '21:9'
+	| '4:5'
+	| '5:4'
+	| 'adaptive';
 
 export type VideoGenerationTaskStatus =
 	| 'pending'
@@ -61,7 +71,7 @@ export interface VideoContentVideoUrl {
 
 export interface VideoContentAudioUrl {
 	type: 'audio_url';
-	audio_url: {url: string};
+	audio_url: {url: string; duration?: number; size?: number};
 	role: 'reference_audio';
 }
 
@@ -87,6 +97,14 @@ export interface VideoReferenceVideoMeta {
 	size?: number;
 }
 
+export type SeedanceOmniReferenceTaskType = 'auto' | 'reference' | 'edit' | 'extend';
+
+export interface VideoReferenceAudioMeta {
+	role: 'reference_audio';
+	duration: number;
+	size?: number;
+}
+
 export interface UploadVideoReferenceImageParams {
 	file: import('./files.js').UploadFileData;
 	fileName?: string;
@@ -106,8 +124,11 @@ export interface UploadedVideoReferenceImage {
  * Model-specific constraints (enforced server-side):
  * - `happyhorse`: no 480p resolution; no `last_frame` or `audio_url` content; ratio supports 4:5/5:4;
  *   min duration 3s; max prompt length 2500 chars; inputVideoDuration range [3,60]
- * - `doubao-seedance-*`: min duration 4s; max prompt length 500 chars; inputVideoDuration range [2,15];
- *   1080p only available on `doubao-seedance-2-pro`
+ * - Seedance 2.0 Pro/Fast: duration 4–15s, 3000 characters, 9 images/3 videos/3 audios;
+ *   audio requires a visual input; Fast supports 480p/720p only.
+ * - Seedance 2.5: duration 4–30s or -1, 5000 characters, 30 images/10 videos/10 audios;
+ *   video/audio totals each <=30s; audio-only allowed. Frame/edit/extend require adaptive;
+ *   edit requires duration -1. Draft uses 480p; final uses draftTaskId and no content/options.
  * - `wan3.0-video` / `wan3.0-video-prime`: duration 2-30s; ratio limited to 16:9/4:3/1:1/3:4/9:16;
  *   max prompt length 2500 chars; up to 10 reference images, 5 reference videos, 5 reference audio files;
  *   inputVideoDuration range [1,15] and inputVideoDuration + duration must not exceed 30s;
@@ -119,8 +140,15 @@ export interface UploadedVideoReferenceImage {
  *   always carries an audio track and is not reproducible)
  */
 export interface CreateVideoGenerationParams {
+	omniReferenceTaskType?: SeedanceOmniReferenceTaskType;
+	draft?: boolean;
+	/** ListenHub draft task ID, not the provider ID. Final generation inherits its input. */
+	draftTaskId?: string;
+	/** Reuse for retries of the same request; use a new value for a new generation. */
+	requestId?: string;
 	model?: VideoGenerationModel;
-	content: VideoContentItem[];
+	/** Required for ordinary/draft generation; omit when supplying draftTaskId. */
+	content?: VideoContentItem[];
 	resolution?: VideoGenerationResolution;
 	ratio?: VideoGenerationRatio;
 	duration?: number;
@@ -131,6 +159,7 @@ export interface CreateVideoGenerationParams {
 	referenceImages?: VideoReferenceImageMeta[];
 	/** Reference video dimensions/duration used by Seedance validation. Prefer this over embedding metadata in content. */
 	referenceVideos?: VideoReferenceVideoMeta[];
+	referenceAudios?: VideoReferenceAudioMeta[];
 	/** Audio handling for happyhorse video-edit mode. Only effective when model is 'happyhorse' and content includes a video_url. */
 	audioSetting?: 'auto' | 'origin';
 }
@@ -142,13 +171,17 @@ export interface ListVideoGenerationTasksParams {
 }
 
 export interface EstimateVideoGenerationCreditsParams {
+	omniReferenceTaskType?: SeedanceOmniReferenceTaskType;
+	draft?: boolean;
+	draftTaskId?: string;
 	model: VideoGenerationModel;
-	resolution: VideoGenerationResolution;
-	duration: number;
+	resolution?: VideoGenerationResolution;
+	duration?: number;
 	hasVideoInput?: boolean;
 	inputVideoDuration?: number;
 	referenceImages?: VideoReferenceImageMeta[];
 	referenceVideos?: VideoReferenceVideoMeta[];
+	referenceAudios?: VideoReferenceAudioMeta[];
 	ratio?: VideoGenerationRatio;
 }
 
@@ -158,6 +191,11 @@ export interface CreateVideoGenerationResponse {
 }
 
 export interface VideoGenerationTaskDetail {
+	draft?: boolean;
+	draftTaskId?: string;
+	finalTaskIds?: string[];
+	draftEpisodeId?: string;
+	finalEpisodeIds?: string[];
 	id: string;
 	status: VideoGenerationTaskStatus;
 	model: string;
@@ -170,6 +208,7 @@ export interface VideoGenerationTaskDetail {
 		seed: number;
 		referenceImages?: VideoReferenceImageMeta[];
 		referenceVideos?: VideoReferenceVideoMeta[];
+		referenceAudios?: VideoReferenceAudioMeta[];
 	};
 	videoUrl?: string;
 	providerVideoUrl?: string;
@@ -183,6 +222,11 @@ export interface VideoGenerationTaskDetail {
 }
 
 export interface VideoGenerationTaskListItem {
+	draft?: boolean;
+	draftTaskId?: string;
+	finalTaskIds?: string[];
+	draftEpisodeId?: string;
+	finalEpisodeIds?: string[];
 	id: string;
 	status: VideoGenerationTaskStatus;
 	model: string;
@@ -192,6 +236,7 @@ export interface VideoGenerationTaskListItem {
 		duration: number;
 		referenceImages?: VideoReferenceImageMeta[];
 		referenceVideos?: VideoReferenceVideoMeta[];
+		referenceAudios?: VideoReferenceAudioMeta[];
 	};
 	videoUrl?: string;
 	providerVideoUrl?: string;

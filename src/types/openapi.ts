@@ -189,15 +189,26 @@ export interface OpenAPIVideoReferenceVideoMeta {
 	fps?: number;
 	size?: number;
 }
+export interface OpenAPIVideoReferenceAudioMeta {
+	role: 'reference_audio';
+	duration: number;
+	size?: number;
+}
 export interface OpenAPICreateVideoGenerationParams {
+	omniReferenceTaskType?: 'auto' | 'reference' | 'edit' | 'extend';
+	draft?: boolean;
+	draftTaskId?: string;
+	requestId?: string;
 	model?:
 		| 'doubao-seedance-2-pro'
 		| 'doubao-seedance-2-fast'
+		| 'doubao-seedance-2-5'
 		| 'happyhorse'
 		| 'wan3.0-video'
 		| 'wan3.0-video-prime'
 		| 'MiniMax-H3';
-	content: Array<
+	/** Required unless draftTaskId is supplied. */
+	content?: Array<
 		| {type: 'text'; text: string}
 		| {
 				type: 'image_url';
@@ -216,11 +227,15 @@ export interface OpenAPICreateVideoGenerationParams {
 				};
 				role: 'reference_video';
 		  }
-		| {type: 'audio_url'; audio_url: {url: string}; role: 'reference_audio'}
+		| {
+				type: 'audio_url';
+				audio_url: {url: string; duration?: number; size?: number};
+				role: 'reference_audio';
+		  }
 	>;
 	/** `768p` and `2k` are MiniMax-H3 only; every other model rejects them. */
 	resolution?: '480p' | '720p' | '1080p' | '768p' | '2k';
-	ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4';
+	ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4' | 'adaptive';
 	duration?: number;
 	/** Ignored by `MiniMax-H3` — its output always carries an audio track. */
 	generateAudio?: boolean;
@@ -229,6 +244,7 @@ export interface OpenAPICreateVideoGenerationParams {
 	inputVideoDuration?: number;
 	referenceImages?: OpenAPIVideoReferenceImageMeta[];
 	referenceVideos?: OpenAPIVideoReferenceVideoMeta[];
+	referenceAudios?: OpenAPIVideoReferenceAudioMeta[];
 	/** Audio handling for happyhorse video-edit mode. Only effective when model is 'happyhorse' and content includes a video_url. */
 	audioSetting?: 'auto' | 'origin';
 }
@@ -237,6 +253,11 @@ export interface OpenAPICreateVideoGenerationResponse {
 	status: OpenAPIVideoGenerationTaskStatus;
 }
 export interface OpenAPIVideoGenerationTaskDetail {
+	draft?: boolean;
+	draftTaskId?: string;
+	finalTaskIds?: string[];
+	draftEpisodeId?: string;
+	finalEpisodeIds?: string[];
 	id: string;
 	status: OpenAPIVideoGenerationTaskStatus;
 	model: string;
@@ -249,6 +270,7 @@ export interface OpenAPIVideoGenerationTaskDetail {
 		seed: number;
 		referenceImages?: OpenAPIVideoReferenceImageMeta[];
 		referenceVideos?: OpenAPIVideoReferenceVideoMeta[];
+		referenceAudios?: OpenAPIVideoReferenceAudioMeta[];
 	};
 	videoUrl?: string;
 	providerVideoUrl?: string;
@@ -267,6 +289,11 @@ export interface OpenAPIListVideoGenerationTasksParams {
 }
 export interface OpenAPIListVideoGenerationTasksResponse {
 	items: Array<{
+		draft?: boolean;
+		draftTaskId?: string;
+		finalTaskIds?: string[];
+		draftEpisodeId?: string;
+		finalEpisodeIds?: string[];
 		id: string;
 		status: OpenAPIVideoGenerationTaskStatus;
 		model: string;
@@ -282,25 +309,30 @@ export interface OpenAPIListVideoGenerationTasksResponse {
 	total: number;
 }
 export interface OpenAPIEstimateVideoCreditsParams {
+	omniReferenceTaskType?: 'auto' | 'reference' | 'edit' | 'extend';
+	draft?: boolean;
+	draftTaskId?: string;
 	model:
 		| 'doubao-seedance-2-pro'
 		| 'doubao-seedance-2-fast'
+		| 'doubao-seedance-2-5'
 		| 'happyhorse'
 		| 'wan3.0-video'
 		| 'wan3.0-video-prime'
 		| 'MiniMax-H3';
 	/** `768p` and `2k` are MiniMax-H3 only; every other model rejects them. */
-	resolution: '480p' | '720p' | '1080p' | '768p' | '2k';
-	duration: number;
+	resolution?: '480p' | '720p' | '1080p' | '768p' | '2k';
+	duration?: number;
 	hasVideoInput?: boolean;
 	inputVideoDuration?: number;
 	referenceImages?: OpenAPIVideoReferenceImageMeta[];
 	referenceVideos?: OpenAPIVideoReferenceVideoMeta[];
-	ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4';
+	referenceAudios?: OpenAPIVideoReferenceAudioMeta[];
+	ratio?: '16:9' | '4:3' | '1:1' | '3:4' | '9:16' | '21:9' | '4:5' | '5:4' | 'adaptive';
 }
 export interface OpenAPIEstimateVideoCreditsResponse {
 	tokens: number;
-	credits: number;
+	estimatedCostUsd: number;
 }
 
 // --- ListenHub Voice ---
