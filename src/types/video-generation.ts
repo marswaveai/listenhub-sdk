@@ -124,7 +124,7 @@ export interface UploadedVideoReferenceImage {
  * Model-specific constraints (enforced server-side):
  * - `happyhorse`: no 480p resolution; no `last_frame` or `audio_url` content; ratio supports 4:5/5:4;
  *   min duration 3s; max prompt length 2500 chars; inputVideoDuration range [3,60]
- * - Seedance 2.0 Pro/Fast: duration 4–15s, 1500 characters, 9 images/3 videos/3 audios;
+ * - Seedance 2.0 Pro/Fast: duration 4–15s, 3000 characters, 9 images/3 videos/3 audios;
  *   audio requires a visual input; Fast supports 480p/720p only.
  * - Seedance 2.5: duration 4–30s or -1, 5000 characters, 30 images/10 videos/10 audios;
  *   video/audio totals each <=30s; audio-only allowed. Frame/edit/extend require adaptive;
