@@ -332,7 +332,7 @@ export interface OpenAPIEstimateVideoCreditsParams {
 }
 export interface OpenAPIEstimateVideoCreditsResponse {
 	tokens: number;
-	credits: number;
+	estimatedCostUsd: number;
 }
 
 // --- ListenHub Voice ---
